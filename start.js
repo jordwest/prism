@@ -104,8 +104,9 @@ const importObject = {
     clear: () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
     },
-    measure_text: (strPtr) => {
+    measure_text: (size, strPtr) => {
       const text = readString(strPtr);
+      ctx.font = `${size}px CompaqThin`;
       return ctx.measureText(text).width;
     },
     fill: (r, g, b, a) => {
@@ -116,14 +117,42 @@ const importObject = {
       // console.log("Rect", x, y, w, h);
       ctx.fillRect(x, y, w, h);
     },
-    draw_text: (x, y, strPtr) => {
+    draw_text: (x, y, size, strPtr) => {
       const text = readString(strPtr);
+      ctx.font = `${size}px CompaqThin`;
       ctx.fillText(text, x, y);
     },
   },
 };
 
 let existingModule = null;
+
+let pointerState = {
+  x: 0,
+  y: 0,
+  down: false,
+};
+
+function sendMouseUpdate() {
+  existingModule.instance.exports.on_mouse_update(
+    pointerState.x,
+    pointerState.y,
+    pointerState.down,
+  );
+}
+canvas.addEventListener("mousemove", (evt) => {
+  pointerState.x = evt.offsetX;
+  pointerState.y = evt.offsetY;
+  sendMouseUpdate();
+});
+canvas.addEventListener("mousedown", (evt) => {
+  pointerState.down = true;
+  sendMouseUpdate();
+});
+canvas.addEventListener("mouseup", (evt) => {
+  pointerState.down = false;
+  sendMouseUpdate();
+});
 
 function startWasm(obj) {
   mem = obj.instance.exports.memory.buffer;
@@ -133,6 +162,7 @@ function startWasm(obj) {
 async function initWasm() {
   return WebAssembly.instantiateStreaming(
     fetch("odin-test.wasm"),
+    // fetch("optimized.wasm"),
     importObject,
   ).then((obj) => {
     console.log("WASM INIT", obj.instance.exports);
@@ -194,6 +224,7 @@ requestAnimationFrame(frame);
 
 setTimeout(() => {
   ctx.font = "16px CompaqThin";
+  ctx.textBaseline = "top";
   ctx.imageSmoothingEnabled = false;
   ctx.fillText("hellooooo there 😂", 20, 20);
   console.log("Text measure", ctx.measureText("Hellooooooo there"));

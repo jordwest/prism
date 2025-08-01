@@ -30,8 +30,8 @@ foreign wasm {
 	clear :: proc() ---
 	fill :: proc(r: f32, g: f32, b: f32, a: f32) ---
 	draw_rect :: proc(x: f32, y: f32, w: f32, h: f32) ---
-	draw_text :: proc(x: f32, y: f32, text: cstring) ---
-	measure_text :: proc(text: cstring) -> i32 ---
+	draw_text :: proc(x: f32, y: f32, size: i32, text: cstring) ---
+	measure_text :: proc(size: i32, text: cstring) -> i32 ---
 }
 
 foreign import debug "debug"
@@ -67,6 +67,11 @@ on_panic :: proc(a: string, b: string, loc: runtime.Source_Code_Location) -> ! {
 }
 
 @(export)
+on_mouse_update :: proc(pos_x: f32, pos_y: f32, button_down: bool) {
+	clay.SetPointerState({pos_x, pos_y}, button_down)
+}
+
+@(export)
 tick :: proc(dt: f32) {
 	context.assertion_failure_proc = on_panic
 	context.allocator = persistent_arena_alloc
@@ -82,7 +87,7 @@ tick :: proc(dt: f32) {
 
 	// text := fmt.tprintf("Time is %.2f", state.t)
 	cstr := strings.clone_to_cstring(fmt.tprintf("Time is %.3f", state.t))
-	draw_text(f32(x), f32(y + 50 + offset), cstr)
+	draw_text(f32(x), f32(y + 50 + offset), 16, cstr)
 
 	render_commands := ui_create_layout()
 
@@ -109,10 +114,12 @@ tick :: proc(dt: f32) {
 		// )
 		// ... Implement handling of other command types
 		case .Text:
-			fill(0, 0, 0, 255)
+			c := render_command.renderData.text.textColor
+			fill(c.r, c.g, c.b, c.a)
 			draw_text(
 				render_command.boundingBox.x,
 				render_command.boundingBox.y,
+				i32(render_command.renderData.text.fontSize),
 				strings.clone_to_cstring(
 					string_from_clay_slice(render_command.renderData.text.stringContents),
 				),
@@ -135,14 +142,13 @@ clay_measure_text :: proc "c" (
 	// clay.TextElementConfig contains members such as fontId, fontSize, letterSpacing, etc..
 	// Note: clay.String->chars is not guaranteed to be null terminated
 	odin_string := string_from_clay_slice(text)
-	width := measure_text(strings.clone_to_cstring(odin_string))
+	width := measure_text(i32(config.fontSize), strings.clone_to_cstring(odin_string))
 	return {width = f32(width), height = f32(config.fontSize)}
 }
 
 clay_error_handler :: proc "c" (errorData: clay.ErrorData) {
 	print("CLAY ERROR")
 }
-
 
 @(export)
 hello :: proc(s: ^TestStruct) {
@@ -158,7 +164,7 @@ hello :: proc(s: ^TestStruct) {
 	context.allocator = persistent_arena_alloc
 	context.temp_allocator = frame_arena_alloc
 
-	print("It works! 😃  Hey there, hot reload from 202507jj")
+	print("It works! 😃  Hey there, hot reload from 202507")
 	printf("Time is %.2f", state.t)
 
 	// Boot clay
@@ -166,10 +172,12 @@ hello :: proc(s: ^TestStruct) {
 	min_memory_size := clay.MinMemorySize()
 	memory := make([^]u8, min_memory_size)
 	clay_arena: clay.Arena = clay.CreateArenaWithCapacityAndMemory(uint(min_memory_size), memory)
-	clay.Initialize(clay_arena, {1080, 720}, {handler = clay_error_handler})
+	clay.Initialize(clay_arena, {1280, 1024}, {handler = clay_error_handler})
 
 	// Tell clay how to measure text
 	clay.SetMeasureTextFunction(clay_measure_text, nil)
+
+	clay.SetDebugModeEnabled(true)
 
 	return
 }

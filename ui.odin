@@ -51,7 +51,10 @@ ui_create_layout :: proc() -> clay.ClayArray(clay.RenderCommand) {
 			id = clay.ID("SideBar"),
 			layout = {
 				layoutDirection = .TopToBottom,
-				sizing = {width = clay.SizingFixed(300), height = clay.SizingGrow({})},
+				sizing = {
+					width = clay.SizingFixed(300 + math.cos(state.t * 0.2) * 100),
+					height = clay.SizingGrow({}),
+				},
 				padding = {16, 16, 16, 16},
 				childGap = 16,
 			},
@@ -89,14 +92,17 @@ ui_create_layout :: proc() -> clay.ClayArray(clay.RenderCommand) {
 				{
 					id = clay.ID("Sizer"),
 					layout = {
-						sizing = {
-							width = clay.SizingGrow({}),
-							height = clay.SizingFixed(20 + math.sin(state.t) * 20),
-						},
+						sizing = {width = clay.SizingGrow({}), height = clay.SizingGrow({})},
 					},
 					backgroundColor = COLOR_LIGHT,
 				},
-				) {}
+				) {
+
+					clay.Text(
+						"Here's some text inside the sizing area",
+						clay.TextConfig({textColor = COLOR_BLACK, fontSize = 32}),
+					)
+				}
 				if clay.UI()(
 				{
 					id = clay.ID("Textual"),
@@ -106,11 +112,22 @@ ui_create_layout :: proc() -> clay.ClayArray(clay.RenderCommand) {
 							height = clay.SizingGrow({}), // + math.sin(state.t) * 20),
 						},
 					},
-					backgroundColor = COLOR_ORANGE,
+					backgroundColor = clay.Hovered() ? COLOR_LIGHT : COLOR_ORANGE,
 				},
 				) {
-					clay.Text(
-						"Clay - A UI Library",
+
+					count := int(42 + 50 + math.sin(state.t) * 50)
+					chars := make([]u8, count)
+					for x := 0; x < count; x += 1 {
+						if x % 5 == 0 {
+							chars[x] = ' '
+						} else {
+							chars[x] = u8(x)
+						}
+					}
+
+					clay.TextDynamic(
+						string(chars), // "Clay - A UI Library with text wrapping",
 						clay.TextConfig({textColor = COLOR_BLACK, fontSize = 16}),
 					)
 				}
