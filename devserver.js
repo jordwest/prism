@@ -41,14 +41,47 @@ async function handleStaticFile(request) {
   }
 }
 
+var isBuilding = false;
+
+async function onFileUpdate(event) {
+  var odinFileUpdate = event.paths.find((p) => p.endsWith(".odin"));
+  if (odinFileUpdate != null) {
+    if (isBuilding) {
+      console.warn("Already building");
+      return;
+    }
+    isBuilding = true;
+    console.log("run command");
+    let cmd = new Deno.Command("odin", {
+      args: ["build", ".", "-target:freestanding_wasm32"],
+    });
+    let { code, stdout, stderr } = await cmd.output();
+    console.log("Return code", code);
+
+    if (code === 0) {
+      // var wasmFileUpdate = event.paths.find((p) => p.endsWith(".wasm"));
+      for (var s of sockets) {
+        s.send(JSON.stringify(odinFileUpdate));
+      }
+    } else {
+      const outStr = new TextDecoder().decode(stdout);
+      const outErr = new TextDecoder().decode(stderr);
+      console.log(outStr, outErr);
+    }
+    isBuilding = false;
+  }
+}
+
 // Watch for file changes and send wasm
 const watcher = Deno.watchFs("./");
 for await (const event of watcher) {
-  for (var s of sockets) {
-    var wasmFileUpdate = event.paths.find((p) => p.endsWith(".wasm"));
-    if (wasmFileUpdate != null) {
-      s.send(JSON.stringify(wasmFileUpdate));
-    }
-  }
+  onFileUpdate(event);
+
+  // var wasmFileUpdate = event.paths.find((p) => p.endsWith(".wasm"));
+  // if (wasmFileUpdate != null) {
+  //   for (var s of sockets) {
+  //     s.send(JSON.stringify(wasmFileUpdate));
+  //   }
+  // }
   console.log(">>>> event", event);
 }
