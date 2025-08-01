@@ -1,0 +1,3 @@
+*.wasm
+.vite
+odin-test

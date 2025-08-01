@@ -1,0 +1,16 @@
+@font-face {
+    font-family: "CompaqThin";
+    src: url("./CompaqThin.ttf") format("truetype");
+}
+
+body {
+    font-family: "CompaqThin";
+    font-size: 16px;
+}
+
+canvas {
+    font-smooth: never;
+    image-rendering: pixelated;
+    image-rendering: -webkit-optimize-contrast; /* webkit */
+    image-rendering: -moz-crisp-edges; /* Firefox */
+}
