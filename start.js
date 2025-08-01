@@ -2,7 +2,34 @@
 let mem;
 
 const canvas = document.getElementById("canvas");
+canvas.width = 1280;
+canvas.height = 1024;
 const ctx = canvas.getContext("2d");
+
+const readOdinString = (ptr) => {
+  if (mem == null) {
+    console.error("mem is null");
+    return;
+  }
+
+  const data = new DataView(mem);
+  const charPtr = data.getInt32(ptr, true);
+  const charLen = data.getInt32(ptr + 4, true);
+  console.log("String at ", charPtr, charLen);
+
+  // let i = 0;
+  // while (true) {
+  //   if (data[i] === 0) {
+  //     break;
+  //   }
+  //   i++;
+  // }
+
+  const bytes = new Uint8Array(mem, charPtr, charLen);
+
+  const string = new TextDecoder().decode(bytes);
+  return string;
+};
 
 const readString = (ptr) => {
   if (mem == null) {
@@ -37,6 +64,11 @@ const readU32 = (address) => {
 
 const importObject = {
   debug: {
+    log_panic(prefix, message, file, lineNumber) {
+      console.error(
+        `${readOdinString(prefix)}: ${readOdinString(message)}\n${readOdinString(file)}:${lineNumber}`,
+      );
+    },
     log_u8(info, num) {
       console.log(readString(info), num);
     },
@@ -72,8 +104,16 @@ const importObject = {
     clear: () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
     },
+    measure_text: (strPtr) => {
+      const text = readString(strPtr);
+      return ctx.measureText(text).width;
+    },
+    fill: (r, g, b, a) => {
+      // console.log("Fill", r, g, b, a);
+      ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${a})`;
+    },
     draw_rect: (x, y, w, h) => {
-      ctx.fillStyle = "black";
+      // console.log("Rect", x, y, w, h);
       ctx.fillRect(x, y, w, h);
     },
     draw_text: (x, y, strPtr) => {

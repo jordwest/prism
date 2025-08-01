@@ -1,4 +1,6 @@
 package main
+import "base:runtime"
+import clay "clay-odin"
 import "core:fmt"
 import "core:math"
 import "core:mem"
@@ -9,8 +11,15 @@ TestStruct :: struct #packed {
 	t: f32,
 }
 
+frame_heap: [1049600]u8
 heap: [33554432]u8
 state: TestStruct
+
+persistent_arena_alloc: mem.Allocator
+persistent_arena: mem.Arena
+
+frame_arena_alloc: mem.Allocator
+frame_arena: mem.Arena
 
 foreign import wasm "my_namespace"
 @(default_calling_convention = "c")
@@ -19,13 +28,16 @@ foreign wasm {
 	test :: proc(test_struct: ^TestStruct) -> u8 ---
 	print :: proc(str: cstring) ---
 	clear :: proc() ---
+	fill :: proc(r: f32, g: f32, b: f32, a: f32) ---
 	draw_rect :: proc(x: f32, y: f32, w: f32, h: f32) ---
 	draw_text :: proc(x: f32, y: f32, text: cstring) ---
+	measure_text :: proc(text: cstring) -> i32 ---
 }
 
 foreign import debug "debug"
 @(default_calling_convention = "c")
 foreign debug {
+	log_panic :: proc(prefix: string, message: string, file: string, line: i32) ---
 	log_pointer :: proc(ptr: rawptr, size: i32) ---
 	log_u8 :: proc(info: cstring, val: u8) ---
 }
@@ -46,13 +58,19 @@ get_state_size :: proc() -> u32 {
 	return size_of(TestStruct)
 }
 
+on_panic :: proc(a: string, b: string, loc: runtime.Source_Code_Location) -> ! {
+	// printf("Panic! %s ||| %s", a, b)
+	// print(strings.unsafe_string_to_cstring(b))
+	// print(strings.unsafe_string_to_cstring(loc.line))
+	log_panic(a, b, loc.file_path, loc.line)
+	unreachable()
+}
+
 @(export)
 tick :: proc(dt: f32) {
-	arena := mem.Arena {
-		data = heap[:],
-	}
-	context.allocator = mem.arena_allocator(&arena)
-	context.temp_allocator = mem.arena_allocator(&arena)
+	context.assertion_failure_proc = on_panic
+	context.allocator = persistent_arena_alloc
+	context.temp_allocator = frame_arena_alloc
 
 	state.t += dt
 	clear()
@@ -66,38 +84,92 @@ tick :: proc(dt: f32) {
 	cstr := strings.clone_to_cstring(fmt.tprintf("Time is %.3f", state.t))
 	draw_text(f32(x), f32(y + 50 + offset), cstr)
 
-	mem.arena_free_all(&arena)
+	render_commands := ui_create_layout()
+
+	for i in 0 ..< i32(render_commands.length) {
+		render_command := clay.RenderCommandArray_Get(&render_commands, i)
+
+		#partial switch render_command.commandType {
+		case .Rectangle:
+			fill(
+				render_command.renderData.rectangle.backgroundColor.r,
+				render_command.renderData.rectangle.backgroundColor.g,
+				render_command.renderData.rectangle.backgroundColor.b,
+				render_command.renderData.rectangle.backgroundColor.a,
+			)
+			draw_rect(
+				render_command.boundingBox.x,
+				render_command.boundingBox.y,
+				render_command.boundingBox.width,
+				render_command.boundingBox.height,
+			)
+		// DrawRectangle(
+		// 	render_command.boundingBox,
+		// 	render_command.config.rectangleElementConfig.color,
+		// )
+		// ... Implement handling of other command types
+		case .Text:
+			fill(0, 0, 0, 255)
+			draw_text(
+				render_command.boundingBox.x,
+				render_command.boundingBox.y,
+				strings.clone_to_cstring(
+					string_from_clay_slice(render_command.renderData.text.stringContents),
+				),
+			)
+		}
+	}
+
+	mem.arena_free_all(&frame_arena)
 }
+
+// Example measure text function
+clay_measure_text :: proc "c" (
+	text: clay.StringSlice,
+	config: ^clay.TextElementConfig,
+	userData: rawptr,
+) -> clay.Dimensions {
+	context = runtime.default_context()
+	context.allocator = frame_arena_alloc
+	context.temp_allocator = frame_arena_alloc
+	// clay.TextElementConfig contains members such as fontId, fontSize, letterSpacing, etc..
+	// Note: clay.String->chars is not guaranteed to be null terminated
+	odin_string := string_from_clay_slice(text)
+	width := measure_text(strings.clone_to_cstring(odin_string))
+	return {width = f32(width), height = f32(config.fontSize)}
+}
+
+clay_error_handler :: proc "c" (errorData: clay.ErrorData) {
+	print("CLAY ERROR")
+}
+
 
 @(export)
 hello :: proc(s: ^TestStruct) {
-	arena := mem.Arena {
+	persistent_arena = mem.Arena {
 		data = heap[:],
 	}
-	arena_alloc := mem.arena_allocator(&arena)
+	frame_arena = mem.Arena {
+		data = frame_heap[:],
+	}
+	persistent_arena_alloc = mem.arena_allocator(&persistent_arena)
+	frame_arena_alloc = mem.arena_allocator(&frame_arena)
 
-	tracking: mem.Tracking_Allocator
-	mem.tracking_allocator_init(&tracking, arena_alloc, arena_alloc)
-	context.allocator = mem.tracking_allocator(&tracking)
+	context.allocator = persistent_arena_alloc
+	context.temp_allocator = frame_arena_alloc
 
 	print("It works! 😃  Hey there, hot reload from 202507jj")
 	printf("Time is %.2f", state.t)
 
-	defer {
-		if len(tracking.allocation_map) > 0 {
-			printf("=== %v allocations not freed: ===\n", len(tracking.allocation_map))
-			for _, entry in tracking.allocation_map {
-				printf("- %v bytes @ %v\n", entry.size, entry.location)
-			}
-		}
-		if len(tracking.bad_free_array) > 0 {
-			printf("=== %v incorrect frees: ===\n", len(tracking.bad_free_array))
-			for entry in tracking.bad_free_array {
-				printf("- %p @ %v\n", entry.memory, entry.location)
-			}
-		}
-		mem.tracking_allocator_destroy(&tracking)
-	}
+	// Boot clay
+
+	min_memory_size := clay.MinMemorySize()
+	memory := make([^]u8, min_memory_size)
+	clay_arena: clay.Arena = clay.CreateArenaWithCapacityAndMemory(uint(min_memory_size), memory)
+	clay.Initialize(clay_arena, {1080, 720}, {handler = clay_error_handler})
+
+	// Tell clay how to measure text
+	clay.SetMeasureTextFunction(clay_measure_text, nil)
 
 	return
 }
