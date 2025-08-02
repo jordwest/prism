@@ -30,8 +30,11 @@ sidebar_item_component :: proc(index: u32) {
 
 // An example function to create your layout tree
 ui_create_layout :: proc() -> clay.ClayArray(clay.RenderCommand) {
+	context.allocator = context.temp_allocator
+	ln()
 	// Begin constructing the layout.
 	clay.BeginLayout()
+	ln()
 
 	// An example of laying out a UI with a fixed-width sidebar and flexible-width main content
 	// NOTE: To create a scope for child components, the Odin API uses `if` with components that have children
@@ -75,6 +78,7 @@ ui_create_layout :: proc() -> clay.ClayArray(clay.RenderCommand) {
 				cornerRadius = {6, 6, 6, 6},
 			},
 			) {
+				ln()
 				if clay.UI()(
 				{
 					id = clay.ID("ProfilePicture"),
@@ -88,6 +92,7 @@ ui_create_layout :: proc() -> clay.ClayArray(clay.RenderCommand) {
 					// },
 				},
 				) {}
+				ln()
 				if clay.UI()(
 				{
 					id = clay.ID("Sizer"),
@@ -97,7 +102,7 @@ ui_create_layout :: proc() -> clay.ClayArray(clay.RenderCommand) {
 					backgroundColor = COLOR_LIGHT,
 				},
 				) {
-
+					ln()
 					clay.Text(
 						"Here's some text inside the sizing area",
 						clay.TextConfig({textColor = COLOR_BLACK, fontSize = 32}),
@@ -117,15 +122,20 @@ ui_create_layout :: proc() -> clay.ClayArray(clay.RenderCommand) {
 				) {
 
 					count := int(42 + 50 + math.sin(state.t) * 50)
+					metric_i32("count", i32(count))
 					chars := make([]u8, count)
 					for x := 0; x < count; x += 1 {
+						ln()
 						if x % 5 == 0 {
+							ln()
 							chars[x] = ' '
 						} else {
+							ln()
 							chars[x] = u8(x)
 						}
 					}
 
+					ln()
 					clay.TextDynamic(
 						string(chars), // "Clay - A UI Library with text wrapping",
 						clay.TextConfig({textColor = COLOR_BLACK, fontSize = 16}),
@@ -134,6 +144,7 @@ ui_create_layout :: proc() -> clay.ClayArray(clay.RenderCommand) {
 
 			}
 
+			ln()
 			// Standard Odin code like loops, etc. work inside components.
 			// Here we render 5 sidebar items.
 			for i in u32(0) ..< 5 {
@@ -141,96 +152,24 @@ ui_create_layout :: proc() -> clay.ClayArray(clay.RenderCommand) {
 			}
 		}
 
+		ln()
 		if clay.UI()(
 		{
 			id = clay.ID("MainContent"),
 			layout = {sizing = {width = clay.SizingGrow({}), height = clay.SizingGrow({})}},
-			backgroundColor = COLOR_LIGHT,
-		},
-		) {}
-	}
-
-	// Returns a list of render commands
-	return clay.EndLayout()
-} // An example function to create your layout tree
-create_layout :: proc() -> clay.ClayArray(clay.RenderCommand) {
-	// Begin constructing the layout.
-	clay.BeginLayout()
-
-	// An example of laying out a UI with a fixed-width sidebar and flexible-width main content
-	// NOTE: To create a scope for child components, the Odin API uses `if` with components that have children
-	if clay.UI()(
-	{
-		id = clay.ID("OuterContainer"),
-		layout = {
-			sizing = {width = clay.SizingGrow({}), height = clay.SizingGrow({})},
-			padding = {16, 16, 16, 16},
-			childGap = 16,
-		},
-		backgroundColor = {250, 250, 255, 255},
-	},
-	) {
-		if clay.UI()(
-		{
-			id = clay.ID("SideBar"),
-			layout = {
-				layoutDirection = .TopToBottom,
-				sizing = {width = clay.SizingFixed(300), height = clay.SizingGrow({})},
-				padding = {16, 16, 16, 16},
-				childGap = 16,
-			},
 			backgroundColor = COLOR_LIGHT,
 		},
 		) {
-			if clay.UI()(
-			{
-				id = clay.ID("ProfilePictureOuter"),
-				layout = {
-					sizing = {width = clay.SizingGrow({}), height = clay.SizingFixed(600)},
-					padding = {16, 16, 16, 16},
-					childGap = 16,
-					childAlignment = {y = .Center},
-				},
-				backgroundColor = COLOR_RED,
-				cornerRadius = {6, 6, 6, 6},
-			},
-			) {
-				if clay.UI()(
-				{
-					id = clay.ID("ProfilePicture"),
-					layout = {
-						sizing = {width = clay.SizingFixed(60), height = clay.SizingFixed(60)},
-					},
-					// image = {
-					// 	// How you define `profile_picture` depends on your renderer.
-					// 	imageData = &profile_picture,
-					// 	sourceDimensions = {width = 60, height = 60},
-					// },
-				},
-				) {}
-
-				clay.Text(
-					"Clay - a UI Library with some really long text",
-					clay.TextConfig({textColor = COLOR_BLACK, fontSize = 16}),
-				)
-			}
-
-			// Standard Odin code like loops, etc. work inside components.
-			// Here we render 5 sidebar items.
-			for i in u32(0) ..< 5 {
-				sidebar_item_component(i)
-			}
+			ln()
+			clay.Text("One ", clay.TextConfig({textColor = COLOR_BLACK, fontSize = 16}))
+			ln()
+			clay.Text("Two", clay.TextConfig({textColor = COLOR_BLACK, fontSize = 16}))
+			ln()
+			clay.Text(" Three", clay.TextConfig({textColor = COLOR_BLACK, fontSize = 16}))
 		}
-
-		if clay.UI()(
-		{
-			id = clay.ID("MainContent"),
-			layout = {sizing = {width = clay.SizingGrow({}), height = clay.SizingGrow({})}},
-			backgroundColor = COLOR_LIGHT,
-		},
-		) {}
 	}
 
+	ln()
 	// Returns a list of render commands
 	return clay.EndLayout()
-}
+} // An example function to create your layout tree

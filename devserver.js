@@ -3,13 +3,16 @@ Deno.addSignalListener("SIGINT", () => {
   Deno.exit();
 });
 
-Deno.serve({ hostname: "localhost", port: 8000 }, async (request) => {
-  if (request.headers.get("upgrade") == "websocket") {
-    return await handleWebsocket(request);
-  }
+Deno.serve(
+  { hostname: "localhost", port: 8000, hostname: "0.0.0.0" },
+  async (request) => {
+    if (request.headers.get("upgrade") == "websocket") {
+      return await handleWebsocket(request);
+    }
 
-  return await handleStaticFile(request);
-});
+    return await handleStaticFile(request);
+  },
+);
 
 const sockets = [];
 

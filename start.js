@@ -2,8 +2,8 @@
 let mem;
 
 const canvas = document.getElementById("canvas");
-canvas.width = 1280;
-canvas.height = 1024;
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 const ctx = canvas.getContext("2d");
 
 const readOdinString = (ptr) => {
@@ -15,15 +15,6 @@ const readOdinString = (ptr) => {
   const data = new DataView(mem);
   const charPtr = data.getInt32(ptr, true);
   const charLen = data.getInt32(ptr + 4, true);
-  console.log("String at ", charPtr, charLen);
-
-  // let i = 0;
-  // while (true) {
-  //   if (data[i] === 0) {
-  //     break;
-  //   }
-  //   i++;
-  // }
 
   const bytes = new Uint8Array(mem, charPtr, charLen);
 
@@ -62,6 +53,14 @@ const readU32 = (address) => {
   return u32[0];
 };
 
+var messages = [];
+var line = 0;
+var metrics = {};
+
+window.getMetrics = () => {
+  console.table(metrics);
+};
+
 const importObject = {
   debug: {
     log_panic(prefix, message, file, lineNumber) {
@@ -72,6 +71,12 @@ const importObject = {
     log_u8(info, num) {
       console.log(readString(info), num);
     },
+    record_line(num) {
+      line = num;
+    },
+    metric_i32(name, num) {
+      metrics[readOdinString(name)] = num;
+    },
     log_pointer(ptr, size) {
       const arr = new Uint8Array(mem, ptr, size);
       // Blah
@@ -80,8 +85,21 @@ const importObject = {
 
       const nextPtr = readU32(ptr);
       if (nextPtr < mem.byteLength) {
-        const nextArr = new Uint8Array(mem, nextPtr, 10);
+        const nextArr = new Uint8Array(mem, nextPtr, size);
+
         console.warn("👉", nextPtr, nextArr);
+
+        var chars = [];
+
+        for (var b of nextArr) {
+          if (b >= 32 && b <= 126) {
+            chars.push(String.fromCharCode(b));
+          } else {
+            chars.push("0x" + b.toString(16).padStart(2, "0"));
+          }
+        }
+
+        console.info(chars.join(" "));
       }
     },
   },
@@ -98,8 +116,18 @@ const importObject = {
       console.log("pointer", struct[0], struct[1], struct[5], struct);
       return ptr[1];
     },
-    print: (ptr) => {
-      console.warn(readString(ptr));
+    print: (ptr, lvl) => {
+      const s = readOdinString(ptr);
+      switch (lvl) {
+        case 0:
+          return console.log(s);
+        case 1:
+          return console.info(s);
+        case 2:
+          return console.warn(s);
+        case 3:
+          return console.error(s);
+      }
     },
     clear: () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -110,11 +138,9 @@ const importObject = {
       return ctx.measureText(text).width;
     },
     fill: (r, g, b, a) => {
-      // console.log("Fill", r, g, b, a);
       ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${a})`;
     },
     draw_rect: (x, y, w, h) => {
-      // console.log("Rect", x, y, w, h);
       ctx.fillRect(x, y, w, h);
     },
     draw_text: (x, y, size, strPtr) => {
@@ -122,10 +148,41 @@ const importObject = {
       ctx.font = `${size}px CompaqThin`;
       ctx.fillText(text, x, y);
     },
+    client_send_message: (msgPtr, size) => {
+      const messageContent = new Uint8Array(mem, msgPtr, size);
+      messages.push(messageContent.slice());
+      console.log(`Message queue has ${messages.length} messages`);
+      return 1;
+    },
+    client_poll_message: (msgPtr, size) => {
+      const message = messages.shift();
+      if (message == null) {
+        return 0;
+      }
+
+      if (message.length !== size) {
+        return 0;
+      }
+
+      const memView = new Uint8Array(mem, msgPtr, size);
+      console.log(memView);
+
+      memView.set(message);
+      return size;
+    },
   },
 };
 
 let existingModule = null;
+
+window.addEventListener("resize", () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  ctx.textBaseline = "top";
+  if (existingModule != null) {
+    existingModule.instance.exports.on_resize(canvas.width, canvas.height);
+  }
+});
 
 let pointerState = {
   x: 0,
@@ -156,7 +213,7 @@ canvas.addEventListener("mouseup", (evt) => {
 
 function startWasm(obj) {
   mem = obj.instance.exports.memory.buffer;
-  obj.instance.exports.hello();
+  obj.instance.exports.hello(canvas.width, canvas.height);
   existingModule = obj;
 }
 async function initWasm() {
@@ -216,7 +273,12 @@ ws.addEventListener("message", async () => {
 
 function frame(time) {
   if (existingModule != null) {
-    existingModule.instance.exports.tick(0.016);
+    try {
+      existingModule.instance.exports.tick(0.016);
+    } catch (e) {
+      console.error(`Crashed at line`, line);
+      throw e;
+    }
   }
   requestAnimationFrame(frame);
 }
@@ -225,7 +287,4 @@ requestAnimationFrame(frame);
 setTimeout(() => {
   ctx.font = "16px CompaqThin";
   ctx.textBaseline = "top";
-  ctx.imageSmoothingEnabled = false;
-  ctx.fillText("hellooooo there 😂", 20, 20);
-  console.log("Text measure", ctx.measureText("Hellooooooo there"));
 }, 100);
