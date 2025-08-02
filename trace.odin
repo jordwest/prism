@@ -1,15 +1,18 @@
 package main
 
-import fmt "core:fmt"
+import "base:runtime"
+import "core:fmt"
+import "fresnel"
 
 LogLevel :: enum {
 	Trace,
 	Info,
 	Warn,
 	Error,
+	Off,
 }
 
-log_level :: LogLevel.Trace
+log_level :: LogLevel.Error
 
 when log_level <= LogLevel.Trace {
 	trace :: proc(s: string, args: ..any) {
@@ -41,8 +44,17 @@ when log_level <= LogLevel.Warn {
 when log_level <= LogLevel.Error {
 	err :: #force_inline proc(s: string, args: ..any) {
 		result := fmt.tprintf(s, ..args)
-		print(result, i32(LogLevel.Error))
+		fresnel.print(result, i32(LogLevel.Error))
 	}
 } else {
 	err :: #force_inline proc(_: ..any) {}
+}
+
+when log_level <= LogLevel.Trace {
+	line :: proc(loc: runtime.Source_Code_Location = #caller_location) {
+		str := fmt.tprintf("%s %d", loc.file_path, loc.line)
+		metric_str("line", str)
+	}
+} else {
+	line :: #force_inline proc(_: ..any) {}
 }

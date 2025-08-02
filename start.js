@@ -74,6 +74,9 @@ const importObject = {
     record_line(num) {
       line = num;
     },
+    metric_str(name, s) {
+      metrics[readOdinString(name)] = readOdinString(s);
+    },
     metric_i32(name, num) {
       metrics[readOdinString(name)] = num;
     },
@@ -107,7 +110,7 @@ const importObject = {
     sinf: (x) => Math.sin(x),
     cosf: (x) => Math.cos(x),
   },
-  my_namespace: {
+  core: {
     test: (ptr) => {
       console.log(ptr, mem);
 
@@ -151,7 +154,6 @@ const importObject = {
     client_send_message: (msgPtr, size) => {
       const messageContent = new Uint8Array(mem, msgPtr, size);
       messages.push(messageContent.slice());
-      console.log(`Message queue has ${messages.length} messages`);
       return 1;
     },
     client_poll_message: (msgPtr, size) => {

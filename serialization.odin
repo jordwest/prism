@@ -1,6 +1,5 @@
 package main
 
-import "binserial"
 import "core:mem"
 import "core:slice"
 
