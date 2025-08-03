@@ -1,3 +1,8 @@
+/**
+ * Global state
+ **/
+var runningCmds = new Set();
+
 Deno.addSignalListener("SIGINT", () => {
   console.log("Shutting down");
   Deno.exit();
@@ -14,13 +19,21 @@ Deno.serve(
   },
 );
 
+async function buildAll() {
+  // Build everything
+  await buildWebRunner();
+  await buildWasm();
+}
+
+buildAll();
+
 const sockets = [];
 
 async function handleWebsocket(request) {
   const { socket, response } = Deno.upgradeWebSocket(request);
 
   socket.addEventListener("open", () => {
-    console.log("a client connected!");
+    console.log("🔌 WebSocket client connected");
     sockets.push(socket);
   });
 
@@ -32,10 +45,13 @@ async function handleStaticFile(request) {
   const filepath = decodeURIComponent(url.pathname);
 
   try {
-    const file = await Deno.open("." + filepath, { read: true });
+    console.log("GET", filepath);
+    const file = await Deno.open("./build/web" + filepath, { read: true });
 
     const response = new Response(file.readable);
-    if (filepath.endsWith(".wasm")) {
+    if (filepath.endsWith(".js")) {
+      response.headers.set("Content-Type", "application/javascript");
+    } else if (filepath.endsWith(".wasm")) {
       response.headers.set("Content-Type", "application/wasm");
     }
     return response;
@@ -43,8 +59,6 @@ async function handleStaticFile(request) {
     return new Response("404 Not Found", { status: 404 });
   }
 }
-
-var runningCmds = new Set();
 
 async function buildCommand({ cmdKey, cmd, args, cwd }) {
   if (runningCmds.has(cmdKey)) {
@@ -77,31 +91,62 @@ async function buildCommand({ cmdKey, cmd, args, cwd }) {
   }
 }
 
-async function onFileUpdate(event) {
-  var tsFileUpdate = event.paths.find((p) => p.endsWith(".ts"));
-  if (tsFileUpdate != null) {
+async function buildWebRunner() {
+  if (
     await buildCommand({
       cmdKey: "vite-build",
       cmd: "npx",
       cwd: "web-runner",
-      args: ["vite", "build", ".", "--outDir", "../build/web"],
-    });
+      args: [
+        "vite",
+        "build",
+        "--minify",
+        "false",
+        ".",
+        "--outDir",
+        "../build/web",
+      ],
+    })
+  ) {
+    for await (var entry of Deno.readDir("./assets")) {
+      if (entry.isFile) {
+        Deno.copyFile(
+          `./assets/${entry.name}`,
+          `./build/web/assets/${entry.name}`,
+        );
+      }
+    }
+  }
+}
+
+async function buildWasm() {
+  return await buildCommand({
+    cmdKey: "wasm-build",
+    cmd: "odin",
+    args: [
+      "build",
+      ".",
+      "-target:freestanding_wasm32",
+      "-out:build/web/assets/app.wasm",
+    ],
+  });
+}
+
+async function onFileUpdate(event) {
+  var tsFileUpdate = event.paths.find(
+    (p) =>
+      (p.endsWith(".ts") || p.endsWith(".html") || p.endsWith(".css")) &&
+      !p.includes("build/web"),
+  );
+  if (tsFileUpdate != null) {
+    console.log("🌐 File changed: ", tsFileUpdate);
+    await buildWebRunner();
   }
 
   var odinFileUpdate = event.paths.find((p) => p.endsWith(".odin"));
   if (odinFileUpdate != null) {
-    if (
-      await buildCommand({
-        cmdKey: "wasm-build",
-        cmd: "odin",
-        args: [
-          "build",
-          ".",
-          "-target:freestanding_wasm32",
-          "-out:build/web/assets/app.wasm",
-        ],
-      })
-    ) {
+    console.log("👾 File changed: ", odinFileUpdate);
+    if (await buildWasm()) {
       for (var s of sockets) {
         s.send(JSON.stringify(odinFileUpdate));
       }
@@ -113,11 +158,4 @@ async function onFileUpdate(event) {
 const watcher = Deno.watchFs("./");
 for await (const event of watcher) {
   onFileUpdate(event);
-
-  // var wasmFileUpdate = event.paths.find((p) => p.endsWith(".wasm"));
-  // if (wasmFileUpdate != null) {
-  //   for (var s of sockets) {
-  //     s.send(JSON.stringify(wasmFileUpdate));
-  //   }
-  // }
 }

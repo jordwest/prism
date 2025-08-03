@@ -1,0 +1,28 @@
+@font-face {
+    font-family: "CompaqThin";
+    src: url("./CompaqThin.ttf") format("truetype");
+    font-weight: normal;
+}
+@font-face {
+    font-family: "CompaqThin";
+    src: url("./PxPlus_IBM_VGA_8x16.ttf") format("truetype");
+    font-weight: bold;
+}
+
+body {
+    font-family: "CompaqThin";
+    font-size: 16px;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+h1 {
+    font-size: 16px;
+}
+
+canvas {
+    font-smooth: never;
+    image-rendering: pixelated;
+    image-rendering: -webkit-optimize-contrast; /* webkit */
+    image-rendering: -moz-crisp-edges; /* Firefox */
+}
