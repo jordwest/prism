@@ -18,7 +18,6 @@ window.getMetrics = () => {
   console.table(metrics);
 };
 
-// let instance: FresnelInstance | null = null;
 let instances: FresnelInstance[] = [];
 
 let state: FresnelState = {
@@ -27,12 +26,19 @@ let state: FresnelState = {
   storage: {},
 };
 
-// window.addEventListener("resize", () => {
-//   canvas.width = window.innerWidth;
-//   canvas.height = window.innerHeight / 2;
-//   state.canvasContext.textBaseline = "top";
-//   instance?.exports.on_resize?.(canvas.width, canvas.height);
-// });
+window.addEventListener("resize", () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  state.canvasContext.textBaseline = "top";
+
+  for (var i = 0; i < instances.length; i++) {
+    const instance = instances[i];
+    instance?.exports.on_resize?.(
+      canvas.width,
+      canvas.height * instance!.region.height,
+    );
+  }
+});
 
 let pointerState = {
   x: 0,

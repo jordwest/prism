@@ -123,16 +123,17 @@ function createEnvImports() {
 function createCoreImports(instance: FresnelInstance) {
   return {
     print: (ptr: OdinStringPointer, lvl: number) => {
+      const id = `[${instance.instanceId}] `;
       const s = readOdinString(instance.memory, ptr);
       switch (lvl) {
         case 0:
-          return console.log(s);
+          return console.log(id, s);
         case 1:
-          return console.info(s);
+          return console.info(id, s);
         case 2:
-          return console.warn(s);
+          return console.warn(id, s);
         case 3:
-          return console.error(s);
+          return console.error(id, s);
       }
     },
     clear: () => {

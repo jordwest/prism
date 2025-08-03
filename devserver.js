@@ -126,6 +126,7 @@ async function buildWasm() {
     args: [
       "build",
       ".",
+      // "-o:none",
       "-target:freestanding_wasm32",
       "-out:build/web/assets/app.wasm",
     ],
