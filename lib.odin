@@ -194,8 +194,7 @@ boot :: proc(width: i32, height: i32) {
 
 	ds := create_deserializer(szr.stream)
 	other := TestStruct{}
-	ds.stream[5] = 0
-	fresnel.log_slice("deserializer stream", ds.stream[:])
+	ds.stream[6] = 0
 	result := serialize_state(&ds, &other)
 	if result != nil {
 		printf("Serialization failed! %s at %d", result, ds.offset)

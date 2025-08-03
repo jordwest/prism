@@ -26,16 +26,14 @@ create_deserializer :: proc(stream: [dynamic]u8) -> Serializer {
 }
 
 serialize_state :: proc(s: ^Serializer, state: ^TestStruct) -> SerializationResult {
-	serialize_token(s, "S") or_return
 	serialize_f32(s, &state.t) or_return
-	serialize_token(s, "S") or_return
 	serialize_u8(s, &state.test) or_return
-	serialize_token(s, "S") or_return
 	serialize_string(s, &state.greeting) or_return
 	return nil
 }
 
 serialize_counter :: proc(s: ^Serializer) -> SerializationResult {
+	serialize_token(s, "[") or_return
 	s.counter += 1
 	if (s.writing) {
 		append(&s.stream, s.counter)
@@ -46,6 +44,7 @@ serialize_counter :: proc(s: ^Serializer) -> SerializationResult {
 		}
 	}
 	s.offset = s.offset + 1
+	serialize_token(s, "]") or_return
 	return nil
 }
 
@@ -75,7 +74,7 @@ serialize_token :: proc(s: ^Serializer, token: string) -> SerializationResult {
 }
 
 serialize_string :: proc(s: ^Serializer, state: ^string) -> SerializationResult {
-	serialize_counter(s)
+	// Counter not needed as its added by the serialize_i32 call
 	if (s.writing) {
 		str_len := i32(len(state^))
 		serialize_i32(s, &str_len)
