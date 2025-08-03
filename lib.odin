@@ -16,7 +16,6 @@ TestStruct :: struct #packed {
 	height:   i32,
 }
 
-
 frame_heap: [1049600]u8
 // heap: [33554432]u8
 heap: [5554432]u8
@@ -33,16 +32,6 @@ frame_arena: mem.Arena
 printf :: proc(fmtstr: string, args: ..any) {
 	result := fmt.tprintf(fmtstr, ..args)
 	fresnel.print(result)
-}
-
-@(export)
-get_state_ptr :: proc() -> ^TestStruct {
-	return &state
-}
-
-@(export)
-get_state_size :: proc() -> u32 {
-	return size_of(TestStruct)
 }
 
 @(export)
@@ -140,7 +129,7 @@ clay_error_handler :: proc "c" (errorData: clay.ErrorData) {
 	context = runtime.default_context()
 	context.allocator = persistent_arena_alloc
 	context.temp_allocator = frame_arena_alloc
-	err("CLAY ERROR")
+	err("CLAY ERROR %s", errorData.errorType)
 }
 
 @(export)
