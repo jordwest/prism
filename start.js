@@ -3,7 +3,7 @@ let mem;
 
 const canvas = document.getElementById("canvas");
 canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+canvas.height = window.innerHeight / 2;
 const ctx = canvas.getContext("2d");
 
 const readOdinString = (ptr) => {
@@ -111,14 +111,14 @@ const importObject = {
     cosf: (x) => Math.cos(x),
   },
   core: {
-    test: (ptr) => {
-      console.log(ptr, mem);
+    // test: (ptr) => {
+    //   console.log(ptr, mem);
 
-      const struct = new Uint8Array(mem, ptr, 6);
+    //   const struct = new Uint8Array(mem, ptr, 6);
 
-      console.log("pointer", struct[0], struct[1], struct[5], struct);
-      return ptr[1];
-    },
+    //   console.log("pointer", struct[0], struct[1], struct[5], struct);
+    //   return ptr[1];
+    // },
     print: (ptr, lvl) => {
       const s = readOdinString(ptr);
       switch (lvl) {
@@ -133,7 +133,7 @@ const importObject = {
       }
     },
     clear: () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, canvas.width, canvas.height / 2);
     },
     measure_text: (size, strPtr) => {
       const text = readString(strPtr);
@@ -147,10 +147,12 @@ const importObject = {
       ctx.fillRect(x, y, w, h);
     },
     draw_text: (x, y, size, strPtr) => {
-      const text = readString(strPtr);
+      const text = readOdinString(strPtr);
       ctx.font = `${size}px CompaqThin`;
       ctx.fillText(text, x, y);
     },
+  },
+  net: {
     client_send_message: (msgPtr, size) => {
       const messageContent = new Uint8Array(mem, msgPtr, size);
       messages.push(messageContent.slice());
@@ -179,7 +181,7 @@ let existingModule = null;
 
 window.addEventListener("resize", () => {
   canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+  canvas.height = window.innerHeight / 2;
   ctx.textBaseline = "top";
   if (existingModule != null) {
     existingModule.instance.exports.on_resize(canvas.width, canvas.height);

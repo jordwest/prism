@@ -64,30 +64,7 @@ on_mouse_update :: proc(pos_x: f32, pos_y: f32, button_down: bool) {
 	clay.SetPointerState({pos_x, pos_y}, button_down)
 }
 
-@(export)
-tick :: proc(dt: f32) {
-	context.assertion_failure_proc = on_panic
-	context.allocator = persistent_arena_alloc
-	context.temp_allocator = frame_arena_alloc
-
-	fresnel.metric_i32("persistent mem", i32(persistent_arena.offset))
-	fresnel.metric_i32("persistent mem peak", i32(persistent_arena.peak_used))
-
-	state.t += dt
-	fresnel.clear()
-	x := i32(50 + math.sin(state.t) * 50)
-	y := 30 + i32(math.cos(state.t) * 20)
-	fresnel.draw_rect(f32(x), f32(y), f32(70 + math.sin(state.t * 2.0) * 20), 30)
-
-	offset := i32(math.sin(state.t * 0.9) * 10)
-
-	// text := fmt.tprintf("Time is %.2f", state.t)
-	cstr := strings.clone_to_cstring(
-		fmt.tprintf("Time is %.3f", state.t),
-		allocator = context.temp_allocator,
-	)
-	fresnel.draw_text(f32(x), f32(y + 50 + offset), 16, cstr)
-
+render_ui :: proc() {
 	render_commands := ui_create_layout()
 
 	for i in 0 ..< i32(render_commands.length) {
@@ -115,13 +92,27 @@ tick :: proc(dt: f32) {
 				render_command.boundingBox.x,
 				render_command.boundingBox.y,
 				i32(render_command.renderData.text.fontSize),
-				strings.clone_to_cstring(
-					string_from_clay_slice(render_command.renderData.text.stringContents),
-					allocator = context.temp_allocator,
-				),
+				string_from_clay_slice(render_command.renderData.text.stringContents),
 			)
 		}
 	}
+}
+
+@(export)
+tick :: proc(dt: f32) {
+	context.assertion_failure_proc = on_panic
+	context.allocator = persistent_arena_alloc
+	context.temp_allocator = frame_arena_alloc
+
+	fresnel.clear()
+
+	render_ui()
+
+	fresnel.metric_i32("persistent mem", i32(persistent_arena.offset))
+	fresnel.metric_i32("persistent mem peak", i32(persistent_arena.peak_used))
+
+	state.t += dt
+
 	fresnel.metric_i32("temp mem", i32(frame_arena.offset))
 	fresnel.metric_i32("temp mem peak", i32(frame_arena.peak_used))
 	fresnel.metric_i32("temp mem count", i32(frame_arena.temp_count))

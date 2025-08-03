@@ -12,12 +12,12 @@ LogLevel :: enum {
 	Off,
 }
 
-log_level :: LogLevel.Error
+log_level :: LogLevel.Trace
 
 when log_level <= LogLevel.Trace {
 	trace :: proc(s: string, args: ..any) {
 		result := fmt.tprintf(s, ..args)
-		print(result, i32(LogLevel.Trace))
+		fresnel.print(result, i32(LogLevel.Trace))
 	}
 } else {
 	trace :: #force_inline proc(_: ..any) {}
@@ -26,7 +26,7 @@ when log_level <= LogLevel.Trace {
 when log_level <= LogLevel.Info {
 	info :: proc(s: string, args: ..any) {
 		result := fmt.tprintf(s, ..args)
-		print(result, i32(LogLevel.Info))
+		fresnel.print(result, i32(LogLevel.Info))
 	}
 } else {
 	info :: #force_inline proc(_: ..any) {}
@@ -35,7 +35,7 @@ when log_level <= LogLevel.Info {
 when log_level <= LogLevel.Warn {
 	warn :: proc(s: string, args: ..any) {
 		result := fmt.tprintf(s, ..args)
-		print(result, i32(LogLevel.Warn))
+		fresnel.print(result, i32(LogLevel.Warn))
 	}
 } else {
 	warn :: #force_inline proc(_: ..any) {}
@@ -53,7 +53,7 @@ when log_level <= LogLevel.Error {
 when log_level <= LogLevel.Trace {
 	line :: proc(loc: runtime.Source_Code_Location = #caller_location) {
 		str := fmt.tprintf("%s %d", loc.file_path, loc.line)
-		metric_str("line", str)
+		fresnel.metric_str("line", str)
 	}
 } else {
 	line :: #force_inline proc(_: ..any) {}
