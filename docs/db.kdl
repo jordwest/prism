@@ -1,0 +1,38 @@
+schema {
+    table "todo" label="Todos" file="todo.csv" {
+        field "status" type="select" label="Status" {
+            option "todo" label="🔘 Todo"
+            option "doing" label="🔵 Doing"
+            option "done" label="✅ Done"
+        }
+        field "type" type="select" {
+            option "feat" label="❇️ Feature"
+            option "imp" label="✨ Improvement"
+            option "bug" label="🔧 Bugfix"
+            option "devtool" label="🧰 DevTool"
+            option "refactor" label="⚙️ Refactoring"
+            option "perf" label="📊 Performance"
+        }
+        field "milestone_id" label="Milestone" type="belongs_to" related_entity="milestone" related_key="id"
+        field "title"
+    }
+
+    table "milestone" label="Milestones" file="milestone.csv" {
+        field "id"
+        field "title"
+        field "time_budget"
+        field "logged_time"
+    }
+    
+    table "credits" label="Asset credits" file="credits.csv" {
+        field "name"
+        field "credit"
+        field "type" type="select" {
+            option "font" label="🀄️ Font"
+            option "sfx" label="🔊 Sound effect"
+            option "music" label="🎵 Music"
+        }
+        field "url"
+        field "notes"
+    }
+}
