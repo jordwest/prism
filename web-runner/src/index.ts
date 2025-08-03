@@ -1,12 +1,16 @@
-/** @type ArrayBufferLike */
-let mem;
+let mem: ArrayBufferLike;
 
-const canvas = document.getElementById("canvas");
+type Pointer = number & { __pointer: never };
+type OdinStringPointer = number & { __odinStringPointer: never };
+
+const canvas: HTMLCanvasElement = document.getElementById(
+  "canvas",
+)! as HTMLCanvasElement;
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight / 2;
 const ctx = canvas.getContext("2d");
 
-const readOdinString = (ptr) => {
+const readOdinString = (ptr: OdinStringPointer) => {
   if (mem == null) {
     console.error("mem is null");
     return;
@@ -22,7 +26,7 @@ const readOdinString = (ptr) => {
   return string;
 };
 
-const readString = (ptr) => {
+const readString = (ptr: Pointer) => {
   if (mem == null) {
     console.error("mem is null");
     return;
@@ -43,7 +47,7 @@ const readString = (ptr) => {
   return string;
 };
 
-const readU32 = (address) => {
+const readU32 = (address: Pointer) => {
   if (mem == null) {
     console.error("mem is null");
     return;
@@ -55,39 +59,47 @@ const readU32 = (address) => {
 
 var messages = [];
 var line = 0;
-var metrics = {};
+var metrics: Record<string, any> = {};
 
+declare global {
+  function getMetrics(): void;
+}
 window.getMetrics = () => {
   console.table(metrics);
 };
 
 const importObject = {
   debug: {
-    log_panic(prefix, message, file, lineNumber) {
+    log_panic(
+      prefix: OdinStringPointer,
+      message: OdinStringPointer,
+      file: OdinStringPointer,
+      lineNumber: number,
+    ) {
       console.error(
         `${readOdinString(prefix)}: ${readOdinString(message)}\n${readOdinString(file)}:${lineNumber}`,
       );
     },
-    log_u8(info, num) {
+    log_u8(info: Pointer, num: number) {
       console.log(readString(info), num);
     },
-    record_line(num) {
+    record_line(num: number) {
       line = num;
     },
-    metric_str(name, s) {
-      metrics[readOdinString(name)] = readOdinString(s);
+    metric_str(name: OdinStringPointer, s: OdinStringPointer) {
+      metrics[readOdinString(name)!] = readOdinString(s);
     },
-    metric_i32(name, num) {
-      metrics[readOdinString(name)] = num;
+    metric_i32(name: OdinStringPointer, num: number) {
+      metrics[readOdinString(name)!] = num;
     },
-    log_pointer(ptr, size) {
+    log_pointer(ptr: Pointer, size: number) {
       const arr = new Uint8Array(mem, ptr, size);
       // Blah
 
       console.warn("👉 Pointer at ", ptr, " size ", size, arr);
 
       const nextPtr = readU32(ptr);
-      if (nextPtr < mem.byteLength) {
+      if (nextPtr != null && nextPtr < mem.byteLength) {
         const nextArr = new Uint8Array(mem, nextPtr, size);
 
         console.warn("👉", nextPtr, nextArr);
@@ -119,7 +131,7 @@ const importObject = {
     //   console.log("pointer", struct[0], struct[1], struct[5], struct);
     //   return ptr[1];
     // },
-    print: (ptr, lvl) => {
+    print: (ptr: OdinStringPointer, lvl: number) => {
       const s = readOdinString(ptr);
       switch (lvl) {
         case 0:
@@ -153,12 +165,12 @@ const importObject = {
     },
   },
   net: {
-    client_send_message: (msgPtr, size) => {
+    client_send_message: (msgPtr: Pointer, size: number) => {
       const messageContent = new Uint8Array(mem, msgPtr, size);
       messages.push(messageContent.slice());
       return 1;
     },
-    client_poll_message: (msgPtr, size) => {
+    client_poll_message: (msgPtr: Pointer, size: number) => {
       const message = messages.shift();
       if (message == null) {
         return 0;
@@ -234,7 +246,13 @@ async function initWasm() {
 
 initWasm().then(startWasm);
 
-function copyMem(from, to, fromAddr, toAddr, size) {
+function copyMem(
+  from: WebAssembly.WebAssemblyInstantiatedSource,
+  to: WebAssembly.WebAssemblyInstantiatedSource,
+  fromAddr: Pointer,
+  toAddr: Pointer,
+  size: number,
+) {
   console.info(`Copy ${size} bytes (${fromAddr} -> ${toAddr})`);
   const source = new Uint8Array(
     from.instance.exports.memory.buffer,
