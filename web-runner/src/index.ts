@@ -15,7 +15,9 @@ declare global {
   function getMetrics(): void;
 }
 window.getMetrics = () => {
-  console.table(metrics);
+  for (var i = 0; i < instances.length; i++) {
+    console.table(instances[i]?.metrics);
+  }
 };
 
 let instances: FresnelInstance[] = [];

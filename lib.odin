@@ -1,7 +1,9 @@
 package main
 import "base:runtime"
 import clay "clay-odin"
+import "core:crypto/legacy/sha1"
 import "core:fmt"
+import "core:hash"
 import "core:math"
 import "core:mem"
 import "core:strings"
@@ -74,7 +76,7 @@ render_ui :: proc() {
 				render_command.renderData.rectangle.backgroundColor.r,
 				render_command.renderData.rectangle.backgroundColor.g,
 				render_command.renderData.rectangle.backgroundColor.b,
-				render_command.renderData.rectangle.backgroundColor.a,
+				render_command.renderData.rectangle.backgroundColor.a / 255,
 			)
 			fresnel.draw_rect(
 				render_command.boundingBox.x,
@@ -95,6 +97,54 @@ render_ui :: proc() {
 	}
 }
 
+SplitMixState :: struct {
+	state: u64,
+}
+splitmix_state := SplitMixState{}
+
+next_int :: proc() -> u64 {
+	splitmix_state.state += 0x9e3779b97f4a7c15
+	z: u64 = splitmix_state.state
+	z = (z ~ (z >> 30)) * 0xbf58476d1ce4e5b9
+	z = (z ~ (z >> 27)) * 0x94d049bb133111eb
+	return z ~ (z >> 31)
+}
+
+rand_int_at :: proc(x: u64, y: u64) -> u64 {
+	state := x + y * 0x9e3779b97f4a7c15
+	z: u64 = state
+	z = (z ~ (z >> 30)) * 0xbf58476d1ce4e5b9
+	z = (z ~ (z >> 27)) * 0x94d049bb133111eb
+	return z ~ (z >> 31)
+}
+rand_float_at :: proc(x: u64, y: u64) -> f64 {
+	return f64(rand_int_at(x, y)) / f64(1 << 64)
+}
+
+next_float :: proc() -> f64 {
+	return f64(next_int()) / f64(1 << 64)
+}
+
+rand_f32 :: proc(data: []u8) -> f32 {
+	// h := hash.crc64_ecma_182(data, 123456)
+
+	// hasher: sha1.Context
+	// hash: [20]u8
+	// // sha1.init(&hasher)
+	// // sha1.update(&hasher, data)
+	// // sha1.final(&hasher, hash[:20])
+
+	// truncated_hash: [4]u8
+	// copy(truncated_hash[:], hash[12:16])
+
+	// h := transmute(u32)truncated_hash
+	// v := f32(h) / math.pow2_f32(64)
+	//
+	v := f32(next_float())
+
+	return v
+}
+
 @(export)
 tick :: proc(dt: f32) {
 	context.assertion_failure_proc = on_panic
@@ -102,8 +152,8 @@ tick :: proc(dt: f32) {
 	context.temp_allocator = frame_arena_alloc
 
 	fresnel.clear()
-
-	render_ui()
+	fresnel.fill(0, 0, 0, 255)
+	fresnel.draw_rect(0, 0, f32(state.width), f32(state.height))
 
 	fresnel.metric_i32("persistent mem", i32(persistent_arena.offset))
 	fresnel.metric_i32("persistent mem peak", i32(persistent_arena.peak_used))
@@ -119,6 +169,44 @@ tick :: proc(dt: f32) {
 	} else {
 		fresnel.fill(0, 0, 0, 255)
 	}
+
+	grid_size := 16
+	scale := 2
+	view_grid := grid_size * scale
+
+	splitmix_state = SplitMixState{}
+	t0 := fresnel.time()
+	hash_data: [10]u8 = {34, 54, 77, 124, 12, 45, 0, 221, 123, 139}
+	for x := 0; x < 50; x += 1 {
+		for y := 0; y < 30; y += 1 {
+			hash_data[0] = u8(y)
+			hash_data[1] = u8(x)
+			hash_data[2] = u8(state.t)
+			v := rand_float_at(u64(x) + u64(state.t), u64(y) + u64(state.t)) //rand_f32(hash_data[:])
+			sx := 2
+			if (v > 0.5) {
+				sx = 3
+			}
+			// text := fmt.tprintf("%.1f", v)
+			fresnel.draw_image(
+				1,
+				f32(sx * 16),
+				3 * 16,
+				16,
+				16,
+				f32(x * view_grid),
+				f32(y * view_grid),
+				f32(view_grid),
+				f32(view_grid),
+			)
+			// fresnel.fill(255, 255, 255, 255)
+			// fresnel.draw_text(f32(x * view_grid), f32(y * view_grid), 16, text)
+		}
+	}
+	t1 := fresnel.time()
+	fresnel.metric_i32("Tile loop", t1 - t0)
+
+	// render_ui()
 
 	fresnel.draw_image(
 		1,

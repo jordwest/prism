@@ -33,6 +33,7 @@ foreign net {
 foreign import debug "debug"
 @(default_calling_convention = "c")
 foreign debug {
+	time :: proc() -> i32 ---
 	log_panic :: proc(prefix: string, message: string, file: string, line: i32) ---
 	log_slice :: proc(name: string, ptr: []u8) ---
 	metric_i32 :: proc(name: string, val: i32) ---

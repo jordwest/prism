@@ -68,6 +68,9 @@ function createDebugImports(
   instance: FresnelInstance,
 ): WebAssembly.ModuleImports {
   return {
+    time() {
+      return performance.now();
+    },
     log_panic(
       prefix: OdinStringPointer,
       message: OdinStringPointer,

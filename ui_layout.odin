@@ -4,9 +4,9 @@ import "core:math"
 import "fresnel"
 
 // Define some colors.
-COLOR_LIGHT :: clay.Color{224, 215, 210, 255}
-COLOR_RED :: clay.Color{168, 66, 28, 255}
-COLOR_ORANGE :: clay.Color{225, 138, 50, 255}
+COLOR_LIGHT :: clay.Color{224, 215, 210, 50}
+COLOR_RED :: clay.Color{168, 66, 28, 150}
+COLOR_ORANGE :: clay.Color{225, 138, 50, 150}
 COLOR_BLACK :: clay.Color{0, 0, 0, 255}
 
 // Layout config is just a struct that can be declared statically, or inline
@@ -45,7 +45,7 @@ ui_layout_create :: proc() -> clay.ClayArray(clay.RenderCommand) {
 			padding = {16, 16, 16, 16},
 			childGap = 16,
 		},
-		backgroundColor = {250, 250, 255, 255},
+		// backgroundColor = {250, 250, 255, 0},
 	},
 	) {
 		if clay.UI()(
