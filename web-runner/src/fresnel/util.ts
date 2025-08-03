@@ -1,4 +1,9 @@
-import { OdinSlicePointer, OdinStringPointer, Pointer } from "./types";
+import {
+  I32Pointer,
+  OdinSlicePointer,
+  OdinStringPointer,
+  Pointer,
+} from "./types";
 
 export const readOdinString = (
   buffer: ArrayBufferLike,
@@ -24,6 +29,15 @@ export const readCString = (buffer: ArrayBufferLike, ptr: Pointer) => {
 
   const string = new TextDecoder().decode(bytes);
   return string;
+};
+
+export const writeI32 = (
+  buffer: ArrayBufferLike,
+  ptr: I32Pointer,
+  val: number,
+) => {
+  const data = new DataView(buffer);
+  data.setInt32(ptr, val, true);
 };
 
 export const getSlice = (buffer: ArrayBufferLike, ptr: OdinSlicePointer) => {

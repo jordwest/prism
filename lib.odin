@@ -9,11 +9,15 @@ import "core:sync"
 import "fresnel"
 
 TestStruct :: struct #packed {
-	t:        f32,
-	test:     u8,
-	greeting: string,
-	width:    i32,
-	height:   i32,
+	t:                  f32,
+	test:               u8,
+	greeting:           string,
+	width:              i32,
+	height:             i32,
+	is_server:          bool,
+	other_pointer_x:    u8,
+	other_pointer_y:    u8,
+	other_pointer_down: u8,
 }
 
 frame_heap: [1049600]u8
@@ -52,6 +56,9 @@ mouse_moved := true
 on_mouse_update :: proc(pos_x: f32, pos_y: f32, button_down: bool) {
 	mouse_moved = true
 	clay.SetPointerState({pos_x, pos_y}, button_down)
+
+	msg_data := []u8{u8(pos_x), u8(pos_y), u8(button_down)}
+	fresnel.client_send_message(msg_data)
 }
 
 render_ui :: proc() {
@@ -103,6 +110,17 @@ tick :: proc(dt: f32) {
 
 	state.t += dt
 
+	if state.is_server {
+		server_poll()
+	}
+
+	if (state.other_pointer_down == 1) {
+		fresnel.fill(255, 0, 0, 255)
+	} else {
+		fresnel.fill(0, 0, 0, 255)
+	}
+	fresnel.draw_rect(f32(state.other_pointer_x), f32(state.other_pointer_y), 20, 20)
+
 	fresnel.metric_i32("temp mem", i32(frame_arena.offset))
 	fresnel.metric_i32("temp mem peak", i32(frame_arena.peak_used))
 	fresnel.metric_i32("temp mem count", i32(frame_arena.temp_count))
@@ -143,6 +161,27 @@ on_dev_hot_unload :: proc() {
 	fresnel.storage_set("dev_state", szr.stream[:])
 }
 
+server_poll :: proc() {
+	msg_in: [100]u8
+	client_id: i32
+	bytes_read := 0
+	for {
+		bytes_read := fresnel.server_poll_message(&client_id, msg_in[:])
+		if bytes_read <= 0 {
+			break
+		}
+
+		state.other_pointer_x = msg_in[0]
+		state.other_pointer_y = msg_in[1]
+		state.other_pointer_down = msg_in[2]
+
+		// trace("Server message received from %d", client_id)
+		// fresnel.log_slice("message in", msg_in[:bytes_read])
+
+		// fresnel.server_send_message()
+	}
+}
+
 hot_reload_hydrate_state :: proc() -> bool {
 	hot_reload_data := make([dynamic]u8, 100000, 100000)
 	bytes_read := fresnel.storage_get("dev_state", hot_reload_data[:])
@@ -173,7 +212,7 @@ hot_reload_hydrate_state :: proc() -> bool {
 }
 
 @(export)
-boot :: proc(width: i32, height: i32) {
+boot :: proc(width: i32, height: i32, flags: i32) {
 	context.assertion_failure_proc = on_panic
 	persistent_arena = mem.Arena {
 		data = heap[:],
@@ -187,19 +226,34 @@ boot :: proc(width: i32, height: i32) {
 	context.allocator = persistent_arena_alloc
 	context.temp_allocator = frame_arena_alloc
 
-	msg_in := TestStruct{}
-	for (fresnel.client_poll_message(&msg_in, size_of(msg_in)) > 0) {
-		printf("Got message! t is %.4f", msg_in.t)
-	}
-
 	msg := TestStruct {
 		t        = state.t,
 		test     = 28,
 		greeting = "lll",
 	}
 
-	fresnel.client_send_message(&msg, size_of(msg))
-	fresnel.client_send_message(&msg, size_of(msg))
+	info("I appear to be %d", flags)
+
+	if (flags == 0) {
+		state.is_server = true
+	} else {
+		msg_data := []u8{8, 3, 1}
+		fresnel.client_send_message(msg_data)
+
+		msg_data = {8, 3, 2}
+		fresnel.client_send_message(msg_data)
+	}
+
+	msg_in: [100]u8
+	bytes_read := 0
+	for {
+		bytes_read := fresnel.client_poll_message(msg_in[:])
+		if bytes_read <= 0 {
+			break
+		}
+		trace("Client message received")
+		fresnel.log_slice("message in", msg_in[:bytes_read])
+	}
 
 	hot_reload_hydrate_state()
 

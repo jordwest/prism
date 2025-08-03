@@ -24,6 +24,8 @@ let state: FresnelState = {
   canvas,
   canvasContext: ctx!,
   storage: {},
+  mailboxes: {},
+  serverMailbox: [],
 };
 
 window.addEventListener("resize", () => {
@@ -94,7 +96,7 @@ async function initWasm(instanceCount: number) {
       "background-color: #990000; font-weight: bold; font-size: 16px; padding: 8px; display: block;",
     );
     const y = height * i;
-    instances.push(await instantiate(state, i, { y, height }));
+    instances.push(await instantiate(state, i, { y, height }, i));
   }
 }
 initWasm(2);
@@ -118,7 +120,7 @@ ws.addEventListener("message", async () => {
     );
 
     const y = height * i;
-    instances[i] = await instantiate(state, i, { y, height });
+    instances[i] = await instantiate(state, i, { y, height }, i);
   }
 });
 

@@ -16,11 +16,17 @@ foreign core {
 foreign import net "net"
 @(default_calling_convention = "c")
 foreign net {
-	client_send_message :: proc(ptr: rawptr, size: i32) -> i32 ---
-	client_poll_message :: proc(ptr: rawptr, size: i32) -> i32 ---
+	// Send message client -> server
+	client_send_message :: proc(slice: []u8) -> i32 ---
+	// Receive messages from server
+	client_poll_message :: proc(slice: []u8) -> i32 ---
 
-	server_send_message :: proc(peer_id: int, ptr: rawptr, size: i32) -> i32 ---
-	server_poll_message :: proc(ptr: rawptr, size: i32) -> i32 ---
+	// TODO: Should these be host_* instead of server_? Since it may be relayed
+	// Send message server -> client
+	server_send_message :: proc(client_id: i32, slice: []u8) -> i32 ---
+	// Receive messages from clients.
+	// Writes output to both client_id and slice
+	server_poll_message :: proc(client_id: ^i32, slice: []u8) -> i32 ---
 }
 
 foreign import debug "debug"

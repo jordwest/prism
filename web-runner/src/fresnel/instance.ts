@@ -1,3 +1,4 @@
+import { createNetImports } from "./net";
 import {
   FresnelExports,
   FresnelState,
@@ -26,6 +27,7 @@ export async function instantiate(
   state: FresnelState,
   instanceId: number,
   region: { y: number; height: number },
+  flags: number = 0,
 ): Promise<FresnelInstance> {
   // Need to set up a reference here so it can be passed in to the exports
   const instance = {} as FresnelInstance;
@@ -47,6 +49,7 @@ export async function instantiate(
   instance.exports.boot(
     state.canvas.width,
     state.canvas.height * region.height,
+    flags,
   );
 
   return instance;
@@ -200,34 +203,6 @@ function createCoreImports(instance: FresnelInstance) {
         x,
         y + instance.state.canvas.height * instance.region.y,
       );
-    },
-  };
-}
-
-function createNetImports(instance: FresnelInstance) {
-  let messages: Uint8Array<ArrayBuffer>[] = [];
-
-  return {
-    client_send_message: (msgPtr: Pointer, size: number) => {
-      const messageContent = new Uint8Array(instance.memory, msgPtr, size);
-      messages.push(messageContent.slice());
-      return 1;
-    },
-    client_poll_message: (msgPtr: Pointer, size: number) => {
-      const message = messages.shift();
-      if (message == null) {
-        return 0;
-      }
-
-      if (message.length !== size) {
-        return 0;
-      }
-
-      const memView = new Uint8Array(instance.memory, msgPtr, size);
-      console.log(memView);
-
-      memView.set(message);
-      return size;
     },
   };
 }
