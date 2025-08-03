@@ -1,8 +1,6 @@
 import { FresnelInstance, instantiate } from "./fresnel/instance";
 import { FresnelState, Pointer } from "./fresnel/types";
 
-let mem: ArrayBufferLike;
-
 const canvas: HTMLCanvasElement = document.getElementById(
   "canvas",
 )! as HTMLCanvasElement;
@@ -10,17 +8,6 @@ canvas.width = window.innerWidth;
 canvas.height = window.innerHeight / 2;
 const ctx = canvas.getContext("2d");
 
-const readU32 = (address: Pointer) => {
-  if (mem == null) {
-    console.error("mem is null");
-    return;
-  }
-
-  const u32 = new Uint32Array(mem, address, 4);
-  return u32[0];
-};
-
-var messages = [];
 var line = 0;
 var metrics: Record<string, any> = {};
 
@@ -99,7 +86,7 @@ ws.addEventListener("message", async () => {
   instance = await instantiate(state);
 });
 
-function frame(time) {
+const frame: FrameRequestCallback = (time) => {
   if (instance != null) {
     try {
       instance.exports.tick(0.016);
@@ -109,7 +96,7 @@ function frame(time) {
     }
   }
   requestAnimationFrame(frame);
-}
+};
 requestAnimationFrame(frame);
 
 // TODO: Something more robust - gives the font time to load
