@@ -10,6 +10,7 @@ export type FresnelState = {
   storage: Record<string, string>;
   serverMailbox: ServerMailbox;
   mailboxes: Record<number, Mailbox>;
+  images: Record<number, ImageBitmap>;
 };
 
 export type Pointer = number & { __pointer: never };

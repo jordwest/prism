@@ -26,7 +26,23 @@ let state: FresnelState = {
   storage: {},
   mailboxes: {},
   serverMailbox: [],
+  images: {},
 };
+
+const loadResource = async (resourceId: number, filename: string) => {
+  const response = await fetch(`assets/${filename}`);
+  await addImage(resourceId, await response.blob());
+};
+const addImage = async (resourceId: number, data: Blob) => {
+  state.images[resourceId] = await createImageBitmap(data);
+};
+
+fetch("assets/manifest.json").then(async (response) => {
+  const manifest = await response.json();
+  for (var asset of manifest.assets) {
+    loadResource(asset.id, asset.filename);
+  }
+});
 
 window.addEventListener("resize", () => {
   canvas.width = window.innerWidth;
@@ -92,7 +108,7 @@ async function initWasm(instanceCount: number) {
   let height = 1 / instanceCount;
   for (var i = 0; i < instanceCount; i++) {
     console.log(
-      `%c Starting fresnel instance ${i}`,
+      `%c ✨ Starting fresnel instance ${i}`,
       "background-color: #990000; font-weight: bold; font-size: 16px; padding: 8px; display: block;",
     );
     const y = height * i;
@@ -115,7 +131,7 @@ ws.addEventListener("message", async () => {
     }
 
     console.log(
-      `%c Hot reload fresnel instance ${i}`,
+      `%c 🔄 Hot reload fresnel instance ${i}`,
       "background-color: #994400; font-weight: bold; font-size: 16px; padding: 8px; display: block;",
     );
 
@@ -141,4 +157,5 @@ requestAnimationFrame(frame);
 setTimeout(() => {
   state.canvasContext.font = "16px CompaqThin";
   state.canvasContext.textBaseline = "top";
+  state.canvasContext.imageSmoothingEnabled = false;
 }, 100);

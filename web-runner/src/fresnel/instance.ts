@@ -190,6 +190,39 @@ function createCoreImports(instance: FresnelInstance) {
         h,
       );
     },
+    draw_image: (
+      imageId: number,
+      sx: number,
+      sy: number,
+      sw: number,
+      sh: number,
+      dx: number,
+      dy: number,
+      dw: number,
+      dh: number,
+    ) => {
+      const image = instance.state.images[imageId];
+      if (image == null) {
+        instance.state.canvasContext.fillRect(
+          sx,
+          dy + instance.state.canvas.height * instance.region.y,
+          dw,
+          dh,
+        );
+        return;
+      }
+      instance.state.canvasContext.drawImage(
+        image,
+        sx,
+        sy,
+        sw,
+        sh,
+        dx,
+        dy + instance.state.canvas.height * instance.region.y,
+        dw,
+        dh,
+      );
+    },
     draw_text: (
       x: number,
       y: number,

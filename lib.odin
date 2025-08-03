@@ -119,7 +119,18 @@ tick :: proc(dt: f32) {
 	} else {
 		fresnel.fill(0, 0, 0, 255)
 	}
-	fresnel.draw_rect(f32(state.other_pointer_x), f32(state.other_pointer_y), 20, 20)
+
+	fresnel.draw_image(
+		1,
+		32,
+		80,
+		16,
+		16,
+		f32(state.other_pointer_x),
+		f32(state.other_pointer_y),
+		32,
+		32,
+	)
 
 	fresnel.metric_i32("temp mem", i32(frame_arena.offset))
 	fresnel.metric_i32("temp mem peak", i32(frame_arena.peak_used))
