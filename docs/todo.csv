@@ -27,7 +27,8 @@ done,refactor,b2,Move all state updates to events (no more general entity update
 done,imp,b2,Add basic hit and miss chances
 done,imp,b2,Add hit indicators back
 done,imp,b2,Add SFX back in
-doing,refactor,b2.5,Add vite and TS for frontend runner
+done,refactor,b2.5,Add vite and TS for frontend runner
+doing,refactor,b2.5,Get hot reloading working again
 todo,feat,b2.5,Get basic server working
 todo,refactor,b3,Test turn system and iron out weird bugs with a refactor
 todo,feat,b3,Heal ability (potion?)

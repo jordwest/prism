@@ -1,10 +1,11 @@
 import {
   FresnelExports,
   FresnelState,
+  OdinSlicePointer,
   OdinStringPointer,
   Pointer,
 } from "./types";
-import { readOdinString } from "./util";
+import { readOdinString, getSlice } from "./util";
 
 export type FresnelInstance = {
   wasmInstance: WebAssembly.Instance;
@@ -72,31 +73,28 @@ function createDebugImports(
       instance.metrics[readOdinString(instance.memory, name)!] = num;
     },
 
-    log_pointer(ptr: Pointer, size: number) {
-      const arr = new Uint8Array(instance.memory, ptr, size);
+    log_slice(name: OdinStringPointer, ptr: OdinSlicePointer) {
+      const groupName = readOdinString(instance.memory, name);
 
-      console.warn("👉 Pointer at ", ptr, " size ", size, arr);
+      const view = new DataView(instance.memory, ptr);
+      const dataPtr = view.getUint32(0, true);
 
-      const view = new DataView(instance.memory, ptr, size);
+      const slice = getSlice(instance.memory, ptr);
 
-      const nextPtr = view.getUint32(0, true);
-      if (nextPtr != null && nextPtr < instance.memory.byteLength) {
-        const nextArr = new Uint8Array(instance.memory, nextPtr, size);
+      console.group("👉", groupName, dataPtr, "0x" + dataPtr.toString(16));
+      console.info(slice);
 
-        console.warn("👉", nextPtr, nextArr);
-
-        var chars = [];
-
-        for (var b of nextArr) {
-          if (b >= 32 && b <= 126) {
-            chars.push(String.fromCharCode(b));
-          } else {
-            chars.push("0x" + b.toString(16).padStart(2, "0"));
-          }
+      var chars = [];
+      for (var b of slice) {
+        if (b >= 32 && b <= 126) {
+          chars.push(String.fromCharCode(b));
+        } else {
+          chars.push("0x" + b.toString(16).padStart(2, "0"));
         }
-
-        console.info(chars.join(" "));
       }
+
+      console.info(chars.join(" "));
+      console.groupEnd();
     },
   };
 }
@@ -109,6 +107,8 @@ function createEnvImports() {
 }
 
 function createCoreImports(instance: FresnelInstance) {
+  const storage: Record<string, string> = {};
+
   return {
     print: (ptr: OdinStringPointer, lvl: number) => {
       const s = readOdinString(instance.memory, ptr);
@@ -130,6 +130,36 @@ function createCoreImports(instance: FresnelInstance) {
         instance.state.canvas.width,
         instance.state.canvas.height / 2,
       );
+    },
+    storage_set: (keyPtr: OdinStringPointer, slice: OdinSlicePointer) => {
+      const key = readOdinString(instance.memory, keyPtr);
+      const data = getSlice(instance.memory, slice);
+
+      var b64encoded = btoa(new TextDecoder().decode(data));
+      console.log(b64encoded);
+
+      storage[key] = b64encoded;
+    },
+    storage_get: (
+      keyPtr: OdinStringPointer,
+      slice: OdinSlicePointer,
+    ): number => {
+      const key = readOdinString(instance.memory, keyPtr);
+      const destination = getSlice(instance.memory, slice);
+      const data = storage[key];
+      if (data != null) {
+        if (data.length > destination.length) {
+          return -2; // ERROR Slice not big enough
+        }
+
+        const binString = atob(data);
+        for (let i = 0; i < binString.length; i++) {
+          destination[i] = binString.charCodeAt(i);
+        }
+
+        return binString.length;
+      }
+      return -1; // ERROR Key not found
     },
     measure_text: (size: number, strPtr: OdinStringPointer) => {
       const text = readOdinString(instance.memory, strPtr);

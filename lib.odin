@@ -144,6 +144,12 @@ clay_error_handler :: proc "c" (errorData: clay.ErrorData) {
 }
 
 @(export)
+on_dev_hot_unload :: proc() {
+	test := []u8{1, 2, 3, 4, 5}
+	fresnel.storage_set("dev_state", test)
+}
+
+@(export)
 boot :: proc(width: i32, height: i32) {
 	context.assertion_failure_proc = on_panic
 	persistent_arena = mem.Arena {
@@ -158,6 +164,16 @@ boot :: proc(width: i32, height: i32) {
 	context.allocator = persistent_arena_alloc
 	context.temp_allocator = frame_arena_alloc
 
+	test2 := []u8{0, 0, 0, 0, 0, 0, 0, 0}
+	bytes_read := fresnel.storage_get("dev_state", test2)
+	if bytes_read > 0 {
+		printf("Read %d bytes", bytes_read)
+		test3 := test2[:bytes_read]
+		fresnel.log_slice("unstored data", test3)
+	} else {
+		printf("Dev state not loaded, returned %d", bytes_read)
+	}
+
 	msg_in := TestStruct{}
 	for (fresnel.client_poll_message(&msg_in, size_of(msg_in)) > 0) {
 		printf("Got message! t is %.4f", msg_in.t)
@@ -171,7 +187,7 @@ boot :: proc(width: i32, height: i32) {
 
 	szr := create_serializer(frame_arena_alloc)
 	serialize_state(&szr, &msg)
-	fresnel.log_pointer(&szr.stream, i32(len(szr.stream)))
+	fresnel.log_slice("serializer stream", szr.stream[:])
 
 	fresnel.client_send_message(&msg, size_of(msg))
 	fresnel.client_send_message(&msg, size_of(msg))
@@ -179,7 +195,7 @@ boot :: proc(width: i32, height: i32) {
 	ds := create_deserializer(szr.stream)
 	other := TestStruct{}
 	ds.stream[5] = 0
-	fresnel.log_pointer(&szr.stream, i32(len(szr.stream)))
+	fresnel.log_slice("deserializer stream", ds.stream[:])
 	result := serialize_state(&ds, &other)
 	if result != nil {
 		printf("Serialization failed! %s at %d", result, ds.offset)
