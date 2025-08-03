@@ -1,0 +1,10 @@
+procs:
+  terminal:
+    shell: "fish"
+  git:
+    shell: "gitui"
+  dev:
+    shell: "just dev"
+  todo:
+    cwd: "docs"
+    shell: "flatlite-cli"
