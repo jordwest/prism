@@ -68,12 +68,7 @@ const importObject = {
         `${readOdinString(prefix)}: ${readOdinString(message)}\n${readOdinString(file)}:${lineNumber}`,
       );
     },
-    log_u8(info, num) {
-      console.log(readString(info), num);
-    },
-    record_line(num) {
-      line = num;
-    },
+
     metric_str(name, s) {
       metrics[readOdinString(name)] = readOdinString(s);
     },
@@ -136,7 +131,7 @@ const importObject = {
       ctx.clearRect(0, 0, canvas.width, canvas.height / 2);
     },
     measure_text: (size, strPtr) => {
-      const text = readString(strPtr);
+      const text = readOdinString(strPtr);
       ctx.font = `${size}px CompaqThin`;
       return ctx.measureText(text).width;
     },

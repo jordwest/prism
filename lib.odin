@@ -132,7 +132,7 @@ clay_measure_text :: proc "c" (
 	// clay.TextElementConfig contains members such as fontId, fontSize, letterSpacing, etc..
 	// Note: clay.String->chars is not guaranteed to be null terminated
 	odin_string := string_from_clay_slice(text)
-	width := fresnel.measure_text(i32(config.fontSize), strings.clone_to_cstring(odin_string))
+	width := fresnel.measure_text(i32(config.fontSize), odin_string)
 	return {width = f32(width), height = f32(config.fontSize)}
 }
 
@@ -144,7 +144,7 @@ clay_error_handler :: proc "c" (errorData: clay.ErrorData) {
 }
 
 @(export)
-hello :: proc(width: i32, height: i32) {
+boot :: proc(width: i32, height: i32) {
 	context.assertion_failure_proc = on_panic
 	persistent_arena = mem.Arena {
 		data = heap[:],
