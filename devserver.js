@@ -44,34 +44,66 @@ async function handleStaticFile(request) {
   }
 }
 
-var isBuilding = false;
+var runningCmds = new Set();
+
+async function buildCommand({ cmdKey, cmd, args, cwd }) {
+  if (runningCmds.has(cmdKey)) {
+    // Command already running, exit early
+    return false;
+  }
+
+  runningCmds.add(cmdKey);
+
+  console.log("⚙️ ", cmdKey);
+  console.log("  🔄 ", cmd, args.join(" "));
+
+  let process = new Deno.Command(cmd, { cwd, args });
+  let { code, stdout, stderr } = await process.output();
+
+  const codePrint = code === 0 ? "  ✅ " : `  ❌ ${code}`;
+  console.log(codePrint, cmd, args.join(" "));
+
+  runningCmds.delete(cmdKey);
+
+  if (code === 0) {
+    return true;
+  } else {
+    const outStr = new TextDecoder().decode(stdout);
+    const outErr = new TextDecoder().decode(stderr);
+    console.log(outStr, outErr);
+    return false;
+  }
+}
 
 async function onFileUpdate(event) {
+  var tsFileUpdate = event.paths.find((p) => p.endsWith(".ts"));
+  if (tsFileUpdate != null) {
+    await buildCommand({
+      cmdKey: "vite-build",
+      cmd: "npx",
+      cwd: "web-runner",
+      args: ["vite", "build", ".", "--outDir", "../build/web"],
+    });
+  }
+
   var odinFileUpdate = event.paths.find((p) => p.endsWith(".odin"));
   if (odinFileUpdate != null) {
-    if (isBuilding) {
-      console.warn("Already building");
-      return;
-    }
-    isBuilding = true;
-    console.log("run command");
-    let cmd = new Deno.Command("odin", {
-      args: ["build", ".", "-target:freestanding_wasm32"],
-    });
-    let { code, stdout, stderr } = await cmd.output();
-    console.log("Return code", code);
-
-    if (code === 0) {
-      // var wasmFileUpdate = event.paths.find((p) => p.endsWith(".wasm"));
+    if (
+      await buildCommand({
+        cmdKey: "wasm-build",
+        cmd: "odin",
+        args: [
+          "build",
+          ".",
+          "-target:freestanding_wasm32",
+          "-out:build/web/assets/app.wasm",
+        ],
+      })
+    ) {
       for (var s of sockets) {
         s.send(JSON.stringify(odinFileUpdate));
       }
-    } else {
-      const outStr = new TextDecoder().decode(stdout);
-      const outErr = new TextDecoder().decode(stderr);
-      console.log(outStr, outErr);
     }
-    isBuilding = false;
   }
 }
 
@@ -86,5 +118,4 @@ for await (const event of watcher) {
   //     s.send(JSON.stringify(wasmFileUpdate));
   //   }
   // }
-  console.log(">>>> event", event);
 }
