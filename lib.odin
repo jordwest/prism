@@ -65,7 +65,7 @@ on_mouse_update :: proc(pos_x: f32, pos_y: f32, button_down: bool) {
 }
 
 render_ui :: proc() {
-	render_commands := ui_create_layout()
+	render_commands := ui_layout_create()
 
 	for i in 0 ..< i32(render_commands.length) {
 		render_command := clay.RenderCommandArray_Get(&render_commands, i)

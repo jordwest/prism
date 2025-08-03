@@ -30,7 +30,7 @@ sidebar_item_component :: proc(index: u32) {
 }
 
 // An example function to create your layout tree
-ui_create_layout :: proc() -> clay.ClayArray(clay.RenderCommand) {
+ui_layout_create :: proc() -> clay.ClayArray(clay.RenderCommand) {
 	context.allocator = context.temp_allocator
 	// Begin constructing the layout.
 	clay.BeginLayout()
