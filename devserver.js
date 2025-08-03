@@ -57,11 +57,13 @@ async function buildCommand({ cmdKey, cmd, args, cwd }) {
   console.log("⚙️ ", cmdKey);
   console.log("  🔄 ", cmd, args.join(" "));
 
+  const t0 = performance.now();
   let process = new Deno.Command(cmd, { cwd, args });
   let { code, stdout, stderr } = await process.output();
+  const t1 = performance.now();
 
   const codePrint = code === 0 ? "  ✅ " : `  ❌ ${code}`;
-  console.log(codePrint, cmd, args.join(" "));
+  console.log(codePrint, `${Number(t1 - t0).toFixed(2)}ms`);
 
   runningCmds.delete(cmdKey);
 

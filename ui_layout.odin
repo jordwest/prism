@@ -3,7 +3,6 @@ import clay "clay-odin"
 import "core:math"
 import "fresnel"
 
-
 // Define some colors.
 COLOR_LIGHT :: clay.Color{224, 215, 210, 255}
 COLOR_RED :: clay.Color{168, 66, 28, 255}
