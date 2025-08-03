@@ -18,10 +18,14 @@ export type FresnelInstance = {
   state: FresnelState;
   metrics: Record<string, any>;
   exports: FresnelExports;
+  instanceId: number;
+  region: { y: number; height: number };
 };
 
 export async function instantiate(
   state: FresnelState,
+  instanceId: number,
+  region: { y: number; height: number },
 ): Promise<FresnelInstance> {
   // Need to set up a reference here so it can be passed in to the exports
   const instance = {} as FresnelInstance;
@@ -37,8 +41,13 @@ export async function instantiate(
   instance.state = state;
   instance.metrics = {};
   instance.exports = instance.wasmInstance.exports as FresnelExports;
+  instance.instanceId = instanceId;
+  instance.region = region;
 
-  instance.exports.boot(state.canvas.width, state.canvas.height);
+  instance.exports.boot(
+    state.canvas.width,
+    state.canvas.height * region.height,
+  );
 
   return instance;
 }
@@ -129,13 +138,13 @@ function createCoreImports(instance: FresnelInstance) {
     clear: () => {
       instance.state.canvasContext.clearRect(
         0,
-        0,
+        instance.state.canvas.height * instance.region.y,
         instance.state.canvas.width,
-        instance.state.canvas.height / 2,
+        instance.state.canvas.height * instance.region.height,
       );
     },
     storage_set: (keyPtr: OdinStringPointer, slice: OdinSlicePointer) => {
-      const key = readOdinString(instance.memory, keyPtr);
+      const key = `${instance.instanceId}:${readOdinString(instance.memory, keyPtr)}`;
       const data = getSlice(instance.memory, slice);
 
       const b94encoded = base94.encode(data);
@@ -146,7 +155,7 @@ function createCoreImports(instance: FresnelInstance) {
       keyPtr: OdinStringPointer,
       slice: OdinSlicePointer,
     ): number => {
-      const key = readOdinString(instance.memory, keyPtr);
+      const key = `${instance.instanceId}:${readOdinString(instance.memory, keyPtr)}`;
       const destination = getSlice(instance.memory, slice);
       const b94encoded = instance.state.storage[key];
       if (b94encoded != null) {
@@ -170,7 +179,12 @@ function createCoreImports(instance: FresnelInstance) {
       instance.state.canvasContext.fillStyle = `rgba(${r}, ${g}, ${b}, ${a})`;
     },
     draw_rect: (x: number, y: number, w: number, h: number) => {
-      instance.state.canvasContext.fillRect(x, y, w, h);
+      instance.state.canvasContext.fillRect(
+        x,
+        y + instance.state.canvas.height * instance.region.y,
+        w,
+        h,
+      );
     },
     draw_text: (
       x: number,
@@ -180,7 +194,11 @@ function createCoreImports(instance: FresnelInstance) {
     ) => {
       const text = readOdinString(instance.memory, strPtr);
       instance.state.canvasContext.font = `${size}px CompaqThin`;
-      instance.state.canvasContext.fillText(text, x, y);
+      instance.state.canvasContext.fillText(
+        text,
+        x,
+        y + instance.state.canvas.height * instance.region.y,
+      );
     },
   };
 }
