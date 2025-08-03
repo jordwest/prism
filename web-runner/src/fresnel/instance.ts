@@ -6,6 +6,11 @@ import {
   Pointer,
 } from "./types";
 import { readOdinString, getSlice } from "./util";
+import basex from "base-x";
+
+const ENCODING =
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz !\"#$%&'()*+,-./0123456789:;<=>?@[]^_`{|}~";
+var base94 = basex(ENCODING);
 
 export type FresnelInstance = {
   wasmInstance: WebAssembly.Instance;
@@ -107,8 +112,6 @@ function createEnvImports() {
 }
 
 function createCoreImports(instance: FresnelInstance) {
-  const storage: Record<string, string> = {};
-
   return {
     print: (ptr: OdinStringPointer, lvl: number) => {
       const s = readOdinString(instance.memory, ptr);
@@ -135,10 +138,9 @@ function createCoreImports(instance: FresnelInstance) {
       const key = readOdinString(instance.memory, keyPtr);
       const data = getSlice(instance.memory, slice);
 
-      var b64encoded = btoa(new TextDecoder().decode(data));
-      console.log(b64encoded);
+      const b94encoded = base94.encode(data);
 
-      storage[key] = b64encoded;
+      instance.state.storage[key] = b94encoded;
     },
     storage_get: (
       keyPtr: OdinStringPointer,
@@ -146,18 +148,16 @@ function createCoreImports(instance: FresnelInstance) {
     ): number => {
       const key = readOdinString(instance.memory, keyPtr);
       const destination = getSlice(instance.memory, slice);
-      const data = storage[key];
-      if (data != null) {
-        if (data.length > destination.length) {
+      const b94encoded = instance.state.storage[key];
+      if (b94encoded != null) {
+        if (b94encoded.length > destination.length) {
           return -2; // ERROR Slice not big enough
         }
 
-        const binString = atob(data);
-        for (let i = 0; i < binString.length; i++) {
-          destination[i] = binString.charCodeAt(i);
-        }
+        const data = base94.decode(b94encoded);
+        destination.set(data);
 
-        return binString.length;
+        return data.length;
       }
       return -1; // ERROR Key not found
     },

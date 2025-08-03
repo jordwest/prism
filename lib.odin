@@ -145,8 +145,42 @@ clay_error_handler :: proc "c" (errorData: clay.ErrorData) {
 
 @(export)
 on_dev_hot_unload :: proc() {
-	test := []u8{1, 2, 3, 4, 5}
-	fresnel.storage_set("dev_state", test)
+	szr := create_serializer(frame_arena_alloc)
+	result := serialize_state(&szr, &state)
+	if result != nil {
+		err("Serialization failed! %s at %d", result, szr.offset)
+	}
+
+	fresnel.storage_set("dev_state", szr.stream[:])
+}
+
+hot_reload_hydrate_state :: proc() -> bool {
+	hot_reload_data := make([dynamic]u8, 100000, 100000)
+	bytes_read := fresnel.storage_get("dev_state", hot_reload_data[:])
+	if bytes_read <= 0 {
+		warn("Dev state not loaded. Storage returned %d", bytes_read)
+		return false
+	}
+
+	info("Read %d bytes from hot reload state", bytes_read)
+
+	resize(&hot_reload_data, int(bytes_read))
+
+	fresnel.log_slice("dev state", hot_reload_data[:])
+	ds := create_deserializer(hot_reload_data)
+	result := serialize_state(&ds, &state)
+	if result != nil {
+		err("Deserialization failed! %s at %d", result, ds.offset)
+	}
+	info(
+		"Serialization result:%s TestStruct t=%.2f test=%d greeting=%s",
+		result,
+		state.t,
+		state.test,
+		state.greeting,
+	)
+
+	return true
 }
 
 @(export)
@@ -164,16 +198,6 @@ boot :: proc(width: i32, height: i32) {
 	context.allocator = persistent_arena_alloc
 	context.temp_allocator = frame_arena_alloc
 
-	test2 := []u8{0, 0, 0, 0, 0, 0, 0, 0}
-	bytes_read := fresnel.storage_get("dev_state", test2)
-	if bytes_read > 0 {
-		printf("Read %d bytes", bytes_read)
-		test3 := test2[:bytes_read]
-		fresnel.log_slice("unstored data", test3)
-	} else {
-		printf("Dev state not loaded, returned %d", bytes_read)
-	}
-
 	msg_in := TestStruct{}
 	for (fresnel.client_poll_message(&msg_in, size_of(msg_in)) > 0) {
 		printf("Got message! t is %.4f", msg_in.t)
@@ -185,35 +209,12 @@ boot :: proc(width: i32, height: i32) {
 		greeting = "lll",
 	}
 
-	szr := create_serializer(frame_arena_alloc)
-	serialize_state(&szr, &msg)
-	fresnel.log_slice("serializer stream", szr.stream[:])
-
 	fresnel.client_send_message(&msg, size_of(msg))
 	fresnel.client_send_message(&msg, size_of(msg))
 
-	ds := create_deserializer(szr.stream)
-	other := TestStruct{}
-	ds.stream[6] = 0
-	result := serialize_state(&ds, &other)
-	if result != nil {
-		printf("Serialization failed! %s at %d", result, ds.offset)
-	}
-	printf(
-		"Serialization result:%s TestStruct t=%.2f test=%d greeting=%s",
-		result,
-		other.t,
-		other.test,
-		other.greeting,
-	)
+	hot_reload_hydrate_state()
 
-	trace("It works! 😃  Hey there, hot reload from 202507")
 	trace("Time is %.2f", state.t)
-
-	trace("Trace")
-	info("Info")
-	warn("Warn")
-	err("Error")
 
 	// Boot clay
 	state.width = width
@@ -222,6 +223,7 @@ boot :: proc(width: i32, height: i32) {
 	printf("Min memory size %d", min_memory_size)
 	memory := make([^]u8, min_memory_size)
 	clay_arena: clay.Arena = clay.CreateArenaWithCapacityAndMemory(uint(min_memory_size), memory)
+
 	clay.Initialize(clay_arena, {f32(width), f32(height)}, {handler = clay_error_handler})
 
 	fresnel.metric_i32("clay max elements", clay.GetMaxElementCount())

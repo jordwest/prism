@@ -36,6 +36,7 @@ let instance: FresnelInstance | null = null;
 let state: FresnelState = {
   canvas,
   canvasContext: ctx!,
+  storage: {},
 };
 
 window.addEventListener("resize", () => {
@@ -74,12 +75,29 @@ canvas.addEventListener("mouseup", (evt) => {
 });
 
 async function initWasm() {
+  console.log(
+    "%c Starting fresnel instance",
+    "background-color: #990000; font-weight: bold; font-size: 16px; padding: 8px; display: block;",
+  );
   instance = await instantiate(state);
 }
-
 initWasm();
 
 const ws = new WebSocket("ws://localhost:8000");
+ws.addEventListener("message", async () => {
+  console.info("Websocket message received, rebooting wasm");
+
+  if (instance != null) {
+    // Notify old instance we're shutting down
+    instance.exports.on_dev_hot_unload?.();
+  }
+
+  console.log(
+    "%c Hot reloading fresnel instance",
+    "background-color: #994400; font-weight: bold; font-size: 16px; padding: 8px; display: block;",
+  );
+  instance = await instantiate(state);
+});
 
 function frame(time) {
   if (instance != null) {

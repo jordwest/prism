@@ -1,6 +1,7 @@
 export type FresnelState = {
   canvas: HTMLCanvasElement;
   canvasContext: CanvasRenderingContext2D;
+  storage: Record<string, string>;
 };
 
 export type Pointer = number & { __pointer: never };
