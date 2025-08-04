@@ -2,6 +2,81 @@ package main
 
 import "core:mem"
 import "fresnel"
+import "config"
+import clay "clay-odin"
+
+@(export)
+boot :: proc(width: i32, height: i32, flags: i32) {
+	memory_init()
+
+	context.assertion_failure_proc = on_panic
+	context.allocator = persistent_arena_alloc
+	context.temp_allocator = frame_arena_alloc
+
+	state.players = make(map[PlayerId]PlayerMeta, 8)
+
+	msg := GameState {
+		t        = state.t,
+		test     = 28,
+		greeting = "lll",
+	}
+
+	if (flags == 0) {
+		state.is_server = true
+	} else {
+		msg_data := []u8{8, 3, 1}
+		fresnel.client_send_message(msg_data)
+
+		msg_data = {8, 3, 2}
+		fresnel.client_send_message(msg_data)
+	}
+
+	msg_in: [100]u8
+	bytes_read := 0
+	for {
+		bytes_read := fresnel.client_poll_message(msg_in[:])
+		if bytes_read <= 0 {
+			break
+		}
+		fresnel.trace("Client message received")
+		fresnel.log_slice("message in", msg_in[:bytes_read])
+	}
+
+	hot_reload_hydrate_state()
+
+	fresnel.trace("Time is %.2f", state.t)
+
+	// Boot clay
+	state.width = width
+	state.height = width
+	min_memory_size := clay.MinMemorySize()
+
+	if min_memory_size > len(clay_memory) {
+		fresnel.err(
+			"Not enough memory reserved for clay. Needed %d bytes, got %d",
+			min_memory_size,
+			len(clay_memory),
+		)
+		unreachable()
+	}
+
+	clay_arena: clay.Arena = clay.CreateArenaWithCapacityAndMemory(
+		uint(min_memory_size),
+		raw_data(clay_memory[:]),
+	)
+
+	clay.Initialize(clay_arena, {f32(width), f32(height)}, {handler = clay_error_handler})
+
+	fresnel.metric_i32("clay max elements", clay.GetMaxElementCount())
+
+	// Tell clay how to measure text
+	clay.SetMeasureTextFunction(clay_measure_text, nil)
+
+	clay.SetDebugModeEnabled(config.CLAY_DEBUG_ENABLED)
+
+	return
+}
+
 
 @(export)
 tick :: proc(dt: f32) {
@@ -82,4 +157,16 @@ tick :: proc(dt: f32) {
 	fresnel.metric_i32("temp mem peak", i32(frame_arena.peak_used))
 	fresnel.metric_i32("temp mem count", i32(frame_arena.temp_count))
 	mem.arena_free_all(&frame_arena)
+}
+
+
+@(export)
+on_dev_hot_unload :: proc() {
+	szr := create_serializer(frame_arena_alloc)
+	result := serialize_state(&szr, &state)
+	if result != nil {
+		fresnel.err("Serialization failed! %s at %d", result, szr.offset)
+	}
+
+	fresnel.storage_set("dev_state", szr.stream[:])
 }
