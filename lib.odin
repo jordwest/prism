@@ -161,7 +161,7 @@ tick :: proc(dt: f32) {
 	view_grid := grid_size * scale
 
 	splitmix_state = SplitMixState{}
-	t0 := fresnel.time()
+	t0 := fresnel.now()
 	hash_data: [10]u8 = {34, 54, 77, 124, 12, 45, 0, 221, 123, 139}
 	for x := 0; x < 30; x += 1 {
 		for y := 0; y < 20; y += 1 {
@@ -189,7 +189,7 @@ tick :: proc(dt: f32) {
 			// fresnel.draw_text(f32(x * view_grid), f32(y * view_grid), 16, text)
 		}
 	}
-	t1 := fresnel.time()
+	t1 := fresnel.now()
 	fresnel.metric_i32("Tile loop", t1 - t0)
 
 	render_ui()
@@ -232,7 +232,7 @@ clay_error_handler :: proc "c" (errorData: clay.ErrorData) {
 	context = runtime.default_context()
 	context.allocator = persistent_arena_alloc
 	context.temp_allocator = frame_arena_alloc
-	err("CLAY ERROR %s", errorData.errorType)
+	fresnel.err("CLAY ERROR %s", errorData.errorType)
 }
 
 @(export)
@@ -240,7 +240,7 @@ on_dev_hot_unload :: proc() {
 	szr := create_serializer(frame_arena_alloc)
 	result := serialize_state(&szr, &state)
 	if result != nil {
-		err("Serialization failed! %s at %d", result, szr.offset)
+		fresnel.err("Serialization failed! %s at %d", result, szr.offset)
 	}
 
 	fresnel.storage_set("dev_state", szr.stream[:])
@@ -271,18 +271,18 @@ hot_reload_hydrate_state :: proc() -> bool {
 	hot_reload_data := make([dynamic]u8, 100000, 100000, context.temp_allocator)
 	bytes_read := fresnel.storage_get("dev_state", hot_reload_data[:])
 	if bytes_read <= 0 {
-		warn("Dev state not loaded. Storage returned %d", bytes_read)
+		fresnel.warn("Dev state not loaded. Storage returned %d", bytes_read)
 		return false
 	}
 
-	info("Read %d bytes from hot reload state", bytes_read)
+	fresnel.info("Read %d bytes from hot reload state", bytes_read)
 
 	resize(&hot_reload_data, int(bytes_read))
 
 	ds := create_deserializer(hot_reload_data)
 	result := serialize_state(&ds, &state)
 	if result != nil {
-		err("Hot reload deserialization failed! %s at %d", result, ds.offset)
+		fresnel.err("Hot reload deserialization failed! %s at %d", result, ds.offset)
 	}
 
 	return true
@@ -297,8 +297,6 @@ boot :: proc(width: i32, height: i32, flags: i32) {
 	context.temp_allocator = frame_arena_alloc
 
 	state.players = make(map[PlayerId]PlayerMeta, 8)
-
-	test_union_ser()
 
 	msg := GameState {
 		t        = state.t,
@@ -323,13 +321,13 @@ boot :: proc(width: i32, height: i32, flags: i32) {
 		if bytes_read <= 0 {
 			break
 		}
-		trace("Client message received")
+		fresnel.trace("Client message received")
 		fresnel.log_slice("message in", msg_in[:bytes_read])
 	}
 
 	hot_reload_hydrate_state()
 
-	trace("Time is %.2f", state.t)
+	fresnel.trace("Time is %.2f", state.t)
 
 	// Boot clay
 	state.width = width
@@ -337,7 +335,7 @@ boot :: proc(width: i32, height: i32, flags: i32) {
 	min_memory_size := clay.MinMemorySize()
 
 	if min_memory_size > len(clay_memory) {
-		err(
+		fresnel.err(
 			"Not enough memory reserved for clay. Needed %d bytes, got %d",
 			min_memory_size,
 			len(clay_memory),

@@ -133,7 +133,6 @@ serialize_union_variant :: proc(
 		return false
 	}
 
-	info("Trying %v", typeid_of(T))
 	if state.serializer.writing {
 		variant, ok := state.union_ref.(T)
 		if ok {

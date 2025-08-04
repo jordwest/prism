@@ -20,41 +20,12 @@ ClientMessage :: union {
 	i32,
 }
 
-test_union_ser :: proc() {
-	msg: ClientMessage = ClientMessageCursorPosUpdate {
-		pos = {8, 9},
-	}
-	msg2: ClientMessage = 23
-	msg3: ClientMessage
-
-	s := create_serializer(frame_arena_alloc)
-	serialize_client_message(&s, &msg2)
-	serialize_client_message(&s, &msg)
-	serialize_client_message(&s, &msg3)
-
-	fresnel.log_slice("serialized union", s.stream[:])
-
-	de := create_deserializer(s.stream)
-
-	for i := 0; i < 3; i += 1 {
-		deserialized_message: ClientMessage
-		serialize_client_message(&de, &deserialized_message)
-		switch m in deserialized_message {
-		case nil:
-			err("Nil")
-		case i32:
-			info("i32 %d", m)
-		case ClientMessageCursorPosUpdate:
-			info("cursor pos %v", m)
-		}
-	}
-}
 
 serialize_union_nil :: proc(tag: u8, state: ^UnionVariantSerializeState($U)) -> bool {
 	if state.done {
 		return false
 	}
-	info("Trying nil")
+	fresnel.info("Trying nil")
 	if state.serializer.writing {
 		if state.union_ref^ == nil {
 			append(&state.serializer.stream, tag)

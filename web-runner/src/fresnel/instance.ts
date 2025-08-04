@@ -68,7 +68,7 @@ function createDebugImports(
   instance: FresnelInstance,
 ): WebAssembly.ModuleImports {
   return {
-    time() {
+    now() {
       return performance.now();
     },
     log_panic(
