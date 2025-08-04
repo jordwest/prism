@@ -7,7 +7,7 @@ ClientMessageCursorPosUpdate :: struct {
 }
 
 @(private)
-sz_cm_cursor_pos_update :: proc(
+serialize_client_message_cursor_pos_update :: proc(
 	s: ^Serializer,
 	msg: ^ClientMessageCursorPosUpdate,
 ) -> SerializationResult {
@@ -18,31 +18,6 @@ sz_cm_cursor_pos_update :: proc(
 ClientMessage :: union {
 	ClientMessageCursorPosUpdate,
 	i32,
-}
-
-
-serialize_union_nil :: proc(tag: u8, state: ^UnionVariantSerializeState($U)) -> bool {
-	if state.done {
-		return false
-	}
-	info("Trying nil")
-	if state.serializer.writing {
-		if state.union_ref^ == nil {
-			append(&state.serializer.stream, tag)
-			state.done = true
-			return true
-		}
-	} else {
-		read_tag: u8 = state.serializer.stream[state.serializer.offset]
-		if read_tag == tag {
-			state.serializer.offset += 1
-			state.union_ref^ = nil
-			state.done = true
-			return true
-		}
-	}
-
-	return false
 }
 
 UnionVariantSerializeState :: struct($U: typeid) {
@@ -62,6 +37,6 @@ serialize_client_message :: proc(s: ^Serializer, obj: ^ClientMessage) {
 }
 
 serialize_apptype :: proc {
-	sz_cm_cursor_pos_update,
+	serialize_client_message_cursor_pos_update,
 	serialize_client_message,
 }

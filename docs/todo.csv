@@ -65,6 +65,7 @@ todo,feat,ideas,Gem of parry (increased speed after dodging an attack)
 todo,feat,ideas,Character upgrades when drinking from a well (drinking twice shocks player instead)
 todo,feat,ideas,"The god Thoth is watching over the player, pleased and displeased with actions"
 todo,feat,ideas,Net traps
+todo,devtool,ideas,Add a test runner in the fresnel host to call wasm exports prefixed with test_
 todo,refactor,ideas,Add a DirtyEntity Set instead of a flag on each entity (for perf and tidiness)
 todo,perf,ideas,Custom binary entity and message serialization for more compact messaging
 todo,perf,ideas,Networkless play (using a dummy server instead of the server connecting to itself)

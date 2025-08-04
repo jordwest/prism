@@ -123,6 +123,29 @@ serialize_f32 :: proc(s: ^Serializer, state: ^f32) -> SerializationResult {
 	return nil
 }
 
+serialize_union_nil :: proc(tag: u8, state: ^UnionVariantSerializeState($U)) -> bool {
+	if state.done {
+		return false
+	}
+	if state.serializer.writing {
+		if state.union_ref^ == nil {
+			append(&state.serializer.stream, tag)
+			state.done = true
+			return true
+		}
+	} else {
+		read_tag: u8 = state.serializer.stream[state.serializer.offset]
+		if read_tag == tag {
+			state.serializer.offset += 1
+			state.union_ref^ = nil
+			state.done = true
+			return true
+		}
+	}
+
+	return false
+}
+
 serialize_union_variant :: proc(
 	tag: u8,
 	$T: typeid,

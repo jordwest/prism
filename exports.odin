@@ -76,7 +76,6 @@ boot :: proc(width: i32, height: i32, flags: i32) {
 	return
 }
 
-
 @(export)
 tick :: proc(dt: f32) {
 	context.assertion_failure_proc = on_panic
