@@ -32,7 +32,7 @@ done,refactor,b2.5,Get hot reloading working again
 done,feat,b2.5,Run multiple instances in one tab
 done,feat,b2.5,Get basic fake server relay working
 done,feat,b2.5,Render tiles
-todo,feat,b2.5,Add players and make them move
+doing,feat,b2.5,Add players and make them move
 todo,feat,b2.5,Add procedural generation back in
 todo,feat,b2.5,Add djikstra's algorithm
 todo,feat,b2.5,Add player pathfinding
