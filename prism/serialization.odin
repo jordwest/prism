@@ -7,6 +7,7 @@ SerializationResult :: enum {
 	Success,
 	TokenMismatch,
 	CounterMismatch,
+	UnionVariantNotFound,
 }
 
 Serializer :: struct {
@@ -159,10 +160,16 @@ serialize_union_nil :: proc(tag: u8, state: ^UnionSerializerState($U)) -> bool {
 }
 
 // Convenience function mostly for union types with no data
-serialize_empty :: proc(
-	_: ^Serializer,
-	_: ^$T,
+serialize_empty :: proc(_: ^Serializer, _: ^$T) -> SerializationResult {
+	return nil
+}
+
+serialize_union_fail_if_not_found :: proc(
+	state: ^UnionSerializerState($U),
 ) -> SerializationResult {
+	if !state.done {
+		return SerializationResult.UnionVariantNotFound
+	}
 	return nil
 }
 
@@ -171,32 +178,32 @@ serialize_union_variant :: proc(
 	$T: typeid,
 	serializer: proc(s: ^Serializer, t: ^T) -> SerializationResult,
 	state: ^UnionSerializerState($U),
-) -> bool {
+) -> SerializationResult {
 	if state.done {
-		return false
+		return nil
 	}
 
 	if state.serializer.writing {
 		variant, ok := state.union_ref.(T)
 		if ok {
 			append(&state.serializer.stream, tag)
-			serializer(state.serializer, &variant)
+			serializer(state.serializer, &variant) or_return
 			state.done = true
-			return true
+			return nil
 		}
 	} else {
 		read_tag: u8 = state.serializer.stream[state.serializer.offset]
 		if read_tag == tag {
 			state.serializer.offset += 1
 			t: T
-			serializer(state.serializer, &t)
+			serializer(state.serializer, &t) or_return
 			state.union_ref^ = t
 			state.done = true
-			return true
+			return nil
 		}
 	}
 
-	return false
+	return nil
 }
 
 serialize :: proc {

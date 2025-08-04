@@ -23,12 +23,6 @@ boot :: proc(width: i32, height: i32, flags: i32) {
 
 	if (flags == 0) {
 		state.is_server = true
-	} else {
-		msg_data := []u8{8, 3, 1}
-		fresnel.client_send_message(msg_data)
-
-		msg_data = {8, 3, 2}
-		fresnel.client_send_message(msg_data)
 	}
 
 	msg_in: [100]u8
@@ -140,17 +134,7 @@ tick :: proc(dt: f32) {
 
 	render_ui()
 
-	fresnel.draw_image(
-		1,
-		32,
-		80,
-		16,
-		16,
-		f32(state.other_pointer_x),
-		f32(state.other_pointer_y),
-		32,
-		32,
-	)
+	fresnel.draw_image(1, 32, 80, 16, 16, f32(state.cursor_pos.x), f32(state.cursor_pos.y), 32, 32)
 
 	fresnel.metric_i32("temp mem", i32(frame_arena.offset))
 	fresnel.metric_i32("temp mem peak", i32(frame_arena.peak_used))

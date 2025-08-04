@@ -18,9 +18,8 @@ GameState :: struct #packed {
 	width:              i32,
 	height:             i32,
 	is_server:          bool,
-	other_pointer_x:    u8,
-	other_pointer_y:    u8,
 	other_pointer_down: u8,
+	cursor_pos:         [2]i32,
 	players:            PlayerList,
 }
 
@@ -55,7 +54,15 @@ on_mouse_update :: proc(pos_x: f32, pos_y: f32, button_down: bool) {
 	clay.SetPointerState({pos_x, pos_y}, button_down)
 
 	msg_data := []u8{u8(pos_x), u8(pos_y), u8(button_down)}
-	fresnel.client_send_message(msg_data)
+
+	client_send_message(ClientMessageCursorPosUpdate{pos = {i32(pos_x), i32(pos_y)}})
+}
+
+client_send_message :: proc(msg: ClientMessage) {
+	m: ClientMessage = msg
+	s := prism.create_serializer(frame_arena_alloc)
+	client_message_union_serialize(&s, &m)
+	fresnel.client_send_message(s.stream[:])
 }
 
 render_ui :: proc() {
@@ -150,7 +157,7 @@ clay_error_handler :: proc "c" (errorData: clay.ErrorData) {
 }
 
 server_poll :: proc() {
-	msg_in: [100]u8
+	msg_in := make([dynamic]u8, 100, 100)
 	client_id: i32
 	bytes_read := 0
 	for {
@@ -159,9 +166,23 @@ server_poll :: proc() {
 			break
 		}
 
-		state.other_pointer_x = msg_in[0]
-		state.other_pointer_y = msg_in[1]
-		state.other_pointer_down = msg_in[2]
+		s := prism.create_deserializer(msg_in)
+		msg: ClientMessage
+		e := client_message_union_serialize(&s, &msg)
+
+		if e != nil {
+			err("Failed to deserialize %v", e)
+		}
+
+		switch m in msg {
+		case nil:
+			err("Message could not be read")
+		case ClientMessageCursorPosUpdate:
+			state.cursor_pos = m.pos
+		case ClientMessageIdentify:
+			err("identify not implemented")
+		}
+		// state.other_pointer_down = msg_in[2]
 
 		// trace("Server message received from %d", client_id)
 		// fresnel.log_slice("message in", msg_in[:bytes_read])

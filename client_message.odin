@@ -8,11 +8,20 @@ ClientMessage :: union {
 	ClientMessageIdentify,
 }
 
-client_message_union_serialize :: proc(s: ^prism.Serializer, obj: ^ClientMessage) {
+client_message_union_serialize :: proc(
+	s: ^prism.Serializer,
+	obj: ^ClientMessage,
+) -> prism.SerializationResult {
 	state := prism.serialize_union_create(s, obj)
 	prism.serialize_union_nil(0, &state)
-	prism.serialize_union_variant(1, ClientMessageCursorPosUpdate, serialize_variant, &state)
-	prism.serialize_union_variant(2, ClientMessageIdentify, serialize_variant, &state)
+	prism.serialize_union_variant(
+		1,
+		ClientMessageCursorPosUpdate,
+		serialize_variant,
+		&state,
+	) or_return
+	prism.serialize_union_variant(2, ClientMessageIdentify, serialize_variant, &state) or_return
+	return prism.serialize_union_fail_if_not_found(&state)
 }
 
 @(private)

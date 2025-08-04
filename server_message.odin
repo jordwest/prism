@@ -11,6 +11,7 @@ server_message_union_serialize :: proc(s: ^prism.Serializer, obj: ^ServerMessage
 	state := prism.serialize_union_create(s, obj)
 	prism.serialize_union_nil(0, &state)
 	prism.serialize_union_variant(1, ServerMessageWelcome, prism.serialize_empty, &state)
+	prism.serialize_union_fail_if_not_found(&state)
 }
 
 @(private)
@@ -22,7 +23,7 @@ server_message_serialize_variant :: proc {
  * Variants
  ***********/
 
-ServerMessageWelcome :: struct { }
+ServerMessageWelcome :: struct {}
 
 @(private)
 welcome_serialize :: proc(
