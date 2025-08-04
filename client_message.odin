@@ -39,7 +39,7 @@ ClientMessageCursorPosUpdate :: struct {
 }
 
 ClientMessageIdentify :: struct {
-	token:        [16]u8,
+	token:        PlayerToken,
 	display_name: string,
 }
 

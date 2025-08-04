@@ -11,28 +11,8 @@ import "core:sync"
 import "fresnel"
 import "prism"
 
-GameState :: struct #packed {
-	t:                  f32,
-	test:               u8,
-	greeting:           string,
-	width:              i32,
-	height:             i32,
-	is_server:          bool,
-	other_pointer_down: u8,
-	cursor_pos:         [2]i32,
-	players:            PlayerList,
-}
-
-PlayerId :: distinct i32
-
-PlayerMeta :: struct {
-	player_id:   PlayerId,
-	cursor_tile: [2]i32,
-}
-
-PlayerList :: map[PlayerId]PlayerMeta
-
-state: GameState
+state: ClientState
+host_state: HostState
 
 @(export)
 on_resize :: proc(w: i32, h: i32) {
@@ -154,41 +134,6 @@ clay_error_handler :: proc "c" (errorData: clay.ErrorData) {
 	context.allocator = persistent_arena_alloc
 	context.temp_allocator = frame_arena_alloc
 	err("CLAY ERROR %s", errorData.errorType)
-}
-
-server_poll :: proc() {
-	msg_in := make([dynamic]u8, 100, 100)
-	client_id: i32
-	bytes_read := 0
-	for {
-		bytes_read := fresnel.server_poll_message(&client_id, msg_in[:])
-		if bytes_read <= 0 {
-			break
-		}
-
-		s := prism.create_deserializer(msg_in)
-		msg: ClientMessage
-		e := client_message_union_serialize(&s, &msg)
-
-		if e != nil {
-			err("Failed to deserialize %v", e)
-		}
-
-		switch m in msg {
-		case nil:
-			err("Message could not be read")
-		case ClientMessageCursorPosUpdate:
-			state.cursor_pos = m.pos
-		case ClientMessageIdentify:
-			err("identify not implemented")
-		}
-		// state.other_pointer_down = msg_in[2]
-
-		// trace("Server message received from %d", client_id)
-		// fresnel.log_slice("message in", msg_in[:bytes_read])
-
-		// fresnel.server_send_message()
-	}
 }
 
 hot_reload_hydrate_state :: proc() -> bool {

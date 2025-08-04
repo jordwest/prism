@@ -15,25 +15,8 @@ boot :: proc(width: i32, height: i32, flags: i32) {
 
 	state.players = make(map[PlayerId]PlayerMeta, 8)
 
-	msg := GameState {
-		t        = state.t,
-		test     = 28,
-		greeting = "lll",
-	}
-
 	if (flags == 0) {
-		state.is_server = true
-	}
-
-	msg_in: [100]u8
-	bytes_read := 0
-	for {
-		bytes_read := fresnel.client_poll_message(msg_in[:])
-		if bytes_read <= 0 {
-			break
-		}
-		trace("Client message received")
-		fresnel.log_slice("message in", msg_in[:bytes_read])
+	    host_boot()
 	}
 
 	hot_reload_hydrate_state()
@@ -77,6 +60,8 @@ tick :: proc(dt: f32) {
 	context.allocator = persistent_arena_alloc
 	context.temp_allocator = frame_arena_alloc
 
+	mem.arena_free_all(&frame_arena)
+
 	fresnel.clear()
 	fresnel.fill(0, 0, 0, 255)
 	fresnel.draw_rect(0, 0, f32(state.width), f32(state.height))
@@ -86,8 +71,8 @@ tick :: proc(dt: f32) {
 
 	state.t += dt
 
-	if state.is_server {
-		server_poll()
+	if host_state.is_host {
+	    host_tick(dt)
 	}
 
 	if (state.other_pointer_down == 1) {
@@ -139,7 +124,6 @@ tick :: proc(dt: f32) {
 	fresnel.metric_i32("temp mem", i32(frame_arena.offset))
 	fresnel.metric_i32("temp mem peak", i32(frame_arena.peak_used))
 	fresnel.metric_i32("temp mem count", i32(frame_arena.temp_count))
-	mem.arena_free_all(&frame_arena)
 }
 
 
