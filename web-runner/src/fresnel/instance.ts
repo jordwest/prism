@@ -220,8 +220,8 @@ function createCoreImports(instance: FresnelInstance) {
         sy,
         sw,
         sh,
-        dx,
-        dy + instance.state.canvas.height * instance.region.y,
+        Math.round(dx),
+        Math.round(dy + instance.state.canvas.height * instance.region.y),
         dw,
         dh,
       );

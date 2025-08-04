@@ -1,6 +1,7 @@
 package main
 import "base:runtime"
 import clay "clay-odin"
+import "config"
 import "core:crypto/legacy/sha1"
 import "core:fmt"
 import "core:hash"
@@ -23,9 +24,10 @@ TestStruct :: struct #packed {
 }
 
 frame_heap: [1049600]u8
-// heap: [33554432]u8
-heap: [5554432]u8
+persistent_heap: [1049600]u8
 state: TestStruct
+
+clay_memory: [5116736]u8
 
 global_map: map[int]string
 
@@ -177,8 +179,8 @@ tick :: proc(dt: f32) {
 	splitmix_state = SplitMixState{}
 	t0 := fresnel.time()
 	hash_data: [10]u8 = {34, 54, 77, 124, 12, 45, 0, 221, 123, 139}
-	for x := 0; x < 50; x += 1 {
-		for y := 0; y < 30; y += 1 {
+	for x := 0; x < 30; x += 1 {
+		for y := 0; y < 20; y += 1 {
 			hash_data[0] = u8(y)
 			hash_data[1] = u8(x)
 			hash_data[2] = u8(state.t)
@@ -206,7 +208,7 @@ tick :: proc(dt: f32) {
 	t1 := fresnel.time()
 	fresnel.metric_i32("Tile loop", t1 - t0)
 
-	// render_ui()
+	render_ui()
 
 	fresnel.draw_image(
 		1,
@@ -282,7 +284,7 @@ server_poll :: proc() {
 }
 
 hot_reload_hydrate_state :: proc() -> bool {
-	hot_reload_data := make([dynamic]u8, 100000, 100000)
+	hot_reload_data := make([dynamic]u8, 100000, 100000, context.temp_allocator)
 	bytes_read := fresnel.storage_get("dev_state", hot_reload_data[:])
 	if bytes_read <= 0 {
 		warn("Dev state not loaded. Storage returned %d", bytes_read)
@@ -314,7 +316,7 @@ hot_reload_hydrate_state :: proc() -> bool {
 boot :: proc(width: i32, height: i32, flags: i32) {
 	context.assertion_failure_proc = on_panic
 	persistent_arena = mem.Arena {
-		data = heap[:],
+		data = persistent_heap[:],
 	}
 	frame_arena = mem.Arena {
 		data = frame_heap[:],
@@ -362,9 +364,22 @@ boot :: proc(width: i32, height: i32, flags: i32) {
 	state.width = width
 	state.height = width
 	min_memory_size := clay.MinMemorySize()
+
 	printf("Min memory size %d", min_memory_size)
-	memory := make([^]u8, min_memory_size)
-	clay_arena: clay.Arena = clay.CreateArenaWithCapacityAndMemory(uint(min_memory_size), memory)
+
+	if min_memory_size > len(clay_memory) {
+		err(
+			"Not enough memory reserved for clay. Needed %d bytes, got %d",
+			min_memory_size,
+			len(clay_memory),
+		)
+		unreachable()
+	}
+
+	clay_arena: clay.Arena = clay.CreateArenaWithCapacityAndMemory(
+		uint(min_memory_size),
+		raw_data(clay_memory[:]),
+	)
 
 	clay.Initialize(clay_arena, {f32(width), f32(height)}, {handler = clay_error_handler})
 
@@ -373,7 +388,7 @@ boot :: proc(width: i32, height: i32, flags: i32) {
 	// Tell clay how to measure text
 	clay.SetMeasureTextFunction(clay_measure_text, nil)
 
-	clay.SetDebugModeEnabled(true)
+	clay.SetDebugModeEnabled(config.CLAY_DEBUG_ENABLED)
 
 	return
 }

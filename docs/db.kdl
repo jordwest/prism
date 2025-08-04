@@ -23,7 +23,14 @@ schema {
         field "time_budget"
         field "logged_time"
     }
-    
+
+    table "time_entries" label="Time Entries" file="time-entries.csv" {
+        field "date"
+        field "milestone" type="belongs_to" related_entity="milestone" related_key="id"
+        field "hours"
+        field "notes"
+    }
+
     table "credits" label="Asset credits" file="credits.csv" {
         field "name"
         field "credit"

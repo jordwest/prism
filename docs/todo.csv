@@ -31,7 +31,7 @@ done,refactor,b2.5,Add vite and TS for frontend runner
 done,refactor,b2.5,Get hot reloading working again
 done,feat,b2.5,Run multiple instances in one tab
 done,feat,b2.5,Get basic fake server relay working
-todo,feat,b2.5,Render tiles
+doing,feat,b2.5,Render tiles
 todo,feat,b2.5,Add players and make them move
 todo,refactor,b3,Test turn system and iron out weird bugs with a refactor
 todo,feat,b3,Heal ability (potion?)
