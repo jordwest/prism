@@ -1,20 +1,22 @@
 package main
 
-SharedState:: struct {
+SharedState :: struct {
 	t:                  f32,
 	width:              i32,
 	height:             i32,
 	other_pointer_down: u8,
 	client:             ClientState,
 	host:               HostState,
+	bytes_sent:         int,
+	bytes_received:     i32,
 }
 
 ClientState :: struct {
-    cursor_pos:         [2]i32,
-    my_token:           PlayerToken,
-	player_id:          PlayerId,
-    players:            map[PlayerId]Player,
-	entities:           map[EntityId]Entity,
+	cursor_pos: [2]i32,
+	my_token:   PlayerToken,
+	player_id:  PlayerId,
+	players:    map[PlayerId]Player,
+	entities:   map[EntityId]Entity,
 }
 
 HostState :: struct {

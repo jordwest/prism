@@ -27,7 +27,6 @@ create_deserializer :: proc(stream: [dynamic]u8) -> Serializer {
 }
 
 serialize_counter :: proc(s: ^Serializer) -> SerializationResult {
-	serialize_token(s, "[") or_return
 	s.counter += 1
 	if (s.writing) {
 		append(&s.stream, s.counter)
@@ -38,7 +37,6 @@ serialize_counter :: proc(s: ^Serializer) -> SerializationResult {
 		}
 	}
 	s.offset = s.offset + 1
-	serialize_token(s, "]") or_return
 	return nil
 }
 
@@ -190,9 +188,9 @@ serialize_union_variant :: proc(
 			// serialize_empty is not baked into the code due to being polymorphic
 			// so it ends up being a null pointer, which we check for here.
 			// Would be nice to find a better way but this hack works for now
-            if serializer != nil {
-                serializer(state.serializer, &variant) or_return
-            }
+			if serializer != nil {
+				serializer(state.serializer, &variant) or_return
+			}
 			state.done = true
 			return nil
 		}
@@ -202,7 +200,7 @@ serialize_union_variant :: proc(
 			state.serializer.offset += 1
 			t: T
 			if serializer != nil {
-			    serializer(state.serializer, &t) or_return
+				serializer(state.serializer, &t) or_return
 			}
 			state.union_ref^ = t
 			state.done = true

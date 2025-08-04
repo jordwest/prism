@@ -1,18 +1,18 @@
 import { FresnelInstance } from "./instance";
-import { FresnelState } from "./types";
+import { FresnelState, Mailbox } from "./types";
 import { I32Pointer, OdinSlicePointer } from "./types";
 import { getSlice, writeI32 } from "./util";
 
-const getMailbox = (state: FresnelState, clientId: number) => {
+const getMailbox = (state: FresnelState, clientId: number): Mailbox => {
   const mailboxes = state.mailboxes;
-  if (mailboxes[clientId] == null) {
-    mailboxes[clientId] = [];
+  if (!mailboxes.has(clientId)) {
+    mailboxes.set(clientId, []);
   }
 
-  return mailboxes[clientId];
+  return mailboxes.get(clientId)!;
 };
 
-const delayMs = 150;
+const delayMs = 100;
 
 export function createNetImports(instance: FresnelInstance) {
   return {
@@ -55,6 +55,19 @@ export function createNetImports(instance: FresnelInstance) {
       setTimeout(() => {
         clientMailbox.push(data);
       }, delayMs);
+
+      return messageContent.length;
+    },
+    server_broadcast_message: (msgPtr: OdinSlicePointer) => {
+      const messageContent = getSlice(instance.memory, msgPtr);
+
+      const data = messageContent.slice();
+      for (var clientId of instance.state.mailboxes.keys()) {
+        const clientMailbox = getMailbox(instance.state, clientId);
+        setTimeout(() => {
+          clientMailbox.push(data);
+        }, delayMs);
+      }
 
       return messageContent.length;
     },

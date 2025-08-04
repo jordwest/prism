@@ -32,7 +32,7 @@ let state: FresnelState = {
   canvas,
   canvasContext: ctx!,
   storage: {},
-  mailboxes: {},
+  mailboxes: new Map(),
   serverMailbox: [],
   images: {},
 };

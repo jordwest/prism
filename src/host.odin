@@ -1,8 +1,8 @@
 package main
 
+import "core:mem"
 import "fresnel"
 import "prism"
-import "core:mem"
 
 host_tick :: proc(dt: f32) {
 	host_poll()
@@ -10,6 +10,7 @@ host_tick :: proc(dt: f32) {
 
 host_boot :: proc() {
 	memory_init_host()
+	context.allocator = host_arena_alloc
 
 	alloc_error: mem.Allocator_Error
 
@@ -23,7 +24,7 @@ host_boot :: proc() {
 	if alloc_error != nil {
 		err("Could not allocate entity map %v", alloc_error)
 	}
-	p := host_spawn_entity(&ENTITY_PLAYER)
+	p := host_spawn_entity(EntityMetaId.Player)
 	p.pos = {2, 5}
 
 	fresnel.metric_i32("host mem", i32(host_arena.offset))
@@ -32,6 +33,11 @@ host_boot :: proc() {
 
 host_on_client_connected :: proc(clientId: i32) {
 	host_send_message(clientId, HostMessageWelcome{})
+
+	// TODO: Just send the whole state instead
+	for _, e in state.host.entities {
+		host_broadcast_message(HostMessageEvent{event = EventEntitySpawned{entity = e}})
+	}
 }
 
 @(private)
@@ -44,6 +50,7 @@ host_poll :: proc() {
 		if bytes_read <= 0 {
 			break
 		}
+		state.bytes_received += bytes_read
 
 		s := prism.create_deserializer(msg_in)
 		msg: ClientMessage
@@ -62,6 +69,14 @@ host_poll :: proc() {
 				token     = m.token,
 			}
 			host_send_message(client_id, HostMessageIdentifyResponse{player_id = i32(new_id)})
+		case ClientMessageCursorPosUpdate:
+			for _, &e in state.host.entities {
+				host_broadcast_message(
+					HostMessageEvent {
+						event = EventEntityMoved{entity_id = e.id, pos = TileCoord(m.pos)},
+					},
+				)
+			}
 		}
 
 		trace("Host got message: %v", msg)
@@ -72,17 +87,28 @@ host_send_message :: proc(clientId: i32, msg: HostMessage) {
 	m: HostMessage = msg
 	s := prism.create_serializer(frame_arena_alloc)
 	host_message_union_serialize(&s, &m)
+	state.bytes_sent += len(s.stream)
 	fresnel.server_send_message(clientId, s.stream[:])
 }
 
-host_spawn_entity :: proc(meta: ^EntityMeta) -> ^Entity {
+host_broadcast_message :: proc(msg: HostMessage) {
+	m: HostMessage = msg
+	s := prism.create_serializer(frame_arena_alloc)
+	host_message_union_serialize(&s, &m)
+	state.bytes_sent += len(s.stream)
+	fresnel.server_broadcast_message(s.stream[:])
+}
+
+host_spawn_entity :: proc(meta_id: EntityMetaId) -> ^Entity {
 	state.host.newest_entity_id += 1
 	id := EntityId(state.host.newest_entity_id)
 
 	state.host.entities[id] = Entity {
-		id   = id,
-		meta = meta,
+		id      = id,
+		meta_id = meta_id,
 	}
+
+	host_broadcast_message(HostMessageEvent{event = EventEntitySpawned{}})
 
 	return &state.host.entities[id]
 }

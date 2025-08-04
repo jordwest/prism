@@ -9,7 +9,7 @@ export type FresnelState = {
   canvasContext: CanvasRenderingContext2D;
   storage: Record<string, string>;
   serverMailbox: ServerMailbox;
-  mailboxes: Record<number, Mailbox>;
+  mailboxes: Map<number, Mailbox>;
   images: Record<number, ImageBitmap>;
 };
 

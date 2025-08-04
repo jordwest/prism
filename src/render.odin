@@ -45,11 +45,12 @@ render_entities :: proc() {
 	i: i32 = 0
 	for id, e in state.client.entities {
 		i += 1
+		meta := entity_meta[e.meta_id]
 		offset := e.pos * 32
 		fresnel.draw_image(
 			1,
-			f32(e.meta.spritesheet_coord.x),
-			f32(e.meta.spritesheet_coord.y),
+			f32(meta.spritesheet_coord.x),
+			f32(meta.spritesheet_coord.y),
 			16,
 			16,
 			f32(offset.x),

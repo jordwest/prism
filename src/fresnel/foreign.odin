@@ -26,6 +26,7 @@ foreign net {
 	// TODO: Should these be host_* instead of server_? Since it may be relayed
 	// Send message server -> client
 	server_send_message :: proc(client_id: i32, slice: []u8) -> i32 ---
+	server_broadcast_message :: proc(slice: []u8) -> i32 ---
 	// Receive messages from clients.
 	// Writes output to both client_id and slice
 	server_poll_message :: proc(client_id: ^i32, slice: []u8) -> i32 ---

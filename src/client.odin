@@ -1,11 +1,11 @@
 package main
 
+import "core:mem"
 import "fresnel"
 import "prism"
-import "core:mem"
 
 ClientError :: union {
-    mem.Allocator_Error
+	mem.Allocator_Error,
 }
 
 client_boot :: proc(width: i32, height: i32) -> ClientError {
@@ -31,7 +31,17 @@ client_tick :: proc(dt: f32) {
 	render_entities()
 	render_ui()
 
-	fresnel.draw_image(1, 32, 80, 16, 16, f32(state.client.cursor_pos.x), f32(state.client.cursor_pos.y), 32, 32)
+	fresnel.draw_image(
+		1,
+		32,
+		80,
+		16,
+		16,
+		f32(state.client.cursor_pos.x),
+		f32(state.client.cursor_pos.y),
+		32,
+		32,
+	)
 }
 
 @(private)
@@ -44,6 +54,7 @@ client_poll :: proc() {
 		if bytes_read <= 0 {
 			break
 		}
+		state.bytes_received += bytes_read
 
 		s := prism.create_deserializer(msg_in)
 		msg: HostMessage
@@ -58,15 +69,27 @@ client_poll :: proc() {
 			client_send_message(
 				ClientMessageIdentify{token = state.client.my_token, display_name = "Player me"},
 			)
+		case HostMessageEvent:
+			switch ev in m.event {
+			case EventEntitySpawned:
+				state.client.entities[ev.entity.id] = ev.entity
+			case EventEntityMoved:
+				client_get_entity(ev.entity_id).pos = ev.pos
+			}
 		}
 
 		trace("Client got message: %v", msg)
 	}
 }
 
+client_get_entity :: proc(entity_id: EntityId) -> ^Entity {
+	return &state.client.entities[entity_id]
+}
+
 client_send_message :: proc(msg: ClientMessage) {
 	m: ClientMessage = msg
 	s := prism.create_serializer(frame_arena_alloc)
 	client_message_union_serialize(&s, &m)
+	state.bytes_sent += len(s.stream)
 	fresnel.client_send_message(s.stream[:])
 }

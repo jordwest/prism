@@ -58,8 +58,8 @@ boot :: proc(width: i32, height: i32, flags: i32) {
 
 	boot_err := client_boot(width, height)
 	if boot_err != nil {
-	    err("Error booting: %v", boot_err)
-    }
+		err("Error booting: %v", boot_err)
+	}
 
 	// Boot clay
 	state.width = width
@@ -114,6 +114,8 @@ tick :: proc(dt: f32) {
 	fresnel.metric_i32("temp mem", i32(frame_arena.offset))
 	fresnel.metric_i32("temp mem peak", i32(frame_arena.peak_used))
 	fresnel.metric_i32("temp mem count", i32(frame_arena.temp_count))
+	fresnel.metric_i32("bytes sent", i32(state.bytes_sent))
+	fresnel.metric_i32("bytes received", state.bytes_received)
 }
 
 @(export)

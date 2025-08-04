@@ -38,11 +38,6 @@ ClientMessageCursorPosUpdate :: struct {
 	pos: [2]i32,
 }
 
-ClientMessageIdentify :: struct {
-	token:        PlayerToken,
-	display_name: string,
-}
-
 @(private)
 cursor_pos_update_serialize :: proc(
 	s: ^prism.Serializer,
@@ -50,6 +45,11 @@ cursor_pos_update_serialize :: proc(
 ) -> prism.SerializationResult {
 	prism.serialize(s, &msg.pos) or_return
 	return nil
+}
+
+ClientMessageIdentify :: struct {
+	token:        PlayerToken,
+	display_name: string,
 }
 
 @(private)
