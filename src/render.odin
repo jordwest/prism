@@ -43,7 +43,7 @@ render_tiles :: proc() {
 
 render_entities :: proc() {
 	i: i32 = 0
-	for id, e in state.entities {
+	for id, e in state.client.entities {
 		i += 1
 		offset := e.pos * 32
 		fresnel.draw_image(

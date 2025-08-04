@@ -45,27 +45,21 @@ boot :: proc(width: i32, height: i32, flags: i32) {
 	context.allocator = persistent_arena_alloc
 	context.temp_allocator = frame_arena_alloc
 
-	state.players = make(map[PlayerId]Player, 8)
-
 	if (flags == 0) {
 		host_boot()
 	}
 
 	if !hot_reload_hydrate_state() {
 		// Generate token
-		fresnel.fill_slice_random(state.my_token[:])
+		fresnel.fill_slice_random(state.client.my_token[:])
 	}
 
 	trace("Time is %.2f", state.t)
 
-	// TODO: Move this to host and forward to players via messages
-	alloc_error: mem.Allocator_Error
-	state.entities, alloc_error = make(map[EntityId]Entity, 2048)
-	if alloc_error != nil {
-		err("Could not allocate entity map %v", alloc_error)
-	}
-	p := entity_create(&ENTITY_PLAYER)
-	p.pos = {2, 5}
+	boot_err := client_boot(width, height)
+	if boot_err != nil {
+	    err("Error booting: %v", boot_err)
+    }
 
 	// Boot clay
 	state.width = width
@@ -111,7 +105,7 @@ tick :: proc(dt: f32) {
 
 	state.t += dt
 
-	if host_state.is_host {
+	if state.host.is_host {
 		host_tick(dt)
 	}
 

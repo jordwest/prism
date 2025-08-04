@@ -1,16 +1,19 @@
 package main
 
-ClientState :: struct {
+SharedState:: struct {
 	t:                  f32,
-	test:               u8,
-	greeting:           string,
 	width:              i32,
 	height:             i32,
 	other_pointer_down: u8,
-	cursor_pos:         [2]i32,
+	client:             ClientState,
+	host:               HostState,
+}
+
+ClientState :: struct {
+    cursor_pos:         [2]i32,
+    my_token:           PlayerToken,
 	player_id:          PlayerId,
-	players:            PlayerList,
-	my_token:           PlayerToken,
+    players:            map[PlayerId]Player,
 	entities:           map[EntityId]Entity,
 }
 
@@ -18,7 +21,8 @@ HostState :: struct {
 	is_host:          bool,
 	newest_entity_id: i32,
 	newest_player_id: i32,
-	players:          PlayerList,
+	players:          map[PlayerId]Player,
+	entities:         map[EntityId]Entity,
 }
 
 EntityId :: distinct i32
@@ -30,5 +34,3 @@ Player :: struct {
 	cursor_tile: [2]i32,
 	token:       PlayerToken,
 }
-
-PlayerList :: map[PlayerId]Player

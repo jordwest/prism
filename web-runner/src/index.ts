@@ -21,6 +21,9 @@ document.addEventListener("keydown", (e) => {
     }
     console.groupEnd();
   }
+  if (e.key == "r") {
+    restartWasm();
+  }
 });
 
 let instances: FresnelInstance[] = [];
@@ -53,6 +56,7 @@ window.addEventListener("resize", () => {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
   state.canvasContext.textBaseline = "top";
+  state.canvasContext.imageSmoothingEnabled = false;
 
   for (var i = 0; i < instances.length; i++) {
     const instance = instances[i];
@@ -131,10 +135,7 @@ async function initWasm(instanceCount: number) {
 }
 initWasm(2);
 
-const ws = new WebSocket("ws://localhost:8000");
-ws.addEventListener("message", async () => {
-  console.info("Websocket message received, rebooting wasm");
-
+async function restartWasm() {
   let height = 1 / instances.length;
   for (var i = 0; i < instances.length; i++) {
     const instance = instances[i];
@@ -153,6 +154,12 @@ ws.addEventListener("message", async () => {
     instances[i] = await instantiate(state, i, { y, height }, i);
     notifyHostOfConnection(i + 1);
   }
+}
+
+const ws = new WebSocket("ws://localhost:8000");
+ws.addEventListener("message", async () => {
+  console.info("Websocket message received, rebooting wasm");
+  restartWasm();
 });
 
 const frame: FrameRequestCallback = (time) => {

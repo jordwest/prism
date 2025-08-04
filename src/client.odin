@@ -2,6 +2,17 @@ package main
 
 import "fresnel"
 import "prism"
+import "core:mem"
+
+ClientError :: union {
+    mem.Allocator_Error
+}
+
+client_boot :: proc(width: i32, height: i32) -> ClientError {
+	state.client.players = make(map[PlayerId]Player, 8) or_return
+	state.client.entities = make(map[EntityId]Entity, 2048) or_return
+	return nil
+}
 
 client_tick :: proc(dt: f32) {
 	client_poll()
@@ -20,7 +31,7 @@ client_tick :: proc(dt: f32) {
 	render_entities()
 	render_ui()
 
-	fresnel.draw_image(1, 32, 80, 16, 16, f32(state.cursor_pos.x), f32(state.cursor_pos.y), 32, 32)
+	fresnel.draw_image(1, 32, 80, 16, 16, f32(state.client.cursor_pos.x), f32(state.client.cursor_pos.y), 32, 32)
 }
 
 @(private)
@@ -45,7 +56,7 @@ client_poll :: proc() {
 		#partial switch m in msg {
 		case HostMessageWelcome:
 			client_send_message(
-				ClientMessageIdentify{token = state.my_token, display_name = "Player me"},
+				ClientMessageIdentify{token = state.client.my_token, display_name = "Player me"},
 			)
 		}
 
