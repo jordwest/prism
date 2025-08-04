@@ -23,19 +23,7 @@ TestStruct :: struct #packed {
 	other_pointer_down: u8,
 }
 
-frame_heap: [1049600]u8
-persistent_heap: [1049600]u8
 state: TestStruct
-
-clay_memory: [5116736]u8
-
-global_map: map[int]string
-
-persistent_arena_alloc: mem.Allocator
-persistent_arena: mem.Arena
-
-frame_arena_alloc: mem.Allocator
-frame_arena: mem.Arena
 
 printf :: proc(fmtstr: string, args: ..any) {
 	result := fmt.tprintf(fmtstr, ..args)
@@ -128,20 +116,6 @@ next_float :: proc() -> f64 {
 }
 
 rand_f32 :: proc(data: []u8) -> f32 {
-	// h := hash.crc64_ecma_182(data, 123456)
-
-	// hasher: sha1.Context
-	// hash: [20]u8
-	// // sha1.init(&hasher)
-	// // sha1.update(&hasher, data)
-	// // sha1.final(&hasher, hash[:20])
-
-	// truncated_hash: [4]u8
-	// copy(truncated_hash[:], hash[12:16])
-
-	// h := transmute(u32)truncated_hash
-	// v := f32(h) / math.pow2_f32(64)
-	//
 	v := f32(next_float())
 
 	return v
@@ -295,35 +269,20 @@ hot_reload_hydrate_state :: proc() -> bool {
 
 	resize(&hot_reload_data, int(bytes_read))
 
-	fresnel.log_slice("dev state", hot_reload_data[:])
 	ds := create_deserializer(hot_reload_data)
 	result := serialize_state(&ds, &state)
 	if result != nil {
-		err("Deserialization failed! %s at %d", result, ds.offset)
+		err("Hot reload deserialization failed! %s at %d", result, ds.offset)
 	}
-	info(
-		"Serialization result:%s TestStruct t=%.2f test=%d greeting=%s",
-		result,
-		state.t,
-		state.test,
-		state.greeting,
-	)
 
 	return true
 }
 
 @(export)
 boot :: proc(width: i32, height: i32, flags: i32) {
-	context.assertion_failure_proc = on_panic
-	persistent_arena = mem.Arena {
-		data = persistent_heap[:],
-	}
-	frame_arena = mem.Arena {
-		data = frame_heap[:],
-	}
-	persistent_arena_alloc = mem.arena_allocator(&persistent_arena)
-	frame_arena_alloc = mem.arena_allocator(&frame_arena)
+	memory_init()
 
+	context.assertion_failure_proc = on_panic
 	context.allocator = persistent_arena_alloc
 	context.temp_allocator = frame_arena_alloc
 
@@ -332,8 +291,6 @@ boot :: proc(width: i32, height: i32, flags: i32) {
 		test     = 28,
 		greeting = "lll",
 	}
-
-	info("I appear to be %d", flags)
 
 	if (flags == 0) {
 		state.is_server = true
@@ -364,8 +321,6 @@ boot :: proc(width: i32, height: i32, flags: i32) {
 	state.width = width
 	state.height = width
 	min_memory_size := clay.MinMemorySize()
-
-	printf("Min memory size %d", min_memory_size)
 
 	if min_memory_size > len(clay_memory) {
 		err(
