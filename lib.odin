@@ -14,36 +14,12 @@ import "prism"
 state: ClientState
 host_state: HostState
 
-@(export)
-on_resize :: proc(w: i32, h: i32) {
-	state.width = w
-	state.height = h
-	clay.SetLayoutDimensions({f32(w), f32(h)})
-}
-
 on_panic :: proc(a: string, b: string, loc: runtime.Source_Code_Location) -> ! {
 	fresnel.log_panic(a, b, loc.file_path, loc.line)
 	unreachable()
 }
 
 mouse_moved := true
-
-@(export)
-on_mouse_update :: proc(pos_x: f32, pos_y: f32, button_down: bool) {
-	mouse_moved = true
-	clay.SetPointerState({pos_x, pos_y}, button_down)
-
-	msg_data := []u8{u8(pos_x), u8(pos_y), u8(button_down)}
-
-	client_send_message(ClientMessageCursorPosUpdate{pos = {i32(pos_x), i32(pos_y)}})
-}
-
-client_send_message :: proc(msg: ClientMessage) {
-	m: ClientMessage = msg
-	s := prism.create_serializer(frame_arena_alloc)
-	client_message_union_serialize(&s, &m)
-	fresnel.client_send_message(s.stream[:])
-}
 
 render_ui :: proc() {
 	render_commands := ui_layout_create()
@@ -137,7 +113,7 @@ clay_error_handler :: proc "c" (errorData: clay.ErrorData) {
 }
 
 hot_reload_hydrate_state :: proc() -> bool {
-	hot_reload_data := make([dynamic]u8, 100000, 100000, context.temp_allocator)
+	hot_reload_data := make([dynamic]u8, 10000, 10000, context.temp_allocator)
 	bytes_read := fresnel.storage_get("dev_state", hot_reload_data[:])
 	if bytes_read <= 0 {
 		warn("Dev state not loaded. Storage returned %d", bytes_read)
