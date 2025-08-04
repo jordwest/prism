@@ -11,7 +11,7 @@ import "core:strings"
 import "core:sync"
 import "fresnel"
 
-TestStruct :: struct #packed {
+GameState :: struct #packed {
 	t:                  f32,
 	test:               u8,
 	greeting:           string,
@@ -21,9 +21,19 @@ TestStruct :: struct #packed {
 	other_pointer_x:    u8,
 	other_pointer_y:    u8,
 	other_pointer_down: u8,
+	players:            PlayerList,
 }
 
-state: TestStruct
+PlayerId :: distinct i32
+
+PlayerMeta :: struct {
+	player_id:   PlayerId,
+	cursor_tile: [2]i32,
+}
+
+PlayerList :: map[PlayerId]PlayerMeta
+
+state: GameState
 
 printf :: proc(fmtstr: string, args: ..any) {
 	result := fmt.tprintf(fmtstr, ..args)
@@ -286,7 +296,11 @@ boot :: proc(width: i32, height: i32, flags: i32) {
 	context.allocator = persistent_arena_alloc
 	context.temp_allocator = frame_arena_alloc
 
-	msg := TestStruct {
+	state.players = make(map[PlayerId]PlayerMeta, 8)
+
+	test_union_ser()
+
+	msg := GameState {
 		t        = state.t,
 		test     = 28,
 		greeting = "lll",

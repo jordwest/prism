@@ -25,10 +25,11 @@ create_deserializer :: proc(stream: [dynamic]u8) -> Serializer {
 	return Serializer{stream = stream, offset = 0, writing = false}
 }
 
-serialize_state :: proc(s: ^Serializer, state: ^TestStruct) -> SerializationResult {
-	serialize_f32(s, &state.t) or_return
-	serialize_u8(s, &state.test) or_return
-	serialize_string(s, &state.greeting) or_return
+
+serialize_state :: proc(s: ^Serializer, state: ^GameState) -> SerializationResult {
+	serialize(s, &state.t) or_return
+	serialize(s, &state.test) or_return
+	serialize(s, &state.greeting) or_return
 	return nil
 }
 
@@ -92,6 +93,12 @@ serialize_string :: proc(s: ^Serializer, state: ^string) -> SerializationResult 
 	return SerializationResult.Success
 }
 
+serialize_vec2i :: proc(s: ^Serializer, state: ^[2]i32) -> SerializationResult {
+	serialize_counter(s)
+	serialize_i32(s, &state[0])
+	serialize_i32(s, &state[1])
+	return nil
+}
 serialize_i32 :: proc(s: ^Serializer, state: ^i32) -> SerializationResult {
 	serialize_counter(s)
 	if (s.writing) {
@@ -114,4 +121,46 @@ serialize_f32 :: proc(s: ^Serializer, state: ^f32) -> SerializationResult {
 	}
 	s.offset = s.offset + 4
 	return nil
+}
+
+serialize_union_variant :: proc(
+	tag: u8,
+	$T: typeid,
+	serializer: proc(s: ^Serializer, t: ^T) -> SerializationResult,
+	state: ^UnionVariantSerializeState($U),
+) -> bool {
+	if state.done {
+		return false
+	}
+
+	info("Trying %v", typeid_of(T))
+	if state.serializer.writing {
+		variant, ok := state.union_ref.(T)
+		if ok {
+			append(&state.serializer.stream, tag)
+			serializer(state.serializer, &variant)
+			state.done = true
+			return true
+		}
+	} else {
+		read_tag: u8 = state.serializer.stream[state.serializer.offset]
+		if read_tag == tag {
+			state.serializer.offset += 1
+			t: T
+			serializer(state.serializer, &t)
+			state.union_ref^ = t
+			state.done = true
+			return true
+		}
+	}
+
+	return false
+}
+
+serialize :: proc {
+	serialize_vec2i,
+	serialize_i32,
+	serialize_f32,
+	serialize_u8,
+	serialize_string,
 }
