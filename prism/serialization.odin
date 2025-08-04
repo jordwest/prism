@@ -158,6 +158,14 @@ serialize_union_nil :: proc(tag: u8, state: ^UnionSerializerState($U)) -> bool {
 	return false
 }
 
+// Convenience function mostly for union types with no data
+serialize_empty :: proc(
+	_: ^Serializer,
+	_: ^$T,
+) -> SerializationResult {
+	return nil
+}
+
 serialize_union_variant :: proc(
 	tag: u8,
 	$T: typeid,
