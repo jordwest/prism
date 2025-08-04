@@ -1,7 +1,7 @@
 package main
 
-import clay "clay-odin"
 import "base:runtime"
+import clay "clay-odin"
 import "core:mem"
 import "fresnel"
 import "prism"
@@ -13,25 +13,28 @@ on_resize :: proc(w: i32, h: i32) {
 	clay.SetLayoutDimensions({f32(w), f32(h)})
 }
 
+last_cursor_tile_pos: [2]i32
 @(export)
 on_mouse_update :: proc(pos_x: f32, pos_y: f32, button_down: bool) {
 	mouse_moved = true
 	clay.SetPointerState({pos_x, pos_y}, button_down)
 
-	msg_data := []u8{u8(pos_x), u8(pos_y), u8(button_down)}
-
-	client_send_message(ClientMessageCursorPosUpdate{pos = {i32(pos_x), i32(pos_y)}})
+	new_tile_pos: [2]i32 = {i32(pos_x / 32), i32(pos_y / 32)}
+	if new_tile_pos != last_cursor_tile_pos {
+		last_cursor_tile_pos = new_tile_pos
+		client_send_message(ClientMessageCursorPosUpdate{pos = new_tile_pos})
+	}
 }
 
 @(export)
 on_client_connected :: proc(clientId: i32) {
-    context = runtime.default_context()
-    context.allocator = host_arena_alloc
-    context.temp_allocator = frame_arena_alloc
+	context = runtime.default_context()
+	context.allocator = host_arena_alloc
+	context.temp_allocator = frame_arena_alloc
 
-    trace("Client connected id %d", clientId)
+	trace("Client connected id %d", clientId)
 
-    host_on_client_connected(clientId)
+	host_on_client_connected(clientId)
 }
 
 @(export)
@@ -45,12 +48,12 @@ boot :: proc(width: i32, height: i32, flags: i32) {
 	state.players = make(map[PlayerId]PlayerMeta, 8)
 
 	if (flags == 0) {
-	    host_boot()
+		host_boot()
 	}
 
 	if !hot_reload_hydrate_state() {
-        // Generate token
-	    fresnel.fill_slice_random(state.my_token[:])
+		// Generate token
+		fresnel.fill_slice_random(state.my_token[:])
 	}
 
 	trace("Time is %.2f", state.t)
@@ -100,10 +103,10 @@ tick :: proc(dt: f32) {
 	state.t += dt
 
 	if host_state.is_host {
-	    host_tick(dt)
+		host_tick(dt)
 	}
 
-    client_tick(dt)
+	client_tick(dt)
 
 	fresnel.metric_i32("temp mem", i32(frame_arena.offset))
 	fresnel.metric_i32("temp mem peak", i32(frame_arena.peak_used))
