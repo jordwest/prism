@@ -45,7 +45,7 @@ boot :: proc(width: i32, height: i32, flags: i32) {
 	context.allocator = persistent_arena_alloc
 	context.temp_allocator = frame_arena_alloc
 
-	state.players = make(map[PlayerId]PlayerMeta, 8)
+	state.players = make(map[PlayerId]Player, 8)
 
 	if (flags == 0) {
 		host_boot()
@@ -57,6 +57,15 @@ boot :: proc(width: i32, height: i32, flags: i32) {
 	}
 
 	trace("Time is %.2f", state.t)
+
+	// TODO: Move this to host and forward to players via messages
+	alloc_error: mem.Allocator_Error
+	state.entities, alloc_error = make(map[EntityId]Entity, 2048)
+	if alloc_error != nil {
+		err("Could not allocate entity map %v", alloc_error)
+	}
+	p := entity_create(&ENTITY_PLAYER)
+	p.pos = {2, 5}
 
 	// Boot clay
 	state.width = width

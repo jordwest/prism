@@ -11,21 +11,24 @@ ClientState :: struct {
 	player_id:          PlayerId,
 	players:            PlayerList,
 	my_token:           PlayerToken,
+	entities:           map[EntityId]Entity,
 }
 
 HostState :: struct {
 	is_host:          bool,
+	newest_entity_id: i32,
 	newest_player_id: i32,
 	players:          PlayerList,
 }
 
+EntityId :: distinct i32
 PlayerId :: distinct i32
 PlayerToken :: [16]u8
 
-PlayerMeta :: struct {
+Player :: struct {
 	player_id:   PlayerId,
 	cursor_tile: [2]i32,
 	token:       PlayerToken,
 }
 
-PlayerList :: map[PlayerId]PlayerMeta
+PlayerList :: map[PlayerId]Player

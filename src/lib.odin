@@ -21,40 +21,6 @@ on_panic :: proc(a: string, b: string, loc: runtime.Source_Code_Location) -> ! {
 
 mouse_moved := true
 
-render_ui :: proc() {
-	render_commands := ui_layout_create()
-
-	for i in 0 ..< i32(render_commands.length) {
-		render_command := clay.RenderCommandArray_Get(&render_commands, i)
-
-		#partial switch render_command.commandType {
-		case .Rectangle:
-			// if render_command.renderData.rectangle.backgroundColor.a != 1 {
-			fresnel.fill(
-				render_command.renderData.rectangle.backgroundColor.r,
-				render_command.renderData.rectangle.backgroundColor.g,
-				render_command.renderData.rectangle.backgroundColor.b,
-				render_command.renderData.rectangle.backgroundColor.a / 255,
-			)
-			fresnel.draw_rect(
-				render_command.boundingBox.x,
-				render_command.boundingBox.y,
-				render_command.boundingBox.width,
-				render_command.boundingBox.height,
-			)
-		case .Text:
-			c := render_command.renderData.text.textColor
-			fresnel.fill(c.r, c.g, c.b, c.a)
-			fresnel.draw_text(
-				render_command.boundingBox.x,
-				render_command.boundingBox.y,
-				i32(render_command.renderData.text.fontSize),
-				string_from_clay_slice(render_command.renderData.text.stringContents),
-			)
-		}
-	}
-}
-
 SplitMixState :: struct {
 	state: u64,
 }

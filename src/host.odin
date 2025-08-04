@@ -11,7 +11,7 @@ host_boot :: proc() {
 	memory_init_host()
 
 	host_state.is_host = true
-	host_state.players = make(map[PlayerId]PlayerMeta, 8, allocator = host_arena_alloc)
+	host_state.players = make(map[PlayerId]Player, 8, allocator = host_arena_alloc)
 
 	fresnel.metric_i32("host mem", i32(host_arena.offset))
 	fresnel.metric_i32("host mem peak", i32(host_arena.peak_used))
@@ -44,7 +44,7 @@ host_poll :: proc() {
 		case ClientMessageIdentify:
 			host_state.newest_player_id += 1
 			new_id := PlayerId(host_state.newest_player_id)
-			host_state.players[new_id] = PlayerMeta {
+			host_state.players[new_id] = Player {
 				player_id = PlayerId(host_state.newest_player_id),
 				token     = m.token,
 			}

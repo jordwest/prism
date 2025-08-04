@@ -11,14 +11,17 @@ const ctx = canvas.getContext("2d");
 var line = 0;
 var metrics: Record<string, any> = {};
 
-declare global {
-  function getMetrics(): void;
-}
-window.getMetrics = () => {
-  for (var i = 0; i < instances.length; i++) {
-    console.table(instances[i]?.metrics);
+document.addEventListener("keydown", (e) => {
+  if (e.key == "`") {
+    console.group(`Metrics at ${performance.now() / 1000}`);
+    for (var i = 0; i < instances.length; i++) {
+      console.group(`Instance ${i}`);
+      console.table(instances[i]?.metrics);
+      console.groupEnd();
+    }
+    console.groupEnd();
   }
-};
+});
 
 let instances: FresnelInstance[] = [];
 
