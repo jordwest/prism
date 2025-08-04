@@ -125,7 +125,7 @@ async function buildWasm() {
     cmd: "odin",
     args: [
       "build",
-      ".",
+      "src",
       // "-o:none",
       "-target:freestanding_wasm32",
       "-out:build/web/assets/app.wasm",
