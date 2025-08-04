@@ -71,6 +71,9 @@ function createDebugImports(
     now() {
       return performance.now();
     },
+    breakpoint() {
+      debugger;
+    },
     log_panic(
       prefix: OdinStringPointer,
       message: OdinStringPointer,
@@ -128,6 +131,10 @@ function createEnvImports() {
 
 function createCoreImports(instance: FresnelInstance) {
   return {
+    fill_slice_random: (ptr: OdinSlicePointer) => {
+      const slice = getSlice(instance.memory, ptr);
+      crypto.getRandomValues(slice);
+    },
     print: (ptr: OdinStringPointer, lvl: number) => {
       const id = `[${instance.instanceId}] `;
       const s = readOdinString(instance.memory, ptr);

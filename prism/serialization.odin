@@ -160,7 +160,7 @@ serialize_union_nil :: proc(tag: u8, state: ^UnionSerializerState($U)) -> bool {
 }
 
 // Convenience function mostly for union types with no data
-serialize_empty :: proc(_: ^Serializer, _: ^$T) -> SerializationResult {
+serialize_empty :: proc(_: ^Serializer, _: ^($T)) -> SerializationResult {
 	return nil
 }
 
@@ -187,7 +187,12 @@ serialize_union_variant :: proc(
 		variant, ok := state.union_ref.(T)
 		if ok {
 			append(&state.serializer.stream, tag)
-			serializer(state.serializer, &variant) or_return
+			// serialize_empty is not baked into the code due to being polymorphic
+			// so it ends up being a null pointer, which we check for here.
+			// Would be nice to find a better way but this hack works for now
+            if serializer != nil {
+                serializer(state.serializer, &variant) or_return
+            }
 			state.done = true
 			return nil
 		}
@@ -196,7 +201,9 @@ serialize_union_variant :: proc(
 		if read_tag == tag {
 			state.serializer.offset += 1
 			t: T
-			serializer(state.serializer, &t) or_return
+			if serializer != nil {
+			    serializer(state.serializer, &t) or_return
+			}
 			state.union_ref^ = t
 			state.done = true
 			return nil

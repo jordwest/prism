@@ -1,9 +1,10 @@
 import { FresnelInstance } from "./instance";
+import { FresnelState } from "./types";
 import { I32Pointer, OdinSlicePointer } from "./types";
 import { getSlice, writeI32 } from "./util";
 
-const getMailbox = (instance: FresnelInstance, clientId: number) => {
-  const mailboxes = instance.state.mailboxes;
+const getMailbox = (state: FresnelState, clientId: number) => {
+  const mailboxes = state.mailboxes;
   if (mailboxes[clientId] == null) {
     mailboxes[clientId] = [];
   }
@@ -29,7 +30,7 @@ export function createNetImports(instance: FresnelInstance) {
       return messageContent.length;
     },
     client_poll_message: (msgPtr: OdinSlicePointer) => {
-      const clientMailbox = getMailbox(instance, instance.instanceId + 1);
+      const clientMailbox = getMailbox(instance.state, instance.instanceId + 1);
 
       const message = clientMailbox.shift();
       if (message == null) {
@@ -49,7 +50,7 @@ export function createNetImports(instance: FresnelInstance) {
     server_send_message: (clientId: number, msgPtr: OdinSlicePointer) => {
       const messageContent = getSlice(instance.memory, msgPtr);
 
-      const clientMailbox = getMailbox(instance, clientId);
+      const clientMailbox = getMailbox(instance.state, clientId);
       const data = messageContent.slice();
       setTimeout(() => {
         clientMailbox.push(data);

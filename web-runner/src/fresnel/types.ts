@@ -25,6 +25,8 @@ export type FresnelExports = {
   on_mouse_update?: (x: number, y: number, down: boolean) => void;
   on_resize?: (w: number, h: number) => void;
 
+  on_client_connected?: (clientId: number) => void;
+
   /**
    * Called on the old module when hot reloading, use this to store any state so it
    * can be reloaded when booting again

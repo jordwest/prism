@@ -4,6 +4,8 @@ import "fresnel"
 import "prism"
 
 client_tick :: proc(dt: f32) {
+    client_poll()
+
     fresnel.clear()
 	fresnel.fill(0, 0, 0, 255)
 	fresnel.draw_rect(0, 0, f32(state.width), f32(state.height))
@@ -53,6 +55,37 @@ client_tick :: proc(dt: f32) {
 	render_ui()
 
 	fresnel.draw_image(1, 32, 80, 16, 16, f32(state.cursor_pos.x), f32(state.cursor_pos.y), 32, 32)
+}
+
+@(private)
+client_poll :: proc() {
+	msg_in := make([dynamic]u8, 1000, 1000, frame_arena_alloc)
+	client_id: i32
+	bytes_read := 0
+	for {
+		bytes_read := fresnel.client_poll_message(msg_in[:])
+		if bytes_read <= 0 {
+			break
+		}
+
+		s := prism.create_deserializer(msg_in)
+		msg: HostMessage
+		e := host_message_union_serialize(&s, &msg)
+
+		if e != nil {
+			err("Failed to deserialize %v", e)
+		}
+
+		#partial switch m in msg {
+		    case HostMessageWelcome:
+    			client_send_message(ClientMessageIdentify{
+    				token = state.my_token,
+                    display_name = "Player me"
+    			})
+		}
+
+		trace("Client got message: %v", msg)
+	}
 }
 
 client_send_message :: proc(msg: ClientMessage) {

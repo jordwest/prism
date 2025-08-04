@@ -1,6 +1,7 @@
 package main
 
 import clay "clay-odin"
+import "base:runtime"
 import "core:mem"
 import "fresnel"
 import "prism"
@@ -23,6 +24,17 @@ on_mouse_update :: proc(pos_x: f32, pos_y: f32, button_down: bool) {
 }
 
 @(export)
+on_client_connected :: proc(clientId: i32) {
+    context = runtime.default_context()
+    context.allocator = host_arena_alloc
+    context.temp_allocator = frame_arena_alloc
+
+    trace("Client connected id %d", clientId)
+
+    host_on_client_connected(clientId)
+}
+
+@(export)
 boot :: proc(width: i32, height: i32, flags: i32) {
 	memory_init()
 
@@ -36,7 +48,10 @@ boot :: proc(width: i32, height: i32, flags: i32) {
 	    host_boot()
 	}
 
-	hot_reload_hydrate_state()
+	if !hot_reload_hydrate_state() {
+        // Generate token
+	    fresnel.fill_slice_random(state.my_token[:])
+	}
 
 	trace("Time is %.2f", state.t)
 

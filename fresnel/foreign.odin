@@ -6,6 +6,7 @@ foreign core {
 	print :: proc(str: string, level: i32 = 0) ---
 	clear :: proc() ---
 	fill :: proc(r: f32, g: f32, b: f32, a: f32) ---
+	fill_slice_random :: proc(slice: []u8) ---
 	draw_rect :: proc(x: f32, y: f32, w: f32, h: f32) ---
 	draw_text :: proc(x: f32, y: f32, size: i32, text: string) ---
 	draw_image :: proc(image_id: i32, sx: f32, sy: f32, sw: f32, sh: f32, dx: f32, dy: f32, dw: f32, dh: f32) ---
@@ -34,6 +35,7 @@ foreign import debug "debug"
 @(default_calling_convention = "c")
 foreign debug {
 	now :: proc() -> i32 ---
+	breakpoint :: proc() ---
 	log_panic :: proc(prefix: string, message: string, file: string, line: i32) ---
 	log_slice :: proc(name: string, ptr: []u8) ---
 	metric_i32 :: proc(name: string, val: i32) ---

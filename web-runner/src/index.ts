@@ -106,6 +106,14 @@ canvas.addEventListener("mouseup", (evt) => {
   sendMouseUpdate();
 });
 
+// Temp function for notifying instances of a "connection"
+const notifyHostOfConnection = (clientId: number) => {
+  const host = instances[0];
+  if (host != null) {
+    host.exports.on_client_connected?.(clientId);
+  }
+};
+
 async function initWasm(instanceCount: number) {
   let height = 1 / instanceCount;
   for (var i = 0; i < instanceCount; i++) {
@@ -115,6 +123,7 @@ async function initWasm(instanceCount: number) {
     );
     const y = height * i;
     instances.push(await instantiate(state, i, { y, height }, i));
+    notifyHostOfConnection(i + 1);
   }
 }
 initWasm(2);
@@ -139,6 +148,7 @@ ws.addEventListener("message", async () => {
 
     const y = height * i;
     instances[i] = await instantiate(state, i, { y, height }, i);
+    notifyHostOfConnection(i + 1);
   }
 });
 
