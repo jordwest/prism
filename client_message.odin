@@ -1,0 +1,54 @@
+package main
+import "core:reflect"
+import "fresnel"
+import "prism"
+
+ClientMessage :: union {
+	ClientMessageCursorPosUpdate,
+	ClientMessageIdentify,
+}
+
+client_message_union_serialize :: proc(s: ^prism.Serializer, obj: ^ClientMessage) {
+	state := prism.serialize_union_create(s, obj)
+	prism.serialize_union_nil(0, &state)
+	prism.serialize_union_variant(1, ClientMessageCursorPosUpdate, serialize_variant, &state)
+	prism.serialize_union_variant(2, ClientMessageIdentify, serialize_variant, &state)
+}
+
+@(private)
+serialize_variant :: proc {
+	cursor_pos_update_serialize,
+	identify_serialize,
+}
+
+/************
+ * Variants
+ ***********/
+
+ClientMessageCursorPosUpdate :: struct {
+	pos: [2]i32,
+}
+
+ClientMessageIdentify :: struct {
+	token:        [16]u8,
+	display_name: string,
+}
+
+@(private)
+cursor_pos_update_serialize :: proc(
+	s: ^prism.Serializer,
+	msg: ^ClientMessageCursorPosUpdate,
+) -> prism.SerializationResult {
+	prism.serialize(s, &msg.pos) or_return
+	return nil
+}
+
+@(private)
+identify_serialize :: proc(
+	s: ^prism.Serializer,
+	msg: ^ClientMessageIdentify,
+) -> prism.SerializationResult {
+	prism.serialize(s, &msg.token) or_return
+	prism.serialize(s, &msg.display_name) or_return
+	return nil
+}

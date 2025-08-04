@@ -1,8 +1,9 @@
 package main
 
+import clay "clay-odin"
 import "core:mem"
 import "fresnel"
-import clay "clay-odin"
+import "prism"
 
 @(export)
 boot :: proc(width: i32, height: i32, flags: i32) {
@@ -160,7 +161,7 @@ tick :: proc(dt: f32) {
 
 @(export)
 on_dev_hot_unload :: proc() {
-	szr := create_serializer(frame_arena_alloc)
+	szr := prism.create_serializer(frame_arena_alloc)
 	result := serialize_state(&szr, &state)
 	if result != nil {
 		err("Serialization failed! %s at %d", result, szr.offset)

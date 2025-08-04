@@ -9,6 +9,7 @@ import "core:mem"
 import "core:strings"
 import "core:sync"
 import "fresnel"
+import "prism"
 
 GameState :: struct #packed {
 	t:                  f32,
@@ -181,7 +182,7 @@ hot_reload_hydrate_state :: proc() -> bool {
 
 	resize(&hot_reload_data, int(bytes_read))
 
-	ds := create_deserializer(hot_reload_data)
+	ds := prism.create_deserializer(hot_reload_data)
 	result := serialize_state(&ds, &state)
 	if result != nil {
 		err("Hot reload deserialization failed! %s at %d", result, ds.offset)
