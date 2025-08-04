@@ -1,7 +1,6 @@
 package main
 import "base:runtime"
 import clay "clay-odin"
-import "config"
 import "core:crypto/legacy/sha1"
 import "core:fmt"
 import "core:hash"
@@ -146,7 +145,7 @@ clay_error_handler :: proc "c" (errorData: clay.ErrorData) {
 	context = runtime.default_context()
 	context.allocator = persistent_arena_alloc
 	context.temp_allocator = frame_arena_alloc
-	fresnel.err("CLAY ERROR %s", errorData.errorType)
+	err("CLAY ERROR %s", errorData.errorType)
 }
 
 server_poll :: proc() {
@@ -174,18 +173,18 @@ hot_reload_hydrate_state :: proc() -> bool {
 	hot_reload_data := make([dynamic]u8, 100000, 100000, context.temp_allocator)
 	bytes_read := fresnel.storage_get("dev_state", hot_reload_data[:])
 	if bytes_read <= 0 {
-		fresnel.warn("Dev state not loaded. Storage returned %d", bytes_read)
+		warn("Dev state not loaded. Storage returned %d", bytes_read)
 		return false
 	}
 
-	fresnel.info("Read %d bytes from hot reload state", bytes_read)
+	info("Read %d bytes from hot reload state", bytes_read)
 
 	resize(&hot_reload_data, int(bytes_read))
 
 	ds := create_deserializer(hot_reload_data)
 	result := serialize_state(&ds, &state)
 	if result != nil {
-		fresnel.err("Hot reload deserialization failed! %s at %d", result, ds.offset)
+		err("Hot reload deserialization failed! %s at %d", result, ds.offset)
 	}
 
 	return true

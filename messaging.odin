@@ -25,7 +25,7 @@ serialize_union_nil :: proc(tag: u8, state: ^UnionVariantSerializeState($U)) -> 
 	if state.done {
 		return false
 	}
-	fresnel.info("Trying nil")
+	info("Trying nil")
 	if state.serializer.writing {
 		if state.union_ref^ == nil {
 			append(&state.serializer.stream, tag)

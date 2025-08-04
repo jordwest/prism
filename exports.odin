@@ -2,7 +2,6 @@ package main
 
 import "core:mem"
 import "fresnel"
-import "config"
 import clay "clay-odin"
 
 @(export)
@@ -38,13 +37,13 @@ boot :: proc(width: i32, height: i32, flags: i32) {
 		if bytes_read <= 0 {
 			break
 		}
-		fresnel.trace("Client message received")
+		trace("Client message received")
 		fresnel.log_slice("message in", msg_in[:bytes_read])
 	}
 
 	hot_reload_hydrate_state()
 
-	fresnel.trace("Time is %.2f", state.t)
+	trace("Time is %.2f", state.t)
 
 	// Boot clay
 	state.width = width
@@ -52,7 +51,7 @@ boot :: proc(width: i32, height: i32, flags: i32) {
 	min_memory_size := clay.MinMemorySize()
 
 	if min_memory_size > len(clay_memory) {
-		fresnel.err(
+		err(
 			"Not enough memory reserved for clay. Needed %d bytes, got %d",
 			min_memory_size,
 			len(clay_memory),
@@ -72,7 +71,7 @@ boot :: proc(width: i32, height: i32, flags: i32) {
 	// Tell clay how to measure text
 	clay.SetMeasureTextFunction(clay_measure_text, nil)
 
-	clay.SetDebugModeEnabled(config.CLAY_DEBUG_ENABLED)
+	clay.SetDebugModeEnabled(CLAY_DEBUG_ENABLED)
 
 	return
 }
@@ -165,7 +164,7 @@ on_dev_hot_unload :: proc() {
 	szr := create_serializer(frame_arena_alloc)
 	result := serialize_state(&szr, &state)
 	if result != nil {
-		fresnel.err("Serialization failed! %s at %d", result, szr.offset)
+		err("Serialization failed! %s at %d", result, szr.offset)
 	}
 
 	fresnel.storage_set("dev_state", szr.stream[:])
