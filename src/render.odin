@@ -92,20 +92,35 @@ render_ui :: proc() {
 		}
 	}
 
+	// Draw this player's cursor
+	cursor_pos := vec2f(state.client.cursor_pos) * 32
+
+	fresnel.draw_image(
+		&fresnel.DrawImageArgs {
+			image_id = 1,
+			source_offset = SPRITE_COORD_RECT,
+			source_size = {16, 16},
+			dest_offset = cursor_pos,
+			dest_size = {32, 32},
+		},
+	)
+
+	// Draw other players' cursors
 	for _, p in state.client.players {
 		if p.player_id != state.client.player_id {
-			cursor_pos := vec2f(p.cursor_tile.x)
+			cursor_pos := vec2f(p.cursor_tile) * 32
 
-
+			zoom: i32 = 2
 			fresnel.draw_image(
 				&fresnel.DrawImageArgs {
 					image_id = 1,
 					source_offset = SPRITE_COORD_OTHER_PLAYER_CURSOR,
 					source_size = {16, 16},
-					dest_offset = cursor_pos,
+					dest_offset = cursor_pos - {3, 3} + vec2f(8 * zoom),
 					dest_size = {32, 32},
 				},
 			)
+			fresnel.fill(255, 255, 255, 1)
 			fresnel.draw_text(cursor_pos.x, cursor_pos.y, 16, "Player")
 		}
 	}

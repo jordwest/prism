@@ -64,7 +64,7 @@ client_poll :: proc() {
 			state.client.controlling_entity_id = m.entity_id
 
 		case HostMessageCursorPos:
-			player, ok := state.client.players[m.player_id]
+			player, ok := &state.client.players[m.player_id]
 			if ok {
 				player.cursor_tile = m.pos
 			}
@@ -76,9 +76,10 @@ client_poll :: proc() {
 				client_get_entity(ev.entity_id).pos = ev.pos
 			case EventPlayerJoined:
 				state.client.players[ev.player_id] = Player {
-					player_id = ev.player_id,
+					player_id        = ev.player_id,
+					player_entity_id = ev.player_entity_id,
+					cursor_tile      = {-1000, -1000},
 				}
-				err("TODO EventPlayerJoined")
 			case EventEntityCommandChanged:
 				e, ok := &state.client.entities[ev.entity_id]
 				if ok do e.cmd = ev.cmd

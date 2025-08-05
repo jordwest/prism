@@ -6,11 +6,12 @@ MAX_PLAYERS :: 8
 MAX_ENTITIES :: 2048
 
 // Whether to send cursor coords to the server. It's a nice feature but makes the messaging logs noisy
-CURSOR_REPORTING_ENABLED :: false
+CURSOR_REPORTING_ENABLED :: true
 
 /**********************
  * SPRITE COORDINATES *
  **********************/
 SPRITE_COORD_PLAYER :: [2]f32{16 * 1, 16 * 0}
+SPRITE_COORD_RECT :: [2]f32{5 * 16, 2 * 16}
 SPRITE_COORD_OTHER_PLAYER_CURSOR :: [2]f32{16 * 3, 16 * 5}
 SPRITE_COORD_ACTIVE_CHEVRON :: [2]f32{16, 64}

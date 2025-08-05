@@ -39,6 +39,7 @@ todo,feat,b2.5,Add player pathfinding
 todo,feat,b2.5,Add enemy
 todo,feat,b2.5,"Add map and list serialization, send game state to newly joined clients"
 todo,feat,b2.5,Make rust websocket server and connect it up
+todo,feat,b2.5,Make use of client token to relogin a user (and store it in localstorage)
 todo,refactor,b3,Test turn system and iron out weird bugs with a refactor
 todo,feat,b3,Heal ability (potion?)
 todo,feat,b3,Add fog of war (and add it to the dijkstra map calcs)

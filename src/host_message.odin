@@ -20,29 +20,19 @@ host_message_union_serialize :: proc(
 	prism.serialize_union_variant(
 		2,
 		HostMessageIdentifyResponse,
-		host_message_serialize_variant,
+		_serialize_variant,
 		&state,
 	) or_return
-	prism.serialize_union_variant(
-		3,
-		HostMessageCursorPos,
-		host_message_serialize_variant,
-		&state,
-	) or_return
-	prism.serialize_union_variant(
-		4,
-		HostMessageEvent,
-		host_message_serialize_variant,
-		&state,
-	) or_return
+	prism.serialize_union_variant(3, HostMessageCursorPos, _serialize_variant, &state) or_return
+	prism.serialize_union_variant(4, HostMessageEvent, _serialize_variant, &state) or_return
 	return prism.serialize_union_fail_if_not_found(&state)
 }
 
-@(private)
-host_message_serialize_variant :: proc {
-	cursor_pos_serialize,
-	identify_response_serialize,
-	event_serialize,
+@(private = "file")
+_serialize_variant :: proc {
+	_cursor_pos_serialize,
+	_identify_response_serialize,
+	_event_serialize,
 }
 
 /************
@@ -50,20 +40,14 @@ host_message_serialize_variant :: proc {
  ***********/
 
 HostMessageWelcome :: struct {}
+
 HostMessageIdentifyResponse :: struct {
 	player_id: PlayerId,
 	entity_id: EntityId,
 }
-HostMessageCursorPos :: struct {
-	player_id: PlayerId,
-	pos:       [2]i32,
-}
-HostMessageEvent :: struct {
-	event: Event,
-}
 
-@(private)
-identify_response_serialize :: proc(
+@(private = "file")
+_identify_response_serialize :: proc(
 	s: ^prism.Serializer,
 	msg: ^HostMessageIdentifyResponse,
 ) -> prism.SerializationResult {
@@ -72,8 +56,13 @@ identify_response_serialize :: proc(
 	return nil
 }
 
-@(private)
-cursor_pos_serialize :: proc(
+HostMessageCursorPos :: struct {
+	player_id: PlayerId,
+	pos:       [2]i32,
+}
+
+@(private = "file")
+_cursor_pos_serialize :: proc(
 	s: ^prism.Serializer,
 	msg: ^HostMessageCursorPos,
 ) -> prism.SerializationResult {
@@ -82,9 +71,12 @@ cursor_pos_serialize :: proc(
 	return nil
 }
 
+HostMessageEvent :: struct {
+	event: Event,
+}
 
-@(private)
-event_serialize :: proc(
+@(private = "file")
+_event_serialize :: proc(
 	s: ^prism.Serializer,
 	msg: ^HostMessageEvent,
 ) -> prism.SerializationResult {

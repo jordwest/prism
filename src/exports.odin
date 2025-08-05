@@ -20,7 +20,7 @@ on_mouse_update :: proc "c" (pos_x: f32, pos_y: f32, button_down: bool) {
 	context = runtime.default_context()
 	mouse_moved = true
 	clay.SetPointerState({pos_x, pos_y}, button_down)
-	state.client.cursor_pos = {i32(pos_x), i32(pos_y)}
+	state.client.cursor_pos = {i32(pos_x) / 32, i32(pos_y) / 32}
 
 	new_tile_pos: [2]i32 = {i32(pos_x / 32), i32(pos_y / 32)}
 	if new_tile_pos != last_cursor_tile_pos {

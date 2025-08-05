@@ -87,18 +87,19 @@ host_poll :: proc() {
 					entity_id = player_entity.id,
 				},
 			)
+
+			host_broadcast_message(
+				HostMessageEvent {
+					event = EventPlayerJoined {
+						player_id = new_player_id,
+						player_entity_id = player_entity.id,
+					},
+				},
+			)
 		case ClientMessageCursorPosUpdate:
 			if player_exists {
 				host_broadcast_message(
 					HostMessageCursorPos{player_id = client.player_id, pos = m.pos},
-				)
-				host_broadcast_message(
-					HostMessageEvent {
-						event = EventEntityMoved {
-							entity_id = player.player_entity_id,
-							pos = TileCoord(m.pos),
-						},
-					},
 				)
 			}
 		case ClientMessageSubmitCommand:
