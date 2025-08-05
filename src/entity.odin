@@ -9,6 +9,7 @@ Entity :: struct {
 	meta_id:    EntityMetaId,
 	pos:        TileCoord,
 	cmd:        Command,
+	player_id:  Maybe(PlayerId),
 
 	// Not serialized
 	_local_cmd: Maybe(LocalCommand),

@@ -67,15 +67,34 @@ render_entities :: proc() {
 	for id, &e in state.client.entities {
 		i += 1
 		meta := entity_meta[e.meta_id]
-		fresnel.draw_image(
-			&fresnel.DrawImageArgs {
-				image_id = 1,
-				source_offset = meta.spritesheet_coord,
-				source_size = {SPRITE_SIZE, SPRITE_SIZE},
-				dest_offset = screen_coord(e.pos).xy,
-				dest_size = state.client.zoom * GRID_SIZE,
-			},
-		)
+
+		coord := screen_coord(e.pos).xy
+		if id, is_player := e.player_id.?; is_player {
+			switch id {
+			case 3:
+				render_sprite(SPRITE_COORD_PLAYER_A, coord)
+			case 2:
+				render_sprite(SPRITE_COORD_PLAYER_B, coord)
+			case 1:
+				render_sprite(SPRITE_COORD_PLAYER_C, coord)
+			case:
+				render_sprite(meta.spritesheet_coord, coord)
+			}
+
+			if e.id == state.client.controlling_entity_id {
+				render_sprite(
+					SPRITE_COORD_ACTIVE_CHEVRON,
+					screen_coord(tile_coord_f(e.pos) + TileCoordF({0, -0.5})),
+				)
+			} else {
+				render_sprite(
+					SPRITE_COORD_THOUGHT_BUBBLE,
+					screen_coord(tile_coord_f(e.pos) + TileCoordF({0.75, -0.75})),
+				)
+			}
+		} else {
+			render_sprite(meta.spritesheet_coord, coord)
+		}
 
 		cmd := entity_get_command(&e)
 		if cmd.type == .Move && .IsAllied in meta.flags {

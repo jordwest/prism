@@ -64,3 +64,11 @@ tile_coord_from_screen_coord :: proc(v: ScreenCoord) -> TileCoord {
 tile_coord :: proc {
 	tile_coord_from_screen_coord,
 }
+
+tile_coord_f_from_tile_coord :: proc(v: TileCoord) -> TileCoordF {
+	return {f32(v.x), f32(v.y)}
+}
+
+tile_coord_f :: proc {
+	tile_coord_f_from_tile_coord,
+}

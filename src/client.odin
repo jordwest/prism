@@ -86,6 +86,11 @@ client_poll :: proc() {
 					cursor_tile      = {0, 0},
 					_cursor_spring   = prism.spring_create(2, [2]f32{0, 0}, k = 40, c = 10),
 				}
+				if e, ok := &state.client.entities[ev.player_entity_id]; ok {
+					e.player_id = ev.player_id
+				} else {
+					warn("Player entity does not exist")
+				}
 			case EventEntityCommandChanged:
 				e, ok := &state.client.entities[ev.entity_id]
 				if ok {
@@ -103,7 +108,7 @@ client_poll :: proc() {
 			}
 		}
 
-		if CLIENT_LOG_MESSAGES do trace("[CLIENT]: %v", msg)
+		if CLIENT_LOG_MESSAGES do info("[CLIENT]: %w", msg)
 	}
 }
 
