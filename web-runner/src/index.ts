@@ -267,13 +267,13 @@ function audioTest() {
   const track3 = audioContext.createMediaElementSource(audioElement);
   track3.connect(audioContext.destination);
 }
-// audioTest();
+audioTest();
 
-// canvas.addEventListener("mousedown", () => {
-//   // audioElement.play();
-//   if (audioElement2.currentTime != 0) {
-//     audioElement2.currentTime = 0;
-//   }
-//   audioElement2.play();
-//   audioElement3.play();
-// });
+canvas.addEventListener("mousedown", () => {
+  // audioElement.play();
+  // if (audioElement2.currentTime != 0) {
+  //   audioElement2.currentTime = 0;
+  // }
+  // audioElement2.play();
+  audioElement3.play();
+});

@@ -17,6 +17,7 @@ SharedState :: struct {
 ClientState :: struct {
 	cursor_pos:            TileCoord,
 	zoom:                  f32,
+	camera:                prism.Spring(2),
 	my_token:              PlayerToken,
 	player_id:             PlayerId,
 	controlling_entity_id: EntityId,

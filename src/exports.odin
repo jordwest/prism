@@ -9,6 +9,8 @@ import "prism"
 @(export)
 on_resize :: proc "c" (w: i32, h: i32) {
 	context = runtime.default_context()
+	context.temp_allocator = frame_arena_alloc
+	trace("Resize to %d, %d", w, h)
 	state.width = w
 	state.height = h
 	clay.SetLayoutDimensions({f32(w), f32(h)})
@@ -52,6 +54,8 @@ boot :: proc "c" (width: i32, height: i32, flags: i32) {
 	context.allocator = persistent_arena_alloc
 	context.temp_allocator = frame_arena_alloc
 
+	trace("Starting with size %d, %d. Flags %d", width, height, flags)
+
 	if (flags == 0) {
 		host_boot_err := host_boot()
 		if host_boot_err != nil {
@@ -73,7 +77,7 @@ boot :: proc "c" (width: i32, height: i32, flags: i32) {
 
 	// Boot clay
 	state.width = width
-	state.height = width
+	state.height = height
 	min_memory_size := clay.MinMemorySize()
 
 	if min_memory_size > len(clay_memory) {

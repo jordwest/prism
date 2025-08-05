@@ -35,8 +35,9 @@ done,feat,b2.5,Render tiles
 done,feat,b2.5,Add players and make them move
 done,refactor,b2.5,Add zoom level to state instead of magic numbers
 done,bug,b2.5,Make the local/optimistic command feedback work
-todo,devtool,b2.5,Hydrate client and server entity state in hot reload
+todo,imp,b2.5,Add a spring camera that moves to center on the player
 todo,feat,b2.5,Add procedural generation back in
+todo,devtool,b2.5,Hydrate client and server entity state in hot reload
 todo,feat,b2.5,Add djikstra's algorithm
 todo,feat,b2.5,Add player pathfinding
 todo,refactor,b2.5,Consider splitting server and client into separate packages

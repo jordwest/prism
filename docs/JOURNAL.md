@@ -30,3 +30,5 @@ That doesn't solve the problem of how and when to clear the local event though. 
 I think the only robust way to solve the second problem is with another sequence number. The client entity should increment its command sequence number, and the server should send the client's sequence number in a CommandChanged event.
 
 Second problem seems fairly solved with that sequence number. I'll revisit the server sequence number again in future when it's needed.
+
+Now adding a spring to the camera to follow the player. Added a generic spring to the prism package.

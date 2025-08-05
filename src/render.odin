@@ -2,11 +2,26 @@ package main
 
 import clay "clay-odin"
 import "fresnel"
+import "prism"
 
-render_system :: proc() {
+render_system :: proc(dt: f32) {
+	render_move_camera(dt)
 	render_tiles()
 	render_entities()
 	// render_ui()
+}
+
+// TODO: Does this really belong in render? Find a better home
+render_move_camera :: proc(dt: f32) {
+	if e, ok := state.client.entities[state.client.controlling_entity_id]; ok {
+		target := vec2f(e.pos.xy)
+		cmd := entity_get_command(&e)
+		if cmd.type == .Move {
+			target = target + ((vec2f(cmd.pos) - target) / 2)
+		}
+		state.client.camera.target = target
+	}
+	prism.spring_tick(&state.client.camera, dt)
 }
 
 render_tiles :: proc() {
