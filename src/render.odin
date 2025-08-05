@@ -8,7 +8,7 @@ render_system :: proc(dt: f32) {
 	render_move_camera(dt)
 	render_tiles()
 	render_entities()
-	render_tile_cursors()
+	render_tile_cursors(dt)
 	// render_ui()
 }
 
@@ -83,7 +83,7 @@ render_entities :: proc() {
 	fresnel.metric_i32("entities rendered", i)
 }
 
-render_tile_cursors :: proc() {
+render_tile_cursors :: proc(dt: f32) {
 	// Draw this player's cursor
 	fresnel.draw_image(
 		&fresnel.DrawImageArgs {
@@ -97,9 +97,13 @@ render_tile_cursors :: proc() {
 	// trace("Cursor at %v", screen_coord(state.client.cursor_pos).xy)
 
 	// Draw other players' cursors
-	for _, p in state.client.players {
+	for _, &p in state.client.players {
 		if p.player_id != state.client.player_id {
-			cursor_pos := screen_coord(p.cursor_tile)
+			// Like render_move_camera, does this spring logic belong in a separate system (like an animation system)?
+			p._cursor_spring.target = vec2f(p.cursor_tile)
+			prism.spring_tick(&p._cursor_spring, dt)
+
+			cursor_pos := screen_coord(TileCoordF(p._cursor_spring.pos - 0.5))
 
 			zoom: i32 = 2
 			fresnel.draw_image(

@@ -52,6 +52,9 @@ Player :: struct {
 
 	// Server only
 	_token:           PlayerToken,
+
+	// Client only
+	_cursor_spring:   prism.Spring(2),
 }
 
 Client :: struct {

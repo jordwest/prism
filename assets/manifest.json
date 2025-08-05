@@ -5,22 +5,22 @@
       {
         "name": "move_up",
         "id": 1,
-        "webKeys": ["k", "ArrowUp"]
+        "webKeys": ["k", "ArrowUp", "w"]
       },
       {
         "name": "move_down",
         "id": 2,
-        "webKeys": ["j", "ArrowDown"]
+        "webKeys": ["j", "ArrowDown", "s"]
       },
       {
         "name": "move_left",
         "id": 3,
-        "webKeys": ["h", "ArrowLeft"]
+        "webKeys": ["h", "ArrowLeft", "a"]
       },
       {
         "name": "move_right",
         "id": 4,
-        "webKeys": ["l", "ArrowRight"]
+        "webKeys": ["l", "ArrowRight", "d"]
       }
     ]
   }

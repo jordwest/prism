@@ -10,7 +10,6 @@ ClientError :: union {
 }
 
 client_boot :: proc(width: i32, height: i32) -> ClientError {
-
 	a: f32 = 1.2
 	b: f32 = 1.8
 	trace(
@@ -96,7 +95,8 @@ client_poll :: proc() {
 				state.client.players[ev.player_id] = Player {
 					player_id        = ev.player_id,
 					player_entity_id = ev.player_entity_id,
-					cursor_tile      = {-1000, -1000},
+					cursor_tile      = {0, 0},
+					_cursor_spring   = prism.spring_create(2, [2]f32{0, 0}, k = 40, c = 10),
 				}
 			case EventEntityCommandChanged:
 				e, ok := &state.client.entities[ev.entity_id]
