@@ -13,7 +13,6 @@ SharedState :: struct {
 	bytes_received:     i32,
 }
 
-
 ClientState :: struct {
 	cursor_pos:            TileCoord,
 	zoom:                  f32,
@@ -26,7 +25,7 @@ ClientState :: struct {
 
 	// The sequence id of the command last issued by the client
 	// See JOURNAL.md, 5 Aug 2025
-	cmd_seq:               i32,
+	_cmd_seq:              i32,
 }
 
 HostState :: struct {
@@ -64,6 +63,7 @@ Client :: struct {
 serialize_state :: proc(s: ^prism.Serializer, state: ^SharedState) -> prism.SerializationResult {
 	prism.serialize(s, &state.t) or_return
 	prism.serialize(s, &state.client.my_token) or_return
+	prism.serialize(s, (^i32)(&state.client.player_id)) or_return
 
 	return nil
 }
