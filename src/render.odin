@@ -116,11 +116,17 @@ render_tile_cursors :: proc(dt: f32) {
 			p._cursor_spring.target = vec2f(p.cursor_tile)
 			prism.spring_tick(&p._cursor_spring, dt)
 
-			cursor_pos := screen_coord(TileCoordF(p._cursor_spring.pos + (f32(6) / f32(16))))
+			if p.cursor_updated_at == 0 || (state.t - p.cursor_updated_at > 3) {
+				// Don't render stale cursors
+				continue
+			}
+
+			cursor_pos := screen_coord(TileCoordF(p._cursor_spring.pos))
+			text_pos := screen_coord(TileCoordF(p._cursor_spring.pos + {1, 0.25}))
 
 			render_sprite(SPRITE_COORD_OTHER_PLAYER_CURSOR, cursor_pos)
 			fresnel.fill(255, 255, 255, 1)
-			fresnel.draw_text(cursor_pos.x + 16, cursor_pos.y - 2, 16, "Player")
+			fresnel.draw_text(text_pos.x, text_pos.y, 16, "Player")
 		}
 	}
 }

@@ -45,15 +45,16 @@ PlayerId :: distinct i32
 PlayerToken :: [16]u8
 
 Player :: struct {
-	player_id:        PlayerId,
-	player_entity_id: EntityId,
-	cursor_tile:      TileCoord,
+	player_id:         PlayerId,
+	player_entity_id:  EntityId,
+	cursor_tile:       TileCoord,
+	cursor_updated_at: f32,
 
 	// Server only
-	_token:           PlayerToken,
+	_token:            PlayerToken,
 
 	// Client only
-	_cursor_spring:   prism.Spring(2),
+	_cursor_spring:    prism.Spring(2),
 }
 
 Client :: struct {

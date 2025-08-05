@@ -72,6 +72,7 @@ client_poll :: proc() {
 			player, ok := &state.client.players[m.player_id]
 			if ok {
 				player.cursor_tile = m.pos
+				player.cursor_updated_at = state.t
 			}
 		case HostMessageEvent:
 			switch ev in m.event {
@@ -95,6 +96,11 @@ client_poll :: proc() {
 				e, ok := &state.client.entities[ev.entity_id]
 				if ok {
 					e.cmd = ev.cmd
+					if p, is_player := &state.client.players[e.player_id.? or_else 0]; is_player {
+						// Mark their cursor as stale to hide it immediately
+						p.cursor_updated_at = 0
+					}
+
 					if _local_cmd, has_local := e._local_cmd.?; has_local {
 						if ev.seq >= _local_cmd.seq {
 							trace("Clearing local cmd %d, %d", ev.seq, _local_cmd.seq)
