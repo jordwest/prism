@@ -66,7 +66,7 @@ todo,feat,b3,Fire enemy - when it dies it splats flaming juices in random direct
 todo,imp,b3,"Add animation queue (movement plays in parallel, attacks in sequence)"
 todo,imp,b3,Handle individual player death
 todo,feat,b3,Shock traps (probs easiest as tile effects like fire or net don't need to be implemented)
-todo,feat,ideas,Allow one player to control multiple avatars (to help with testing)
+todo,imp,ideas,Versioning for serialization - especially for anything saved to localstorage
 todo,feat,ideas,Shield ability (potion?)
 todo,feat,ideas,Grappling hook - grapple across to a platform
 todo,imp,ideas,Don't show target for first ~50-100ms of player input to avoid flashes

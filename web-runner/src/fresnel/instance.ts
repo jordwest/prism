@@ -234,6 +234,16 @@ function createCoreImports(instance: FresnelInstance) {
         );
         return;
       }
+      // --- This works for rotation ---
+      // instance.state.canvasContext.translate(
+      //   dx,
+      //   dy + instance.state.canvas.height * instance.region.y,
+      // );
+      // instance.state.canvasContext.rotate((15 * Math.PI) / 180);
+      // instance.state.canvasContext.translate(
+      //   -dx,
+      //   -(dy + instance.state.canvas.height * instance.region.y),
+      // );
       instance.state.canvasContext.drawImage(
         image,
         sx,
@@ -245,6 +255,8 @@ function createCoreImports(instance: FresnelInstance) {
         dw,
         dh,
       );
+      // Needed if rotation enabled
+      // instance.state.canvasContext.resetTransform();
     },
     draw_text: (
       x: number,
