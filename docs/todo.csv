@@ -48,6 +48,7 @@ todo,feat,b3,Add enemy
 todo,feat,b3,Add melee attacks
 todo,feat,b3,Add hit/miss chance
 todo,imp,b3,Add hit indicators
+todo,devtool,b3,Add microui for debug tools
 todo,feat,b3,Make rust websocket server and connect it up
 todo,feat,b3,Make use of client token to relogin a user (and store it in localstorage)
 todo,refactor,b4,Test turn system and iron out weird bugs with a refactor
