@@ -71,6 +71,8 @@ Outputs: `1.2=1, 1.8=1, -1.2=-1, -1.8=-1, floor(-1.2)=-2, floor(-1.8)=-2`
 
 Ok really should get to bed.... too much fun. Maybe I'll just get a few walls rendering first
 
-First thing tomorrow should be fun - procgen rooms and Djikstra pathfinding
+First thing tomorrow should be fun - procgen rooms and Djikstra pathfinding.
+
+Also need to work out why cursor is missing when net delay is removed, probably player map is not populated on one client.
 
 # Wednesday 6 Aug 2025
