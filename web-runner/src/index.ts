@@ -236,7 +236,7 @@ const frame: FrameRequestCallback = (time) => {
       regionHeight,
     );
   } else {
-    canvas.style.opacity = "70%";
+    canvas.style.opacity = "30%";
   }
 
   requestAnimationFrame(frame);

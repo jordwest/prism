@@ -56,7 +56,6 @@ entity_serialize :: proc(s: ^prism.Serializer, e: ^Entity) -> prism.Serializatio
 
 entity_get_command :: proc(e: ^Entity) -> Command {
 	if local_cmd, has_local := e._local_cmd.?; has_local {
-		trace("Has local command %v", local_cmd.cmd)
 		return local_cmd.cmd
 	}
 

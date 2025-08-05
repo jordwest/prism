@@ -13,6 +13,11 @@ CAMERA_SPRING_DAMPER :: 20
 // Whether to send cursor coords to the server. It's a nice feature but makes the messaging logs noisy
 CURSOR_REPORTING_ENABLED :: true
 
+// Whether to record messages received by host
+HOST_LOG_MESSAGES :: false
+// Whether to record messages received by client
+CLIENT_LOG_MESSAGES :: false
+
 /**********************
  * SPRITE COORDINATES *
  **********************/

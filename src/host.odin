@@ -124,7 +124,7 @@ host_poll :: proc() {
 		// todo
 		}
 
-		trace("Host got message: %v", msg)
+		if HOST_LOG_MESSAGES do trace("[HOST] %v", msg)
 	}
 }
 

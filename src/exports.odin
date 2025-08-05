@@ -54,7 +54,7 @@ boot :: proc "c" (width: i32, height: i32, flags: i32) {
 	context.allocator = persistent_arena_alloc
 	context.temp_allocator = frame_arena_alloc
 
-	trace("Starting with size %d, %d. Flags %d", width, height, flags)
+	trace("Boot width=%d height=%d flags=%d", width, height, flags)
 
 	if (flags == 0) {
 		host_boot_err := host_boot()

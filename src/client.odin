@@ -10,18 +10,6 @@ ClientError :: union {
 }
 
 client_boot :: proc(width: i32, height: i32) -> ClientError {
-	a: f32 = 1.2
-	b: f32 = 1.8
-	trace(
-		"1.2=%d, 1.8=%d, -1.2=%d, -1.8=%d, floor(-1.2)=%d, floor(-1.8)=%d",
-		i32(a),
-		i32(b),
-		i32(-a),
-		i32(-b),
-		i32(math.floor(-a)),
-		i32(math.floor(-b)),
-	)
-
 	state.client.players = make(map[PlayerId]Player, 8) or_return
 	state.client.entities = make(map[EntityId]Entity, 2048) or_return
 	state.client.zoom = DEFAULT_ZOOM
@@ -115,7 +103,7 @@ client_poll :: proc() {
 			}
 		}
 
-		trace("Client got message: %v", msg)
+		if CLIENT_LOG_MESSAGES do trace("[CLIENT]: %v", msg)
 	}
 }
 
