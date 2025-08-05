@@ -43,7 +43,7 @@ serialize_variant :: proc {
  ***********/
 
 ClientMessageCursorPosUpdate :: struct {
-	pos: [2]i32,
+	pos: TileCoord,
 }
 
 @(private)
@@ -51,7 +51,7 @@ _cursor_pos_update_serialize :: proc(
 	s: ^prism.Serializer,
 	msg: ^ClientMessageCursorPosUpdate,
 ) -> prism.SerializationResult {
-	prism.serialize(s, &msg.pos) or_return
+	prism.serialize(s, (^[2]i32)(&msg.pos)) or_return
 	return nil
 }
 

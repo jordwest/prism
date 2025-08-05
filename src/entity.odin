@@ -19,6 +19,8 @@ EntityMeta :: struct {
 }
 
 TileCoord :: distinct [2]i32
+TileCoordF :: distinct [2]f32
+ScreenCoord :: distinct [2]f32
 
 EntityMetaId :: enum u8 {
 	None,

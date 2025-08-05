@@ -14,20 +14,20 @@ on_resize :: proc "c" (w: i32, h: i32) {
 	clay.SetLayoutDimensions({f32(w), f32(h)})
 }
 
-last_cursor_tile_pos: [2]i32
+last_cursor_tile_pos: TileCoord
 @(export)
 on_mouse_update :: proc "c" (pos_x: f32, pos_y: f32, button_down: bool) {
 	context = runtime.default_context()
 	mouse_moved = true
 	clay.SetPointerState({pos_x, pos_y}, button_down)
-	state.client.cursor_pos = {i32(pos_x) / 32, i32(pos_y) / 32}
+	screen_pos: ScreenCoord = {pos_x, pos_y}
+	state.client.cursor_pos = tile_coord(screen_pos)
 
-	new_tile_pos: [2]i32 = {i32(pos_x / 32), i32(pos_y / 32)}
-	if new_tile_pos != last_cursor_tile_pos {
-		last_cursor_tile_pos = new_tile_pos
+	if state.client.cursor_pos != last_cursor_tile_pos {
+		last_cursor_tile_pos = state.client.cursor_pos
 
 		if CURSOR_REPORTING_ENABLED {
-			client_send_message(ClientMessageCursorPosUpdate{pos = new_tile_pos})
+			client_send_message(ClientMessageCursorPosUpdate{pos = state.client.cursor_pos})
 		}
 	}
 }

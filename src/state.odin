@@ -14,7 +14,8 @@ SharedState :: struct {
 }
 
 ClientState :: struct {
-	cursor_pos:            [2]i32,
+	cursor_pos:            TileCoord,
+	zoom:                  f32,
 	my_token:              PlayerToken,
 	player_id:             PlayerId,
 	controlling_entity_id: EntityId,
@@ -37,7 +38,7 @@ PlayerToken :: [16]u8
 Player :: struct {
 	player_id:        PlayerId,
 	player_entity_id: EntityId,
-	cursor_tile:      [2]i32,
+	cursor_tile:      TileCoord,
 
 	// Server only
 	_token:           PlayerToken,

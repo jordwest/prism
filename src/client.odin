@@ -11,6 +11,7 @@ ClientError :: union {
 client_boot :: proc(width: i32, height: i32) -> ClientError {
 	state.client.players = make(map[PlayerId]Player, 8) or_return
 	state.client.entities = make(map[EntityId]Entity, 2048) or_return
+	state.client.zoom = 1
 	return nil
 }
 

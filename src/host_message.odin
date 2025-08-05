@@ -58,7 +58,7 @@ _identify_response_serialize :: proc(
 
 HostMessageCursorPos :: struct {
 	player_id: PlayerId,
-	pos:       [2]i32,
+	pos:       TileCoord,
 }
 
 @(private = "file")
@@ -67,7 +67,7 @@ _cursor_pos_serialize :: proc(
 	msg: ^HostMessageCursorPos,
 ) -> prism.SerializationResult {
 	prism.serialize(s, (^i32)(&msg.player_id)) or_return
-	prism.serialize(s, &msg.pos) or_return
+	prism.serialize(s, (^[2]i32)(&msg.pos)) or_return
 	return nil
 }
 
