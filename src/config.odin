@@ -6,6 +6,7 @@ MAX_PLAYERS :: 8
 MAX_ENTITIES :: 2048
 SPRITE_SIZE :: 16
 GRID_SIZE :: 16
+DEFAULT_ZOOM :: 2
 
 // Whether to send cursor coords to the server. It's a nice feature but makes the messaging logs noisy
 CURSOR_REPORTING_ENABLED :: true

@@ -4,35 +4,25 @@ import clay "clay-odin"
 import "fresnel"
 
 render_tiles :: proc() {
-	grid_size := 16
-	scale := 2
-	view_grid := grid_size * scale
-
 	splitmix_state = SplitMixState{}
 	t0 := fresnel.now()
-	hash_data: [10]u8 = {34, 54, 77, 124, 12, 45, 0, 221, 123, 139}
-	for x := 0; x < 30; x += 1 {
-		for y := 0; y < 20; y += 1 {
-			hash_data[0] = u8(y)
-			hash_data[1] = u8(x)
-			hash_data[2] = u8(state.t)
+	for x: i32 = 0; x < 30; x += 1 {
+		for y: i32 = 0; y < 20; y += 1 {
+			tile := TileCoord{x, y}
 			v := rand_float_at(u64(x), u64(y)) //rand_f32(hash_data[:])
 			sx := 2
 			if (v > 0.9) {
 				sx = 3
 			}
-			// text := fmt.tprintf("%.1f", v)
 			fresnel.draw_image(
 				&fresnel.DrawImageArgs {
 					image_id = 1,
 					source_offset = {f32(sx * 16), 3 * 16},
-					source_size = {16, 16},
-					dest_offset = {f32(x * view_grid), f32(y * view_grid)},
-					dest_size = {f32(view_grid), f32(view_grid)},
+					source_size = {SPRITE_SIZE, SPRITE_SIZE},
+					dest_offset = screen_coord(tile).xy,
+					dest_size = state.client.zoom * GRID_SIZE,
 				},
 			)
-			// fresnel.fill(255, 255, 255, 255)
-			// fresnel.draw_text(f32(x * view_grid), f32(y * view_grid), 16, text)
 		}
 	}
 	t1 := fresnel.now()
@@ -44,14 +34,14 @@ render_entities :: proc() {
 	for id, e in state.client.entities {
 		i += 1
 		meta := entity_meta[e.meta_id]
-		offset := e.pos * 32
+		pos := screen_coord(e.pos)
 		fresnel.draw_image(
 			&fresnel.DrawImageArgs {
 				image_id = 1,
 				source_offset = meta.spritesheet_coord,
-				source_size = {16, 16},
-				dest_offset = {f32(offset.x), f32(offset.y)},
-				dest_size = {32, 32},
+				source_size = {SPRITE_SIZE, SPRITE_SIZE},
+				dest_offset = pos.xy,
+				dest_size = state.client.zoom * GRID_SIZE,
 			},
 		)
 	}
@@ -93,7 +83,6 @@ render_ui :: proc() {
 	}
 
 	// Draw this player's cursor
-	// cursor_pos := vec2f(state.client.cursor_pos) * 32
 
 	fresnel.draw_image(
 		&fresnel.DrawImageArgs {
@@ -101,7 +90,7 @@ render_ui :: proc() {
 			source_offset = SPRITE_COORD_RECT,
 			source_size = {16, 16},
 			dest_offset = screen_coord(state.client.cursor_pos).xy,
-			dest_size = {32, 32},
+			dest_size = state.client.zoom * GRID_SIZE,
 		},
 	)
 
@@ -115,9 +104,9 @@ render_ui :: proc() {
 				&fresnel.DrawImageArgs {
 					image_id = 1,
 					source_offset = SPRITE_COORD_OTHER_PLAYER_CURSOR,
-					source_size = {16, 16},
+					source_size = {SPRITE_SIZE, SPRITE_SIZE},
 					dest_offset = (cursor_pos - {3, 3} + screen_coord(TileCoordF({0.5, 0.5}))).xy,
-					dest_size = {32, 32},
+					dest_size = state.client.zoom * GRID_SIZE,
 				},
 			)
 			fresnel.fill(255, 255, 255, 1)
