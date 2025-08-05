@@ -28,9 +28,14 @@ render_move_camera :: proc(dt: f32) {
 render_tiles :: proc() {
 	splitmix_state = SplitMixState{}
 	t0 := fresnel.now()
+	cull_margin := GRID_SIZE * state.client.zoom
 	for x: i32 = 0; x < 30; x += 1 {
 		for y: i32 = 0; y < 20; y += 1 {
-			tile := TileCoord{x, y}
+		    tile := TileCoord{x, y}
+		    coord := screen_coord(tile)
+			cull := coord.x < -cull_margin || coord.y < -cull_margin
+			if cull do continue
+
 			v := rand_float_at(u64(x), u64(y)) //rand_f32(hash_data[:])
 			sprite := SPRITE_COORD_FLOOR_STONE
 			if (v > 0.9) {
@@ -42,7 +47,7 @@ render_tiles :: proc() {
 			if (x >= 5 && x <= 12 && y == 4) {
 				sprite = SPRITE_COORD_BRICK_WALL_FACE
 			}
-			render_sprite(sprite, screen_coord(tile))
+			render_sprite(sprite, coord)
 		}
 	}
 

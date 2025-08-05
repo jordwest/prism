@@ -76,3 +76,5 @@ First thing tomorrow should be fun - procgen rooms and Djikstra pathfinding.
 Also need to work out why cursor is missing when net delay is removed, probably player map is not populated on one client.
 
 # Wednesday 6 Aug 2025
+
+Ok first thing I'm gonna start on procgen because it's fun.

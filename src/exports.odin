@@ -54,6 +54,10 @@ boot :: proc "c" (width: i32, height: i32, flags: i32) {
 	context.temp_allocator = frame_arena_alloc
 
 	trace("Boot width=%d height=%d flags=%d", width, height, flags)
+	trace("Size of AppState: %d", size_of(AppState))
+	trace("Size of HostState: %d", size_of(HostState))
+	trace("Size of ClientState: %d", size_of(ClientState))
+	trace("Size of SharedState: %d", size_of(SharedState))
 
 	if (flags == 0) {
 		host_boot_err := host_boot()

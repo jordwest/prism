@@ -2,7 +2,7 @@ package main
 
 import "prism"
 
-SharedState :: struct {
+AppState :: struct {
 	t:                  f32,
 	width:              i32,
 	height:             i32,
@@ -13,7 +13,13 @@ SharedState :: struct {
 	bytes_received:     i32,
 }
 
+SharedState :: struct {
+	tiles: Tiles(50, 50),
+	// TODO: Move player and entity map here
+}
+
 ClientState :: struct {
+	shared:                SharedState,
 	cursor_pos:            TileCoord,
 	zoom:                  f32,
 	camera:                prism.Spring(2),
@@ -29,6 +35,7 @@ ClientState :: struct {
 }
 
 HostState :: struct {
+	shared:           SharedState,
 	is_host:          bool,
 	newest_entity_id: i32,
 	newest_player_id: i32,
@@ -61,7 +68,7 @@ Client :: struct {
 	player_id: PlayerId,
 }
 
-serialize_state :: proc(s: ^prism.Serializer, state: ^SharedState) -> prism.SerializationResult {
+serialize_state :: proc(s: ^prism.Serializer, state: ^AppState) -> prism.SerializationResult {
 	prism.serialize(s, &state.t) or_return
 	prism.serialize(s, &state.client.my_token) or_return
 	prism.serialize(s, (^i32)(&state.client.player_id)) or_return
