@@ -85,6 +85,7 @@ _event_entity_moved_serialize :: proc(
 
 EventEntityCommandChanged :: struct {
 	entity_id: EntityId,
+	seq:       i32,
 	cmd:       Command,
 }
 
@@ -94,6 +95,7 @@ _event_entity_command_changed_serialize :: proc(
 	ev: ^EventEntityCommandChanged,
 ) -> prism.SerializationResult {
 	prism.serialize(s, (^i32)(&ev.entity_id)) or_return
+	prism.serialize(s, (^i32)(&ev.seq)) or_return
 	command_serialize(s, &ev.cmd) or_return
 	return nil
 }

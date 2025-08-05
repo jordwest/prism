@@ -34,12 +34,13 @@ done,feat,b2.5,Get basic fake server relay working
 done,feat,b2.5,Render tiles
 done,feat,b2.5,Add players and make them move
 done,refactor,b2.5,Add zoom level to state instead of magic numbers
+done,bug,b2.5,Make the local/optimistic command feedback work
 todo,devtool,b2.5,Hydrate client and server entity state in hot reload
-todo,bug,b2.5,Make the local/optimistic command feedback work
-todo,refactor,b2.5,Make event handlers able to operate on both host and client state
 todo,feat,b2.5,Add procedural generation back in
 todo,feat,b2.5,Add djikstra's algorithm
 todo,feat,b2.5,Add player pathfinding
+todo,refactor,b2.5,Consider splitting server and client into separate packages
+todo,refactor,b2.5,Make event handlers able to operate on both host and client state
 todo,feat,b2.5,Add enemy
 todo,feat,b2.5,"Add map and list serialization, send game state to newly joined clients"
 todo,feat,b2.5,Make rust websocket server and connect it up

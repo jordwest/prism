@@ -71,6 +71,7 @@ _identify_serialize :: proc(
 }
 
 ClientMessageSubmitCommand :: struct {
+	seq:     i32,
 	command: Command,
 }
 
@@ -79,6 +80,7 @@ _submit_command_serialize :: proc(
 	s: ^prism.Serializer,
 	msg: ^ClientMessageSubmitCommand,
 ) -> prism.SerializationResult {
+	prism.serialize(s, &msg.seq) or_return
 	command_serialize(s, &msg.command) or_return
 	return nil
 }

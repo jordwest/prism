@@ -105,6 +105,7 @@ host_poll :: proc() {
 		case ClientMessageSubmitCommand:
 			entity := &state.host.entities[player.player_entity_id]
 			entity.pos = m.command.pos
+			entity.cmd = m.command
 			host_broadcast_message(
 				HostMessageEvent {
 					event = EventEntityMoved{entity_id = entity.id, pos = m.command.pos},
@@ -112,7 +113,12 @@ host_poll :: proc() {
 			)
 			host_broadcast_message(
 				HostMessageEvent {
-					event = EventEntityCommandChanged{entity_id = entity.id, cmd = {}},
+					event = EventEntityCommandChanged {
+						entity_id = entity.id,
+						// cmd = entity.cmd,
+						cmd       = Command{},
+						seq       = m.seq,
+					},
 				},
 			)
 		// todo

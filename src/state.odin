@@ -13,6 +13,7 @@ SharedState :: struct {
 	bytes_received:     i32,
 }
 
+
 ClientState :: struct {
 	cursor_pos:            TileCoord,
 	zoom:                  f32,
@@ -21,6 +22,10 @@ ClientState :: struct {
 	controlling_entity_id: EntityId,
 	players:               map[PlayerId]Player,
 	entities:              map[EntityId]Entity,
+
+	// The sequence id of the command last issued by the client
+	// See JOURNAL.md, 5 Aug 2025
+	cmd_seq:               i32,
 }
 
 HostState :: struct {
@@ -30,6 +35,10 @@ HostState :: struct {
 	clients:          map[i32]Client,
 	players:          map[PlayerId]Player,
 	entities:         map[EntityId]Entity,
+
+	// The sequence id of the event last fired by the server
+	// See JOURNAL.md, 5 Aug 2025
+	// evt_seq:          i32,
 }
 
 PlayerId :: distinct i32

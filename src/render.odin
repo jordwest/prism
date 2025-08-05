@@ -3,6 +3,12 @@ package main
 import clay "clay-odin"
 import "fresnel"
 
+render_system :: proc() {
+	render_tiles()
+	render_entities()
+	// render_ui()
+}
+
 render_tiles :: proc() {
 	splitmix_state = SplitMixState{}
 	t0 := fresnel.now()
@@ -31,19 +37,31 @@ render_tiles :: proc() {
 
 render_entities :: proc() {
 	i: i32 = 0
-	for id, e in state.client.entities {
+	for id, &e in state.client.entities {
 		i += 1
 		meta := entity_meta[e.meta_id]
-		pos := screen_coord(e.pos)
 		fresnel.draw_image(
 			&fresnel.DrawImageArgs {
 				image_id = 1,
 				source_offset = meta.spritesheet_coord,
 				source_size = {SPRITE_SIZE, SPRITE_SIZE},
-				dest_offset = pos.xy,
+				dest_offset = screen_coord(e.pos).xy,
 				dest_size = state.client.zoom * GRID_SIZE,
 			},
 		)
+
+		cmd := entity_get_command(&e)
+		if cmd.type == .Move && .IsAllied in meta.flags {
+			fresnel.draw_image(
+				&fresnel.DrawImageArgs {
+					image_id = 1,
+					source_offset = SPRITE_COORD_PLAYER_OUTLINE,
+					source_size = {SPRITE_SIZE, SPRITE_SIZE},
+					dest_offset = screen_coord(cmd.pos).xy,
+					dest_size = state.client.zoom * GRID_SIZE,
+				},
+			)
+		}
 	}
 
 	fresnel.metric_i32("entities rendered", i)
@@ -88,7 +106,7 @@ render_ui :: proc() {
 		&fresnel.DrawImageArgs {
 			image_id = 1,
 			source_offset = SPRITE_COORD_RECT,
-			source_size = {16, 16},
+			source_size = {SPRITE_SIZE, SPRITE_SIZE},
 			dest_offset = screen_coord(state.client.cursor_pos).xy,
 			dest_size = state.client.zoom * GRID_SIZE,
 		},

@@ -11,11 +11,17 @@ Entity :: struct {
 	cmd:        Command,
 
 	// Not serialized
-	_local_cmd: Maybe(Command),
+	_local_cmd: Maybe(LocalCommand),
+}
+
+LocalCommand :: struct {
+	cmd: Command,
+	seq: i32,
 }
 
 EntityMeta :: struct {
 	spritesheet_coord: [2]f32,
+	flags:             bit_set[EntityMetaFlags],
 }
 
 TileCoord :: distinct [2]i32
@@ -27,9 +33,17 @@ EntityMetaId :: enum u8 {
 	Player,
 }
 
+EntityMetaFlags :: enum {
+	IsPlayerControlled,
+	IsAllied,
+}
+
 entity_meta: [EntityMetaId]EntityMeta = {
 	.None = EntityMeta{spritesheet_coord = {0, 0}},
-	.Player = EntityMeta{spritesheet_coord = SPRITE_COORD_PLAYER},
+	.Player = EntityMeta {
+		spritesheet_coord = SPRITE_COORD_PLAYER,
+		flags = {.IsPlayerControlled, .IsAllied},
+	},
 }
 
 entity_serialize :: proc(s: ^prism.Serializer, e: ^Entity) -> prism.SerializationResult {
@@ -38,4 +52,13 @@ entity_serialize :: proc(s: ^prism.Serializer, e: ^Entity) -> prism.Serializatio
 	prism.serialize(s, (^[2]i32)(&e.pos)) or_return
 	command_serialize(s, &e.cmd) or_return
 	return nil
+}
+
+entity_get_command :: proc(e: ^Entity) -> Command {
+	if local_cmd, has_local := e._local_cmd.?; has_local {
+		trace("Has local command %v", local_cmd.cmd)
+		return local_cmd.cmd
+	}
+
+	return e.cmd
 }

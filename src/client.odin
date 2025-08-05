@@ -29,10 +29,7 @@ client_tick :: proc(dt: f32) {
 	}
 
 	input_system(dt)
-
-	render_tiles()
-	render_entities()
-	render_ui()
+	render_system()
 }
 
 @(private)
@@ -83,7 +80,18 @@ client_poll :: proc() {
 				}
 			case EventEntityCommandChanged:
 				e, ok := &state.client.entities[ev.entity_id]
-				if ok do e.cmd = ev.cmd
+				if ok {
+					e.cmd = ev.cmd
+					if _local_cmd, has_local := e._local_cmd.?; has_local {
+						if ev.seq >= _local_cmd.seq {
+							trace("Clearing local cmd %d, %d", ev.seq, _local_cmd.seq)
+							// Server is now ahead of our local state so we can safely clear it
+							e._local_cmd = nil
+						} else {
+							trace("Local cmd is still newer than server")
+						}
+					}
+				}
 			}
 		}
 
