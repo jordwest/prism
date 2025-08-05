@@ -32,3 +32,5 @@ I think the only robust way to solve the second problem is with another sequence
 Second problem seems fairly solved with that sequence number. I'll revisit the server sequence number again in future when it's needed.
 
 Now adding a spring to the camera to follow the player. Added a generic spring to the prism package.
+
+The camera is so smooooooth I LOVE IT. It feels good just to move the character. Getting real excited now, I'm starting to feel like this could have potential. Somehow it feels much more responsive than the Godot version, not sure if it's because of the frame rate or what.
