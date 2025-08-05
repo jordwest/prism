@@ -26,14 +26,14 @@ vec2f :: proc {
 	vec2f_from_screen_coord,
 }
 
-screen_coord_from_tile_coord :: #force_inline proc(v: TileCoord) -> ScreenCoord {
+screen_coord_from_tile_coord :: proc(v: TileCoord) -> ScreenCoord {
 	screen_center := [2]f32{f32(state.width), f32(state.height)} / 2
 	camera_offset := vec2f(v) - state.client.camera.pos
 
 	return ScreenCoord(camera_offset * 16 * state.client.zoom + screen_center)
 }
 
-screen_coord_from_tile_coord_f :: #force_inline proc(v: TileCoordF) -> ScreenCoord {
+screen_coord_from_tile_coord_f :: proc(v: TileCoordF) -> ScreenCoord {
 	screen_center := [2]f32{f32(state.width), f32(state.height)} / 2
 	camera_offset := vec2f(v.xy) - state.client.camera.pos
 
@@ -53,7 +53,7 @@ screen_coord :: proc {
 	screen_coord_from_tile_coord_f,
 }
 
-tile_coord_from_screen_coord :: #force_inline proc(v: ScreenCoord) -> TileCoord {
+tile_coord_from_screen_coord :: proc(v: ScreenCoord) -> TileCoord {
 	screen_center := [2]f32{f32(state.width), f32(state.height)} / 2
 	grid_size := GRID_SIZE * state.client.zoom
 

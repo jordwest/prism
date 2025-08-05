@@ -32,23 +32,34 @@ render_tiles :: proc() {
 		for y: i32 = 0; y < 20; y += 1 {
 			tile := TileCoord{x, y}
 			v := rand_float_at(u64(x), u64(y)) //rand_f32(hash_data[:])
-			sx := 2
+			sprite := SPRITE_COORD_FLOOR_STONE
 			if (v > 0.9) {
-				sx = 3
+				sprite = SPRITE_COORD_FLOOR_STONE_2
 			}
-			fresnel.draw_image(
-				&fresnel.DrawImageArgs {
-					image_id = 1,
-					source_offset = {f32(sx * 16), 3 * 16},
-					source_size = {SPRITE_SIZE, SPRITE_SIZE},
-					dest_offset = screen_coord(tile).xy,
-					dest_size = state.client.zoom * GRID_SIZE,
-				},
-			)
+			if ((x == 5 || x == 12) && y == 3) {
+				sprite = SPRITE_COORD_BRICK_WALL_BEHIND
+			}
+			if (x >= 5 && x <= 12 && y == 4) {
+				sprite = SPRITE_COORD_BRICK_WALL_FACE
+			}
+			render_sprite(sprite, screen_coord(tile))
 		}
 	}
+
 	t1 := fresnel.now()
 	fresnel.metric_i32("Tile loop", t1 - t0)
+}
+
+render_sprite :: proc(sprite_coords: [2]f32, pos: ScreenCoord) {
+	fresnel.draw_image(
+		&fresnel.DrawImageArgs {
+			image_id = 1,
+			source_offset = sprite_coords,
+			source_size = {SPRITE_SIZE, SPRITE_SIZE},
+			dest_offset = pos.xy,
+			dest_size = state.client.zoom * GRID_SIZE,
+		},
+	)
 }
 
 render_entities :: proc() {
@@ -68,15 +79,7 @@ render_entities :: proc() {
 
 		cmd := entity_get_command(&e)
 		if cmd.type == .Move && .IsAllied in meta.flags {
-			fresnel.draw_image(
-				&fresnel.DrawImageArgs {
-					image_id = 1,
-					source_offset = SPRITE_COORD_PLAYER_OUTLINE,
-					source_size = {SPRITE_SIZE, SPRITE_SIZE},
-					dest_offset = screen_coord(cmd.pos).xy,
-					dest_size = state.client.zoom * GRID_SIZE,
-				},
-			)
+			render_sprite(SPRITE_COORD_PLAYER_OUTLINE, screen_coord(cmd.pos))
 		}
 	}
 
@@ -85,16 +88,7 @@ render_entities :: proc() {
 
 render_tile_cursors :: proc(dt: f32) {
 	// Draw this player's cursor
-	fresnel.draw_image(
-		&fresnel.DrawImageArgs {
-			image_id = 1,
-			source_offset = SPRITE_COORD_RECT,
-			source_size = {SPRITE_SIZE, SPRITE_SIZE},
-			dest_offset = screen_coord(state.client.cursor_pos).xy,
-			dest_size = state.client.zoom * GRID_SIZE,
-		},
-	)
-	// trace("Cursor at %v", screen_coord(state.client.cursor_pos).xy)
+	render_sprite(SPRITE_COORD_RECT, screen_coord(state.client.cursor_pos))
 
 	// Draw other players' cursors
 	for _, &p in state.client.players {
@@ -103,20 +97,11 @@ render_tile_cursors :: proc(dt: f32) {
 			p._cursor_spring.target = vec2f(p.cursor_tile)
 			prism.spring_tick(&p._cursor_spring, dt)
 
-			cursor_pos := screen_coord(TileCoordF(p._cursor_spring.pos - 0.5))
+			cursor_pos := screen_coord(TileCoordF(p._cursor_spring.pos + (f32(6) / f32(16))))
 
-			zoom: i32 = 2
-			fresnel.draw_image(
-				&fresnel.DrawImageArgs {
-					image_id = 1,
-					source_offset = SPRITE_COORD_OTHER_PLAYER_CURSOR,
-					source_size = {SPRITE_SIZE, SPRITE_SIZE},
-					dest_offset = (cursor_pos - {3, 3} + (state.client.zoom * GRID_SIZE)).xy,
-					dest_size = state.client.zoom * GRID_SIZE,
-				},
-			)
+			render_sprite(SPRITE_COORD_OTHER_PLAYER_CURSOR, cursor_pos)
 			fresnel.fill(255, 255, 255, 1)
-			fresnel.draw_text(cursor_pos.x, cursor_pos.y, 16, "Player")
+			fresnel.draw_text(cursor_pos.x + 16, cursor_pos.y - 2, 16, "Player")
 		}
 	}
 }
@@ -129,7 +114,6 @@ render_ui :: proc() {
 
 		#partial switch render_command.commandType {
 		case .Rectangle:
-			// if render_command.renderData.rectangle.backgroundColor.a != 1 {
 			fresnel.fill(
 				render_command.renderData.rectangle.backgroundColor.r,
 				render_command.renderData.rectangle.backgroundColor.g,
