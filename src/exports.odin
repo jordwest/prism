@@ -7,7 +7,8 @@ import "fresnel"
 import "prism"
 
 @(export)
-on_resize :: proc(w: i32, h: i32) {
+on_resize :: proc "c" (w: i32, h: i32) {
+	context = runtime.default_context()
 	state.width = w
 	state.height = h
 	clay.SetLayoutDimensions({f32(w), f32(h)})
@@ -15,9 +16,11 @@ on_resize :: proc(w: i32, h: i32) {
 
 last_cursor_tile_pos: [2]i32
 @(export)
-on_mouse_update :: proc(pos_x: f32, pos_y: f32, button_down: bool) {
+on_mouse_update :: proc "c" (pos_x: f32, pos_y: f32, button_down: bool) {
+	context = runtime.default_context()
 	mouse_moved = true
 	clay.SetPointerState({pos_x, pos_y}, button_down)
+	state.client.cursor_pos = {i32(pos_x), i32(pos_y)}
 
 	new_tile_pos: [2]i32 = {i32(pos_x / 32), i32(pos_y / 32)}
 	if new_tile_pos != last_cursor_tile_pos {
@@ -27,7 +30,7 @@ on_mouse_update :: proc(pos_x: f32, pos_y: f32, button_down: bool) {
 }
 
 @(export)
-on_client_connected :: proc(clientId: i32) {
+on_client_connected :: proc "c" (clientId: i32) {
 	context = runtime.default_context()
 	context.allocator = host_arena_alloc
 	context.temp_allocator = frame_arena_alloc
@@ -38,7 +41,8 @@ on_client_connected :: proc(clientId: i32) {
 }
 
 @(export)
-boot :: proc(width: i32, height: i32, flags: i32) {
+boot :: proc "c" (width: i32, height: i32, flags: i32) {
+	context = runtime.default_context()
 	memory_init()
 
 	context.assertion_failure_proc = on_panic
@@ -93,7 +97,8 @@ boot :: proc(width: i32, height: i32, flags: i32) {
 }
 
 @(export)
-tick :: proc(dt: f32) {
+tick :: proc "c" (dt: f32) {
+	context = runtime.default_context()
 	context.assertion_failure_proc = on_panic
 	context.allocator = persistent_arena_alloc
 	context.temp_allocator = frame_arena_alloc
@@ -119,7 +124,8 @@ tick :: proc(dt: f32) {
 }
 
 @(export)
-on_dev_hot_unload :: proc() {
+on_dev_hot_unload :: proc "c" () {
+	context = runtime.default_context()
 	szr := prism.create_serializer(frame_arena_alloc)
 	result := serialize_state(&szr, &state)
 	if result != nil {
