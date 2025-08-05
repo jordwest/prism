@@ -1,0 +1,34 @@
+package main
+
+import "fresnel"
+
+InputActions :: enum i32 {
+	MoveUp    = 1,
+	MoveDown  = 2,
+	MoveLeft  = 3,
+	MoveRight = 4,
+}
+
+input_system :: proc(dt: f32) {
+	player_entity, ok := state.client.entities[state.client.controlling_entity_id]
+
+	if ok {
+		delta_pos: TileCoord = {0, 0}
+		if is_action_just_pressed(.MoveRight) do delta_pos.x += 1
+		if is_action_just_pressed(.MoveLeft) do delta_pos.x -= 1
+		if is_action_just_pressed(.MoveUp) do delta_pos.y -= 1
+		if is_action_just_pressed(.MoveDown) do delta_pos.y += 1
+
+		if delta_pos != {0, 0} {
+			client_send_message(
+				ClientMessageSubmitCommand {
+					command = Command{type = .Move, pos = player_entity.pos + delta_pos},
+				},
+			)
+		}
+	}
+}
+
+is_action_just_pressed :: proc(action: InputActions) -> bool {
+	return fresnel.is_action_just_pressed(i32(action))
+}

@@ -24,6 +24,12 @@ foreign core {
 	storage_get :: proc(key: string, slice: []u8) -> i32 ---
 }
 
+foreign import input "input"
+@(default_calling_convention = "c")
+foreign input {
+	is_action_just_pressed :: proc(action_id: i32) -> bool ---
+}
+
 foreign import net "net"
 @(default_calling_convention = "c")
 foreign net {

@@ -27,6 +27,8 @@ client_tick :: proc(dt: f32) {
 		fresnel.fill(0, 0, 0, 255)
 	}
 
+	input_system(dt)
+
 	render_tiles()
 	render_entities()
 	render_ui()
@@ -52,17 +54,34 @@ client_poll :: proc() {
 			err("Failed to deserialize %v", e)
 		}
 
-		#partial switch m in msg {
+		switch m in msg {
 		case HostMessageWelcome:
 			client_send_message(
 				ClientMessageIdentify{token = state.client.my_token, display_name = "Player me"},
 			)
+		case HostMessageIdentifyResponse:
+			state.client.player_id = m.player_id
+			state.client.controlling_entity_id = m.entity_id
+
+		case HostMessageCursorPos:
+			player, ok := state.client.players[m.player_id]
+			if ok {
+				player.cursor_tile = m.pos
+			}
 		case HostMessageEvent:
 			switch ev in m.event {
 			case EventEntitySpawned:
 				state.client.entities[ev.entity.id] = ev.entity
 			case EventEntityMoved:
 				client_get_entity(ev.entity_id).pos = ev.pos
+			case EventPlayerJoined:
+				state.client.players[ev.player_id] = Player {
+					player_id = ev.player_id,
+				}
+				err("TODO EventPlayerJoined")
+			case EventEntityCommandChanged:
+				e, ok := &state.client.entities[ev.entity_id]
+				if ok do e.cmd = ev.cmd
 			}
 		}
 

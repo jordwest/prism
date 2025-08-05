@@ -25,7 +25,10 @@ on_mouse_update :: proc "c" (pos_x: f32, pos_y: f32, button_down: bool) {
 	new_tile_pos: [2]i32 = {i32(pos_x / 32), i32(pos_y / 32)}
 	if new_tile_pos != last_cursor_tile_pos {
 		last_cursor_tile_pos = new_tile_pos
-		client_send_message(ClientMessageCursorPosUpdate{pos = new_tile_pos})
+
+		if CURSOR_REPORTING_ENABLED {
+			client_send_message(ClientMessageCursorPosUpdate{pos = new_tile_pos})
+		}
 	}
 }
 
@@ -50,7 +53,10 @@ boot :: proc "c" (width: i32, height: i32, flags: i32) {
 	context.temp_allocator = frame_arena_alloc
 
 	if (flags == 0) {
-		host_boot()
+		host_boot_err := host_boot()
+		if host_boot_err != nil {
+			err("Error starting host: %v", host_boot_err)
+		}
 	}
 
 	if !hot_reload_hydrate_state() {

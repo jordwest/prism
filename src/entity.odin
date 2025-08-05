@@ -5,13 +5,17 @@ import "prism"
 EntityId :: distinct i32
 
 Entity :: struct {
-	id:      EntityId,
-	meta_id: EntityMetaId,
-	pos:     TileCoord,
+	id:         EntityId,
+	meta_id:    EntityMetaId,
+	pos:        TileCoord,
+	cmd:        Command,
+
+	// Not serialized
+	_local_cmd: Maybe(Command),
 }
 
 EntityMeta :: struct {
-	spritesheet_coord: [2]i32,
+	spritesheet_coord: [2]f32,
 }
 
 TileCoord :: distinct [2]i32
@@ -20,9 +24,6 @@ EntityMetaId :: enum u8 {
 	None,
 	Player,
 }
-
-SPRITE_COORD_PLAYER :: [2]i32{16 * 1, 16 * 0}
-SPRITE_COORD_ACTIVE_CHEVRON :: [2]i32{16, 64}
 
 entity_meta: [EntityMetaId]EntityMeta = {
 	.None = EntityMeta{spritesheet_coord = {0, 0}},
@@ -33,5 +34,6 @@ entity_serialize :: proc(s: ^prism.Serializer, e: ^Entity) -> prism.Serializatio
 	prism.serialize(s, (^i32)(&e.id)) or_return
 	prism.serialize(s, (^u8)(&e.meta_id)) or_return
 	prism.serialize(s, (^[2]i32)(&e.pos)) or_return
+	command_serialize(s, &e.cmd) or_return
 	return nil
 }

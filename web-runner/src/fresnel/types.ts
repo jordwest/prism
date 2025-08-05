@@ -11,6 +11,25 @@ export type FresnelState = {
   serverMailbox: ServerMailbox;
   mailboxes: Map<number, Mailbox>;
   images: Record<number, ImageBitmap>;
+  input: {
+    keyToAction: Map<string, number>;
+  };
+};
+
+export type ManifestJson = {
+  assets: ManifestAsset[];
+  input: {
+    actions: ManifestAction[];
+  };
+};
+export type ManifestAsset = {
+  id: number;
+  filename: string;
+};
+export type ManifestAction = {
+  id: number;
+  name?: string;
+  webKeys?: string[];
 };
 
 export type Pointer = number & { __pointer: never };

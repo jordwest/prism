@@ -8,31 +8,31 @@ host_tick :: proc(dt: f32) {
 	host_poll()
 }
 
-host_boot :: proc() {
+HostError :: union {
+	mem.Allocator_Error,
+}
+
+host_boot :: proc() -> HostError {
 	memory_init_host()
 	context.allocator = host_arena_alloc
 
 	alloc_error: mem.Allocator_Error
 
 	state.host.is_host = true
-	state.host.players, alloc_error = make(map[PlayerId]Player, 8, allocator = host_arena_alloc)
-	if alloc_error != nil {
-		err("Could not allocate entity map %v", alloc_error)
-	}
-
-	state.host.entities, alloc_error = make(map[EntityId]Entity, MAX_ENTITIES)
-	if alloc_error != nil {
-		err("Could not allocate entity map %v", alloc_error)
-	}
-	p := host_spawn_entity(EntityMetaId.Player)
-	p.pos = {2, 5}
+	state.host.players = make(map[PlayerId]Player, 8, allocator = host_arena_alloc) or_return
+	state.host.clients = make(map[i32]Client, 128, allocator = host_arena_alloc) or_return
+	state.host.entities = make(map[EntityId]Entity, MAX_ENTITIES) or_return
 
 	fresnel.metric_i32("host mem", i32(host_arena.offset))
 	fresnel.metric_i32("host mem peak", i32(host_arena.peak_used))
+
+	return nil
 }
 
 host_on_client_connected :: proc(clientId: i32) {
 	host_send_message(clientId, HostMessageWelcome{})
+
+	state.host.clients[clientId] = Client{}
 
 	// TODO: Just send the whole state instead
 	for _, e in state.host.entities {
@@ -60,23 +60,61 @@ host_poll :: proc() {
 			err("Failed to deserialize %v", e)
 		}
 
-		#partial switch m in msg {
+		client, client_exists := state.host.clients[client_id]
+		player, player_exists := state.host.players[client.player_id]
+		switch m in msg {
 		case ClientMessageIdentify:
 			state.host.newest_player_id += 1
-			new_id := PlayerId(state.host.newest_player_id)
-			state.host.players[new_id] = Player {
-				player_id = PlayerId(state.host.newest_player_id),
-				token     = m.token,
+			new_player_id := PlayerId(state.host.newest_player_id)
+
+			player_entity := host_spawn_entity(EntityMetaId.Player)
+			player_entity.pos = {2, 5}
+
+			state.host.players[new_player_id] = Player {
+				player_id        = new_player_id,
+				player_entity_id = player_entity.id,
+				_token           = m.token,
 			}
-			host_send_message(client_id, HostMessageIdentifyResponse{player_id = i32(new_id)})
+
+			if client, ok := &state.host.clients[client_id]; ok {
+				client.player_id = new_player_id
+			}
+
+			host_send_message(
+				client_id,
+				HostMessageIdentifyResponse {
+					player_id = new_player_id,
+					entity_id = player_entity.id,
+				},
+			)
 		case ClientMessageCursorPosUpdate:
-			for _, &e in state.host.entities {
+			if player_exists {
+				host_broadcast_message(
+					HostMessageCursorPos{player_id = client.player_id, pos = m.pos},
+				)
 				host_broadcast_message(
 					HostMessageEvent {
-						event = EventEntityMoved{entity_id = e.id, pos = TileCoord(m.pos)},
+						event = EventEntityMoved {
+							entity_id = player.player_entity_id,
+							pos = TileCoord(m.pos),
+						},
 					},
 				)
 			}
+		case ClientMessageSubmitCommand:
+			entity := &state.host.entities[player.player_entity_id]
+			entity.pos = m.command.pos
+			host_broadcast_message(
+				HostMessageEvent {
+					event = EventEntityMoved{entity_id = entity.id, pos = m.command.pos},
+				},
+			)
+			host_broadcast_message(
+				HostMessageEvent {
+					event = EventEntityCommandChanged{entity_id = entity.id, cmd = {}},
+				},
+			)
+		// todo
 		}
 
 		trace("Host got message: %v", msg)
@@ -103,12 +141,12 @@ host_spawn_entity :: proc(meta_id: EntityMetaId) -> ^Entity {
 	state.host.newest_entity_id += 1
 	id := EntityId(state.host.newest_entity_id)
 
-	state.host.entities[id] = Entity {
+	new_entity := Entity {
 		id      = id,
 		meta_id = meta_id,
 	}
-
-	host_broadcast_message(HostMessageEvent{event = EventEntitySpawned{}})
+	state.host.entities[id] = new_entity
+	host_broadcast_message(HostMessageEvent{event = EventEntitySpawned{entity = new_entity}})
 
 	return &state.host.entities[id]
 }

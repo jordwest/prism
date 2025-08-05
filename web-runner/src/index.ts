@@ -1,5 +1,5 @@
 import { FresnelInstance, instantiate } from "./fresnel/instance";
-import { FresnelState, Pointer } from "./fresnel/types";
+import { FresnelState, ManifestJson, Pointer } from "./fresnel/types";
 
 const canvas: HTMLCanvasElement = document.getElementById(
   "canvas",
@@ -24,6 +24,25 @@ document.addEventListener("keydown", (e) => {
   if (e.key == "r") {
     restartWasm();
   }
+
+  const instance = instances[focusedInstance];
+  if (instance != null) {
+    const actionId = state.input.keyToAction.get(e.key);
+    if (actionId != null) {
+      instance.input.pressedActions.add(actionId);
+      instance.input.pressedActionsThisFrame.add(actionId);
+    }
+  }
+});
+
+document.addEventListener("keyup", (e) => {
+  const instance = instances[focusedInstance];
+  if (instance != null) {
+    const actionId = state.input.keyToAction.get(e.key);
+    if (actionId != null) {
+      instance.input.pressedActions.delete(actionId);
+    }
+  }
 });
 
 canvas.addEventListener("mousedown", (e) => {
@@ -34,6 +53,7 @@ canvas.addEventListener("dblclick", () => {
 });
 
 let instances: FresnelInstance[] = [];
+let focusedInstance = 0;
 
 let state: FresnelState = {
   canvas,
@@ -42,6 +62,9 @@ let state: FresnelState = {
   mailboxes: new Map(),
   serverMailbox: [],
   images: {},
+  input: {
+    keyToAction: new Map(),
+  },
 };
 
 const loadResource = async (resourceId: number, filename: string) => {
@@ -53,9 +76,16 @@ const addImage = async (resourceId: number, data: Blob) => {
 };
 
 fetch("assets/manifest.json").then(async (response) => {
-  const manifest = await response.json();
+  const manifest: ManifestJson = await response.json();
   for (var asset of manifest.assets) {
     loadResource(asset.id, asset.filename);
+  }
+  for (var action of manifest.input.actions) {
+    if (action.webKeys != null) {
+      action.webKeys.forEach((key) =>
+        state.input.keyToAction.set(key, action.id),
+      );
+    }
   }
 });
 
@@ -84,6 +114,10 @@ function sendMouseUpdate() {
   const regionCoord = getRegionCoord(pointerState.y);
   if (regionCoord == null) return;
   const instance = instances[regionCoord.instanceId];
+  if (instance != null) {
+    focusedInstance = instance?.instanceId;
+  }
+
   instance?.exports.on_mouse_update?.(
     pointerState.x,
     regionCoord.regionY,
@@ -109,6 +143,7 @@ function getRegionCoord(
 canvas.addEventListener("mousemove", (evt) => {
   pointerState.x = evt.offsetX;
   pointerState.y = evt.offsetY;
+
   sendMouseUpdate();
 });
 canvas.addEventListener("mousedown", (evt) => {
@@ -143,6 +178,13 @@ async function initWasm(instanceCount: number) {
 initWasm(2);
 
 async function restartWasm() {
+  // Flush all mailboxes so new instances don't receive messages from old instances...
+
+  state.serverMailbox = [];
+  for (var mb of state.mailboxes.keys()) {
+    state.mailboxes.set(mb, []);
+  }
+
   let height = 1 / instances.length;
   for (var i = 0; i < instances.length; i++) {
     const instance = instances[i];
@@ -170,14 +212,33 @@ ws.addEventListener("message", async () => {
 });
 
 const frame: FrameRequestCallback = (time) => {
-  for (var instance of instances) {
-    try {
-      instance.exports.tick(0.016);
-    } catch (e) {
-      console.error(`Crashed at line`, line);
-      throw e;
+  if (document.hasFocus()) {
+    canvas.style.opacity = "";
+    for (var instance of instances) {
+      try {
+        instance.exports.tick(0.016);
+        instance.input.pressedActionsThisFrame.clear();
+      } catch (e) {
+        console.error(`Crashed at line`, line);
+        throw e;
+      }
     }
+
+    const regionHeight = canvas.height / instances.length;
+
+    state.canvasContext.strokeStyle = "#228";
+    state.canvasContext.lineWidth = 4;
+
+    state.canvasContext.strokeRect(
+      0,
+      focusedInstance * regionHeight,
+      canvas.width,
+      regionHeight,
+    );
+  } else {
+    canvas.style.opacity = "70%";
   }
+
   requestAnimationFrame(frame);
 };
 requestAnimationFrame(frame);

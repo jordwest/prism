@@ -48,7 +48,7 @@ render_entities :: proc() {
 		fresnel.draw_image(
 			&fresnel.DrawImageArgs {
 				image_id = 1,
-				source_offset = {f32(meta.spritesheet_coord.x), f32(meta.spritesheet_coord.y)},
+				source_offset = meta.spritesheet_coord,
 				source_size = {16, 16},
 				dest_offset = {f32(offset.x), f32(offset.y)},
 				dest_size = {32, 32},
@@ -92,16 +92,22 @@ render_ui :: proc() {
 		}
 	}
 
-	// Draw cursor
-	// fresnel.draw_image(
-	// 	1,
-	// 	32,
-	// 	80,
-	// 	16,
-	// 	16,
-	// 	f32(state.client.cursor_pos.x),
-	// 	f32(state.client.cursor_pos.y),
-	// 	32,
-	// 	32,
-	// )
+	for _, p in state.client.players {
+		if p.player_id != state.client.player_id {
+			cursor_pos := vec2f(p.cursor_tile.x)
+
+
+			fresnel.draw_image(
+				&fresnel.DrawImageArgs {
+					image_id = 1,
+					source_offset = SPRITE_COORD_OTHER_PLAYER_CURSOR,
+					source_size = {16, 16},
+					dest_offset = cursor_pos,
+					dest_size = {32, 32},
+				},
+			)
+			fresnel.draw_text(cursor_pos.x, cursor_pos.y, 16, "Player")
+		}
+	}
+
 }

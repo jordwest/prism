@@ -1,3 +1,4 @@
+import { createInputImports } from "./input";
 import { createNetImports } from "./net";
 import {
   FresnelExports,
@@ -21,6 +22,11 @@ export type FresnelInstance = {
   exports: FresnelExports;
   instanceId: number;
   region: { y: number; height: number };
+
+  input: {
+    pressedActions: Set<number>;
+    pressedActionsThisFrame: Set<number>;
+  };
 };
 
 export async function instantiate(
@@ -45,6 +51,10 @@ export async function instantiate(
   instance.exports = instance.wasmInstance.exports as FresnelExports;
   instance.instanceId = instanceId;
   instance.region = region;
+  instance.input = {
+    pressedActions: new Set(),
+    pressedActionsThisFrame: new Set(),
+  };
 
   instance.exports.boot(
     state.canvas.width,
@@ -60,6 +70,7 @@ function createImports(instance: FresnelInstance): WebAssembly.Imports {
     debug: createDebugImports(instance),
     env: createEnvImports(),
     core: createCoreImports(instance),
+    input: createInputImports(instance),
     net: createNetImports(instance),
   };
 }

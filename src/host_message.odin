@@ -51,10 +51,11 @@ host_message_serialize_variant :: proc {
 
 HostMessageWelcome :: struct {}
 HostMessageIdentifyResponse :: struct {
-	player_id: i32,
+	player_id: PlayerId,
+	entity_id: EntityId,
 }
 HostMessageCursorPos :: struct {
-	player_id: i32,
+	player_id: PlayerId,
 	pos:       [2]i32,
 }
 HostMessageEvent :: struct {
@@ -66,7 +67,8 @@ identify_response_serialize :: proc(
 	s: ^prism.Serializer,
 	msg: ^HostMessageIdentifyResponse,
 ) -> prism.SerializationResult {
-	prism.serialize(s, &msg.player_id) or_return
+	prism.serialize(s, (^i32)(&msg.player_id)) or_return
+	prism.serialize(s, (^i32)(&msg.entity_id)) or_return
 	return nil
 }
 
@@ -75,7 +77,7 @@ cursor_pos_serialize :: proc(
 	s: ^prism.Serializer,
 	msg: ^HostMessageCursorPos,
 ) -> prism.SerializationResult {
-	prism.serialize(s, &msg.player_id) or_return
+	prism.serialize(s, (^i32)(&msg.player_id)) or_return
 	prism.serialize(s, &msg.pos) or_return
 	return nil
 }

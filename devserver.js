@@ -136,7 +136,12 @@ async function buildWasm() {
 async function onFileUpdate(event) {
   var tsFileUpdate = event.paths.find(
     (p) =>
-      (p.endsWith(".ts") || p.endsWith(".html") || p.endsWith(".css")) &&
+      (p.endsWith(".ts") ||
+        p.endsWith(".html") ||
+        p.endsWith(".css") ||
+        p.endsWith(".mp3") ||
+        p.endsWith(".ogg") ||
+        p.endsWith(".json" || p.endsWith("png"))) &&
       !p.includes("build/web"),
   );
   if (tsFileUpdate != null) {

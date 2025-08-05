@@ -1,3 +1,27 @@
 {
-  "assets": [{ "id": 1, "filename": "spritesheet.png" }]
+  "assets": [{ "id": 1, "filename": "spritesheet.png" }],
+  "input": {
+    "actions": [
+      {
+        "name": "move_up",
+        "id": 1,
+        "webKeys": ["k", "ArrowUp"]
+      },
+      {
+        "name": "move_down",
+        "id": 2,
+        "webKeys": ["j", "ArrowDown"]
+      },
+      {
+        "name": "move_left",
+        "id": 3,
+        "webKeys": ["h", "ArrowLeft"]
+      },
+      {
+        "name": "move_right",
+        "id": 4,
+        "webKeys": ["l", "ArrowRight"]
+      }
+    ]
+  }
 }
