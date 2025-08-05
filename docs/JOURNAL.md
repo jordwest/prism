@@ -5,3 +5,5 @@ Break: Finish making inputs depend on mouse cursor pos, or perhaps add a key to 
 Adding mouse tile cursor and then I'll start on procgen
 
 Mouse cursor done, but now I realised I need to make local command work before it's confirmed by the server (and probably render it out)
+
+Actually first going to add zoom
