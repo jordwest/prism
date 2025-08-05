@@ -10,7 +10,6 @@ import "prism"
 on_resize :: proc "c" (w: i32, h: i32) {
 	context = runtime.default_context()
 	context.temp_allocator = frame_arena_alloc
-	trace("Resize to %d, %d", w, h)
 	state.width = w
 	state.height = h
 	clay.SetLayoutDimensions({f32(w), f32(h)})
