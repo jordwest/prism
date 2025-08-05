@@ -27,7 +27,6 @@ HostState :: struct {
 	entities:         map[EntityId]Entity,
 }
 
-EntityId :: distinct i32
 PlayerId :: distinct i32
 PlayerToken :: [16]u8
 
