@@ -26,6 +26,13 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
+canvas.addEventListener("mousedown", (e) => {
+  e.preventDefault();
+});
+canvas.addEventListener("dblclick", () => {
+  canvas.requestFullscreen();
+});
+
 let instances: FresnelInstance[] = [];
 
 let state: FresnelState = {
@@ -181,3 +188,31 @@ setTimeout(() => {
   state.canvasContext.textBaseline = "top";
   state.canvasContext.imageSmoothingEnabled = false;
 }, 100);
+
+const audioElement = document.createElement("audio");
+const audioElement2 = document.createElement("audio");
+const audioElement3 = document.createElement("audio");
+function audioTest() {
+  document.body.appendChild(audioElement);
+  const audioContext = new AudioContext();
+  audioElement.src = "/assets/Daudir.mp3";
+  audioElement2.src = "/assets/miss.ogg";
+  audioElement3.src = "/assets/ambience.mp3";
+  audioElement3.loop = true;
+  const track = audioContext.createMediaElementSource(audioElement);
+  track.connect(audioContext.destination);
+  const track2 = audioContext.createMediaElementSource(audioElement);
+  track2.connect(audioContext.destination);
+  const track3 = audioContext.createMediaElementSource(audioElement);
+  track3.connect(audioContext.destination);
+}
+// audioTest();
+
+// canvas.addEventListener("mousedown", () => {
+//   // audioElement.play();
+//   if (audioElement2.currentTime != 0) {
+//     audioElement2.currentTime = 0;
+//   }
+//   audioElement2.play();
+//   audioElement3.play();
+// });
