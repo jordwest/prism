@@ -1,4 +1,4 @@
-### Tuesday 5 Aug 2025
+# Tuesday 5 Aug 2025
 
 Break: Finish making inputs depend on mouse cursor pos, or perhaps add a key to switch between instances. Probably cursor pos is best for now.
 
@@ -34,3 +34,37 @@ Second problem seems fairly solved with that sequence number. I'll revisit the s
 Now adding a spring to the camera to follow the player. Added a generic spring to the prism package.
 
 The camera is so smooooooth I LOVE IT. It feels good just to move the character. Getting real excited now, I'm starting to feel like this could have potential. Somehow it feels much more responsive than the Godot version, not sure if it's because of the frame rate or what.
+
+## Cursor weirdness
+
+So there's something weird going on with the cursor snapping to tile coords when going negative. I presume it's something to do with the f32 -> i32 truncation behaving differently when negative.
+
+```odin
+	a: f32 = 1.2
+	b: f32 = 1.8
+	trace("0.2=%d, 0.8=%d, -0.2=%d, -0.8=%d", i32(a), i32(b), i32(-a), i32(-b))
+```
+
+This returns `0.2=1, 0.8=1, -0.2=-1, -0.8=-1`
+
+So yes, looks like it always floors, what I really want is to floor towards zero.
+
+Ok after a stint with Claude code that couldn't figure it out, it was actually much simpler. Just needed to do a `floor(x)`, even though I thought the int conversion would do that already. I suppose it doesn't even though the above trace indicates it would...
+
+Ah yep, I was just reading it wrong.
+
+```odin
+a: f32 = 1.2
+	b: f32 = 1.8
+	trace(
+		"1.2=%d, 1.8=%d, -1.2=%d, -1.8=%d, floor(-1.2)=%d, floor(-1.8)=%d",
+		i32(a),
+		i32(b),
+		i32(-a),
+		i32(-b),
+		i32(math.floor(-a)),
+		i32(math.floor(-b)),
+	)
+```
+
+Outputs: `1.2=1, 1.8=1, -1.2=-1, -1.8=-1, floor(-1.2)=-2, floor(-1.8)=-2`

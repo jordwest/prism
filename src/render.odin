@@ -8,6 +8,7 @@ render_system :: proc(dt: f32) {
 	render_move_camera(dt)
 	render_tiles()
 	render_entities()
+	render_tile_cursors()
 	// render_ui()
 }
 
@@ -82,6 +83,40 @@ render_entities :: proc() {
 	fresnel.metric_i32("entities rendered", i)
 }
 
+render_tile_cursors :: proc() {
+	// Draw this player's cursor
+	fresnel.draw_image(
+		&fresnel.DrawImageArgs {
+			image_id = 1,
+			source_offset = SPRITE_COORD_RECT,
+			source_size = {SPRITE_SIZE, SPRITE_SIZE},
+			dest_offset = screen_coord(state.client.cursor_pos).xy,
+			dest_size = state.client.zoom * GRID_SIZE,
+		},
+	)
+	// trace("Cursor at %v", screen_coord(state.client.cursor_pos).xy)
+
+	// Draw other players' cursors
+	for _, p in state.client.players {
+		if p.player_id != state.client.player_id {
+			cursor_pos := screen_coord(p.cursor_tile)
+
+			zoom: i32 = 2
+			fresnel.draw_image(
+				&fresnel.DrawImageArgs {
+					image_id = 1,
+					source_offset = SPRITE_COORD_OTHER_PLAYER_CURSOR,
+					source_size = {SPRITE_SIZE, SPRITE_SIZE},
+					dest_offset = (cursor_pos - {3, 3} + (state.client.zoom * GRID_SIZE)).xy,
+					dest_size = state.client.zoom * GRID_SIZE,
+				},
+			)
+			fresnel.fill(255, 255, 255, 1)
+			fresnel.draw_text(cursor_pos.x, cursor_pos.y, 16, "Player")
+		}
+	}
+}
+
 render_ui :: proc() {
 	render_commands := ui_layout_create()
 
@@ -112,38 +147,6 @@ render_ui :: proc() {
 				i32(render_command.renderData.text.fontSize),
 				string_from_clay_slice(render_command.renderData.text.stringContents),
 			)
-		}
-	}
-
-	// Draw this player's cursor
-
-	fresnel.draw_image(
-		&fresnel.DrawImageArgs {
-			image_id = 1,
-			source_offset = SPRITE_COORD_RECT,
-			source_size = {SPRITE_SIZE, SPRITE_SIZE},
-			dest_offset = screen_coord(state.client.cursor_pos).xy,
-			dest_size = state.client.zoom * GRID_SIZE,
-		},
-	)
-
-	// Draw other players' cursors
-	for _, p in state.client.players {
-		if p.player_id != state.client.player_id {
-			cursor_pos := screen_coord(p.cursor_tile)
-
-			zoom: i32 = 2
-			fresnel.draw_image(
-				&fresnel.DrawImageArgs {
-					image_id = 1,
-					source_offset = SPRITE_COORD_OTHER_PLAYER_CURSOR,
-					source_size = {SPRITE_SIZE, SPRITE_SIZE},
-					dest_offset = (cursor_pos - {3, 3} + screen_coord(TileCoordF({0.5, 0.5}))).xy,
-					dest_size = state.client.zoom * GRID_SIZE,
-				},
-			)
-			fresnel.fill(255, 255, 255, 1)
-			fresnel.draw_text(cursor_pos.x, cursor_pos.y, 16, "Player")
 		}
 	}
 

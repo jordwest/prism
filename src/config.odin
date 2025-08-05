@@ -6,12 +6,12 @@ MAX_PLAYERS :: 8
 MAX_ENTITIES :: 2048
 SPRITE_SIZE :: 16
 GRID_SIZE :: 16
-DEFAULT_ZOOM :: 2
+DEFAULT_ZOOM :: 1
 CAMERA_SPRING_CONSTANT :: 100
 CAMERA_SPRING_DAMPER :: 20
 
 // Whether to send cursor coords to the server. It's a nice feature but makes the messaging logs noisy
-CURSOR_REPORTING_ENABLED :: false
+CURSOR_REPORTING_ENABLED :: true
 
 /**********************
  * SPRITE COORDINATES *
