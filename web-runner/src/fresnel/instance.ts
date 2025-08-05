@@ -200,17 +200,19 @@ function createCoreImports(instance: FresnelInstance) {
         h,
       );
     },
-    draw_image: (
-      imageId: number,
-      sx: number,
-      sy: number,
-      sw: number,
-      sh: number,
-      dx: number,
-      dy: number,
-      dw: number,
-      dh: number,
-    ) => {
+    draw_image: (args_ptr: number) => {
+      const view = new DataView(instance.memory, args_ptr);
+
+      const imageId = view.getInt32(0, true);
+      const sx = view.getFloat32(4, true);
+      const sy = view.getFloat32(8, true);
+      const sw = view.getFloat32(12, true);
+      const sh = view.getFloat32(16, true);
+      const dx = view.getFloat32(20, true);
+      const dy = view.getFloat32(24, true);
+      const dw = view.getFloat32(28, true);
+      const dh = view.getFloat32(32, true);
+
       const image = instance.state.images[imageId];
       if (image == null) {
         instance.state.canvasContext.fillRect(

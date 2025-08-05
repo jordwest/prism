@@ -23,15 +23,13 @@ render_tiles :: proc() {
 			}
 			// text := fmt.tprintf("%.1f", v)
 			fresnel.draw_image(
-				1,
-				f32(sx * 16),
-				3 * 16,
-				16,
-				16,
-				f32(x * view_grid),
-				f32(y * view_grid),
-				f32(view_grid),
-				f32(view_grid),
+				&fresnel.DrawImageArgs {
+					image_id = 1,
+					source_offset = {f32(sx * 16), 3 * 16},
+					source_size = {16, 16},
+					dest_offset = {f32(x * view_grid), f32(y * view_grid)},
+					dest_size = {f32(view_grid), f32(view_grid)},
+				},
 			)
 			// fresnel.fill(255, 255, 255, 255)
 			// fresnel.draw_text(f32(x * view_grid), f32(y * view_grid), 16, text)
@@ -48,15 +46,13 @@ render_entities :: proc() {
 		meta := entity_meta[e.meta_id]
 		offset := e.pos * 32
 		fresnel.draw_image(
-			1,
-			f32(meta.spritesheet_coord.x),
-			f32(meta.spritesheet_coord.y),
-			16,
-			16,
-			f32(offset.x),
-			f32(offset.y),
-			32,
-			32,
+			&fresnel.DrawImageArgs {
+				image_id = 1,
+				source_offset = {f32(meta.spritesheet_coord.x), f32(meta.spritesheet_coord.y)},
+				source_size = {16, 16},
+				dest_offset = {f32(offset.x), f32(offset.y)},
+				dest_size = {32, 32},
+			},
 		)
 	}
 
@@ -95,4 +91,17 @@ render_ui :: proc() {
 			)
 		}
 	}
+
+	// Draw cursor
+	// fresnel.draw_image(
+	// 	1,
+	// 	32,
+	// 	80,
+	// 	16,
+	// 	16,
+	// 	f32(state.client.cursor_pos.x),
+	// 	f32(state.client.cursor_pos.y),
+	// 	32,
+	// 	32,
+	// )
 }

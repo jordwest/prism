@@ -30,18 +30,6 @@ client_tick :: proc(dt: f32) {
 	render_tiles()
 	render_entities()
 	render_ui()
-
-	fresnel.draw_image(
-		1,
-		32,
-		80,
-		16,
-		16,
-		f32(state.client.cursor_pos.x),
-		f32(state.client.cursor_pos.y),
-		32,
-		32,
-	)
 }
 
 @(private)

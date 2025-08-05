@@ -1,5 +1,13 @@
 package fresnel
 
+DrawImageArgs :: struct {
+	image_id:      i32,
+	source_offset: [2]f32,
+	source_size:   [2]f32,
+	dest_offset:   [2]f32,
+	dest_size:     [2]f32,
+}
+
 foreign import core "core"
 @(default_calling_convention = "c")
 foreign core {
@@ -9,7 +17,8 @@ foreign core {
 	fill_slice_random :: proc(slice: []u8) ---
 	draw_rect :: proc(x: f32, y: f32, w: f32, h: f32) ---
 	draw_text :: proc(x: f32, y: f32, size: i32, text: string) ---
-	draw_image :: proc(image_id: i32, sx: f32, sy: f32, sw: f32, sh: f32, dx: f32, dy: f32, dw: f32, dh: f32) ---
+	// draw_image :: proc(image_id: i32, sx: f32, sy: f32, sw: f32, sh: f32, dx: f32, dy: f32, dw: f32, dh: f32) ---
+	draw_image :: proc(opts: ^DrawImageArgs) ---
 	measure_text :: proc(size: i32, text: string) -> i32 ---
 	storage_set :: proc(key: string, slice: []u8) ---
 	storage_get :: proc(key: string, slice: []u8) -> i32 ---

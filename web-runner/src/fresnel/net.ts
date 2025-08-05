@@ -12,7 +12,7 @@ const getMailbox = (state: FresnelState, clientId: number): Mailbox => {
   return mailboxes.get(clientId)!;
 };
 
-const delayMs = 100;
+const delayMs = () => 100;
 
 export function createNetImports(instance: FresnelInstance) {
   return {
@@ -25,7 +25,7 @@ export function createNetImports(instance: FresnelInstance) {
           clientId: instance.instanceId + 1,
           data,
         });
-      }, delayMs);
+      }, delayMs());
 
       return messageContent.length;
     },
@@ -54,7 +54,7 @@ export function createNetImports(instance: FresnelInstance) {
       const data = messageContent.slice();
       setTimeout(() => {
         clientMailbox.push(data);
-      }, delayMs);
+      }, delayMs());
 
       return messageContent.length;
     },
@@ -66,7 +66,7 @@ export function createNetImports(instance: FresnelInstance) {
         const clientMailbox = getMailbox(instance.state, clientId);
         setTimeout(() => {
           clientMailbox.push(data);
-        }, delayMs);
+        }, delayMs());
       }
 
       return messageContent.length;
