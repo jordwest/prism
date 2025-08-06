@@ -18,6 +18,11 @@ render_system :: proc(dt: f32) {
 }
 
 render_debug_overlays :: proc() {
+	fresnel.fill(255, 255, 255, 255)
+	cursor_text := fmt.tprintf("(%d, %d)", state.client.cursor_pos.x, state.client.cursor_pos.y)
+	cursor_screen := state.client.cursor_screen_pos + ScreenCoord{32, 32}
+	fresnel.draw_text(cursor_screen.x, cursor_screen.y, 16, cursor_text)
+
 	if state.debug.render_host_state {
 		fresnel.fill(255, 255, 255, 255)
 		fresnel.draw_text(16, 16, 16, "Host state")
@@ -238,6 +243,16 @@ render_ui :: proc() {
 	}
 }
 
+@(private = "file")
+_should_cull :: proc(screen_c: ScreenCoord, tile_size: f32 = 1.0) -> bool {
+	grid_size := state.client.zoom * GRID_SIZE
+	return(
+		screen_c.x < -grid_size ||
+		screen_c.y < -grid_size ||
+		screen_c.x > (f32(state.width) + grid_size) ||
+		screen_c.y > (f32(state.height) + grid_size) \
+	)
+}
 
 @(private = "file")
 _visualise_djikstra :: proc(dmap: ^prism.DjikstraMap($Width, $Height), offset: [2]i32 = {0, 0}) {
@@ -248,6 +263,8 @@ _visualise_djikstra :: proc(dmap: ^prism.DjikstraMap($Width, $Height), offset: [
 			if ok {
 				offset := screen_coord(coord)
 				dims := GRID_SIZE * state.client.zoom
+
+				if _should_cull(offset) do continue
 
 				cost, has_cost := dtile.cost.?
 				// trace("DMap %w", pcg.djikstra_map._queue, pcg.djikstra_map.done)

@@ -138,4 +138,8 @@ I think it's actually gonna be just fine without the reevaluation. I'm reevaluat
 
 Ok think I'm gonna have to call it there for the night. Gonna call djikstra maps done. Tomorrow will be fixing the client/server state synchronization, sending tiles to the client, and maybe pathfinding player movement.
 
+Might also try out creating a spawn point, and pathing to the furthest point on the map then regenerating another djikstra's map.
+
+Ok that last bit is done, can't stop
+
 # Thursday 7 Aug 2025

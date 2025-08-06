@@ -13,6 +13,7 @@ export type FresnelState = {
   images: Record<number, ImageBitmap>;
   input: {
     keyToAction: Map<string, number>;
+    mouseButtonToAction: Map<number, number>;
   };
 };
 
@@ -30,6 +31,7 @@ export type ManifestAction = {
   id: number;
   name?: string;
   webKeys?: string[];
+  mouseButtons?: number[];
 };
 
 export type Pointer = number & { __pointer: never };

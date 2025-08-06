@@ -3,15 +3,14 @@ package main
 import "prism"
 
 AppState :: struct {
-	t:                  f32,
-	width:              i32,
-	height:             i32,
-	other_pointer_down: u8,
-	client:             ClientState,
-	host:               HostState,
-	bytes_sent:         int,
-	bytes_received:     i32,
-	debug:              DebugState,
+	t:              f32,
+	width:          i32,
+	height:         i32,
+	client:         ClientState,
+	host:           HostState,
+	bytes_sent:     int,
+	bytes_received: i32,
+	debug:          DebugState,
 }
 
 SharedState :: struct {
@@ -22,6 +21,7 @@ SharedState :: struct {
 ClientState :: struct {
 	shared:                SharedState,
 	cursor_pos:            TileCoord,
+	cursor_screen_pos:     ScreenCoord,
 	zoom:                  f32,
 	camera:                prism.Spring(2),
 	my_token:              PlayerToken,
@@ -40,6 +40,7 @@ HostState :: struct {
 	is_host:          bool,
 	newest_entity_id: i32,
 	newest_player_id: i32,
+	spawn_point:      TileCoord,
 	clients:          map[i32]Client,
 	players:          map[PlayerId]Player,
 	entities:         map[EntityId]Entity,

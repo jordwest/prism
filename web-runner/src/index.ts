@@ -25,31 +25,32 @@ document.addEventListener("keydown", (e) => {
     restartWasm();
   }
 
-  const instance = instances[focusedInstance];
-  if (instance != null) {
-    const actionId = state.input.keyToAction.get(e.key);
-    if (actionId != null) {
-      instance.input.pressedActions.add(actionId);
-      instance.input.pressedActionsThisFrame.add(actionId);
-    }
-  }
+  const actionId = state.input.keyToAction.get(e.key);
+  setAction(actionId);
 });
 
 document.addEventListener("keyup", (e) => {
-  const instance = instances[focusedInstance];
-  if (instance != null) {
-    const actionId = state.input.keyToAction.get(e.key);
-    if (actionId != null) {
-      instance.input.pressedActions.delete(actionId);
-    }
-  }
+  const actionId = state.input.keyToAction.get(e.key);
+  clearAction(actionId);
 });
+
+function setAction(actionId: number | undefined | null) {
+  const instance = instances[focusedInstance];
+  if (instance != null && actionId != null) {
+    instance.input.pressedActions.add(actionId);
+    instance.input.pressedActionsThisFrame.add(actionId);
+  }
+}
+
+function clearAction(actionId: number | undefined | null) {
+  const instance = instances[focusedInstance];
+  if (instance != null && actionId != null) {
+    instance.input.pressedActions.delete(actionId);
+  }
+}
 
 canvas.addEventListener("mousedown", (e) => {
   e.preventDefault();
-});
-canvas.addEventListener("dblclick", () => {
-  canvas.requestFullscreen();
 });
 
 let instances: FresnelInstance[] = [];
@@ -64,6 +65,7 @@ let state: FresnelState = {
   images: {},
   input: {
     keyToAction: new Map(),
+    mouseButtonToAction: new Map(),
   },
 };
 
@@ -84,6 +86,11 @@ fetch("assets/manifest.json").then(async (response) => {
     if (action.webKeys != null) {
       action.webKeys.forEach((key) =>
         state.input.keyToAction.set(key, action.id),
+      );
+    }
+    if (action.mouseButtons != null) {
+      action.mouseButtons.forEach((btn) =>
+        state.input.mouseButtonToAction.set(btn, action.id),
       );
     }
   }
@@ -148,10 +155,22 @@ canvas.addEventListener("mousemove", (evt) => {
 });
 canvas.addEventListener("mousedown", (evt) => {
   pointerState.down = true;
+  const actionId = state.input.mouseButtonToAction.get(evt.button);
+  if (actionId != null) {
+    evt.preventDefault();
+    setAction(actionId);
+  }
   sendMouseUpdate();
+});
+canvas.addEventListener("contextmenu", (evt) => {
+  evt.preventDefault();
 });
 canvas.addEventListener("mouseup", (evt) => {
   pointerState.down = false;
+  const actionId = state.input.mouseButtonToAction.get(evt.button);
+  if (actionId != null) {
+    clearAction(actionId);
+  }
   sendMouseUpdate();
 });
 

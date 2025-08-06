@@ -4,12 +4,13 @@ import "core:math"
 import "core:mem"
 
 DjikstraMap :: struct($Width: i32, $Height: i32) {
-	done:       bool,
-	tiles:      [Width * Height]DjikstraTile,
-	max_cost:   f32,
-	iterations: i32,
-	_queue:     queue.Queue([2]i32),
-	_move_cost: proc(from: [2]i32, to: [2]i32) -> f32,
+	done:           bool,
+	tiles:          [Width * Height]DjikstraTile,
+	max_cost:       f32,
+	max_cost_coord: [2]i32,
+	iterations:     i32,
+	_queue:         queue.Queue([2]i32),
+	_move_cost:     proc(from: [2]i32, to: [2]i32) -> f32,
 }
 
 DjikstraTile :: struct {
@@ -33,6 +34,7 @@ djikstra_clear :: proc(djikstra_map: ^DjikstraMap($Width, $Height)) {
 	queue.clear(&djikstra_map._queue)
 	djikstra_map.done = false
 	djikstra_map.max_cost = 0
+	djikstra_map.max_cost_coord = {0, 0}
 	djikstra_map.iterations = 0
 	mem.zero_slice(djikstra_map.tiles[:])
 	// for i := 0; i < len(djikstra_map.tiles); i += 1 { djikstra_map.tiles[i] = DjikstraTile{}
@@ -94,14 +96,14 @@ _iterate :: proc(dmap: ^DjikstraMap($Width, $Height)) {
 
 	for neighbour_offset in neighbours {
 		dmap.iterations += 1
-		neighbour_coord := current_coord + neighbour_offset
-		neighbour_tile, valid_next_tile := djikstra_tile(dmap, neighbour_coord).?
+		new_coord := current_coord + neighbour_offset
+		neighbour_tile, valid_next_tile := djikstra_tile(dmap, new_coord).?
 		// if !valid_next_tile || neighbour_tile.visited {
 		if !valid_next_tile {
 			continue
 		}
 
-		move_cost := dmap._move_cost(current_coord, neighbour_coord)
+		move_cost := dmap._move_cost(current_coord, new_coord)
 		neighbour_tile.visited = true
 		if move_cost >= 0 {
 			new_cost := this_tile_cost + move_cost
@@ -114,8 +116,11 @@ _iterate :: proc(dmap: ^DjikstraMap($Width, $Height)) {
 			}
 
 			neighbour_tile.cost = new_cost
-			dmap.max_cost = math.max(new_cost, dmap.max_cost)
-			queue.push_back(&dmap._queue, neighbour_coord)
+			if new_cost > dmap.max_cost {
+				dmap.max_cost = new_cost
+				dmap.max_cost_coord = new_coord
+			}
+			queue.push_back(&dmap._queue, new_coord)
 		}
 	}
 }

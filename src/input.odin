@@ -8,6 +8,8 @@ InputActions :: enum i32 {
 	MoveDown                   = 2,
 	MoveLeft                   = 3,
 	MoveRight                  = 4,
+	LeftClick                  = 5,
+	RightClick                 = 6,
 	ZoomIn                     = 101,
 	ZoomOut                    = 102,
 	DebugRenderHostStateToggle = 9000,
@@ -46,8 +48,19 @@ input_system :: proc(dt: f32) {
 	if is_action_just_pressed(.ZoomOut) {
 		state.client.zoom = math.max(1, state.client.zoom - 1)
 	}
+
+	if is_action_pressed(.LeftClick) {
+		tile_draw(state.client.cursor_pos, .BrickWall)
+	}
+	if is_action_pressed(.RightClick) {
+		tile_draw(state.client.cursor_pos, .Floor)
+	}
+
 }
 
+is_action_pressed :: proc(action: InputActions) -> bool {
+	return fresnel.is_action_pressed(i32(action))
+}
 is_action_just_pressed :: proc(action: InputActions) -> bool {
 	return fresnel.is_action_just_pressed(i32(action))
 }

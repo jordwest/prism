@@ -23,9 +23,19 @@
         "webKeys": ["l", "ArrowRight", "d"]
       },
       {
+        "name": "left_click",
+        "id": 5,
+        "mouseButtons": [0]
+      },
+      {
+        "name": "right_click",
+        "id": 6,
+        "mouseButtons": [2]
+      },
+      {
         "name": "debug_host_render_toggle",
         "id": 9000,
-        "webKeys": ["0"]
+        "webKeys": ["1"]
       },
       {
         "name": "zoom_in",

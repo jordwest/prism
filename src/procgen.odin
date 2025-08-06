@@ -118,6 +118,7 @@ _try_add_room :: proc(
 	prism.rand_splitmix_add(&rng, pcg.iteration)
 
 	room_count := len(pcg.rooms)
+	first_room := room_count == 0
 	min_size: i32 = room_count < 10 ? 7 : 4
 	max_size: i32 = room_count < 10 ? 16 : 9
 
@@ -168,6 +169,13 @@ _try_add_room :: proc(
 
 	tile_draw_room(TileCoord({x, y}), Vec2i({width, height}))
 	if trying_door do tile_draw_door(door.pos)
+
+	if first_room {
+		state.host.spawn_point = TileCoord {
+			prism.rand_splitmix_get_i32_range(&rng, room_aabb.x1, room_aabb.x2),
+			prism.rand_splitmix_get_i32_range(&rng, room_aabb.y1, room_aabb.y2),
+		}
+	}
 
 	pcg.newest_room_id += 1
 	pcg.rooms[pcg.newest_room_id] = Room {

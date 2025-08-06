@@ -19,7 +19,7 @@ LEVEL_HEIGHT :: 40
  * FUTURE STATE
  ***************/
 
-GAME_SEED :: 0xdeadbeef3
+GAME_SEED :: 0xdeadbeef
 
 /*****************
  * DEBUG OPTIONS
@@ -28,10 +28,10 @@ GAME_SEED :: 0xdeadbeef3
 // Only if running as host
 DEFAULT_DEBUG_RENDER_HOST_STATE :: true
 DEBUG_OVERLAYS_ENABLED :: true
-STUTTER_CHECKER_ENABLED :: true
+STUTTER_CHECKER_ENABLED :: false
 // Delay procedural generation iterations by this many frames
 // (to help visualise the generation)
-PCG_ITERATION_DELAY :: 10
+PCG_ITERATION_DELAY :: 0
 
 /***********
  * LOGGING *

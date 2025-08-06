@@ -27,6 +27,7 @@ foreign core {
 foreign import input "input"
 @(default_calling_convention = "c")
 foreign input {
+	is_action_pressed :: proc(action_id: i32) -> bool ---
 	is_action_just_pressed :: proc(action_id: i32) -> bool ---
 }
 

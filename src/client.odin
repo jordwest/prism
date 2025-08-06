@@ -29,11 +29,7 @@ client_tick :: proc(dt: f32) {
 	fresnel.fill(10, 10, 10, 255)
 	fresnel.draw_rect(0, 0, f32(state.width), f32(state.height))
 
-	if (state.other_pointer_down == 1) {
-		fresnel.fill(255, 0, 0, 255)
-	} else {
-		fresnel.fill(0, 0, 0, 255)
-	}
+	fresnel.fill(0, 0, 0, 255)
 
 	input_system(dt)
 	render_system(dt)

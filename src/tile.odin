@@ -50,6 +50,13 @@ tile_draw_door :: proc(pos: TileCoord) {
 	}
 }
 
+tile_draw :: proc(pos: TileCoord, type: TileType) {
+	tile, ok := tile_at(&state.host.shared.tiles, pos).?
+	if ok {
+		tile.type = type
+	}
+}
+
 tile_draw_room :: proc(pos: TileCoord, size: Vec2i) {
 	for ox: i32 = 0; ox < size.x; ox += 1 {
 		for oy: i32 = 0; oy < size.y; oy += 1 {
@@ -66,7 +73,7 @@ tile_draw_room :: proc(pos: TileCoord, size: Vec2i) {
 				   coord.x <= 22 {
 					tile.type = .Water
 				}
-				if !is_boundary && coord.x == 5 && coord.y == 15 {
+				if !is_boundary && coord.x == 18 && coord.y == 18 {
 					tile.type = .Water
 				}
 			}
