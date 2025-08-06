@@ -1,6 +1,7 @@
 package main
 
 import clay "clay-odin"
+import "core:math"
 import "fresnel"
 import "prism"
 
@@ -10,7 +11,7 @@ render_system :: proc(dt: f32) {
 	render_entities()
 	render_tile_cursors(dt)
 	// render_ui()
-	if DEBUG_OVERLAYS_ENABLED {
+	when DEBUG_OVERLAYS_ENABLED {
 		render_debug_overlays()
 	}
 }
@@ -31,6 +32,18 @@ render_debug_overlays :: proc() {
 			fresnel.fill(170, 170, 255, 0.5)
 			fresnel.draw_rect(offset.x, offset.y, dims.x, dims.y)
 		}
+	}
+
+	when STUTTER_CHECKER_ENABLED {
+		// Stutter checker
+		fresnel.fill(255, 255, 255, 255)
+		screen_mid := f32(state.width / 2)
+		fresnel.draw_rect(
+			screen_mid + math.sin(state.t) * screen_mid * 0.9,
+			f32(state.height - 32),
+			2,
+			32,
+		)
 	}
 }
 

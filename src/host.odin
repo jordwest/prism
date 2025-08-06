@@ -8,7 +8,13 @@ host_tick :: proc(dt: f32) {
 	host_poll()
 
 	if pcg, ok := state.host.pcg.?; ok {
-		procgen_iterate(pcg)
+		max_iterations := PCG_ITERATION_DELAY == 0 ? 100 : 1
+		t0 := fresnel.now()
+		for i := 0; i < max_iterations && !pcg.done; i += 1 {
+			procgen_iterate(pcg)
+		}
+		t1 := fresnel.now()
+		pcg.total_time += (t1 - t0)
 	}
 }
 

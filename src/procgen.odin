@@ -23,11 +23,13 @@ Room :: struct {
 PcgState :: struct {
 	iteration:      int,
 	delay:          int,
+	done:           bool,
 	tiles:          [LEVEL_WIDTH * LEVEL_HEIGHT]PcgTile,
 	rooms:          map[RoomId]Room,
 	newest_room_id: RoomId,
 	level_bounds:   prism.Aabb(i32),
 	door_locations: priority_queue.Priority_Queue(PossibleDoorLocation),
+	total_time:     i32,
 
 	// Just for visualisation
 	cursor:         prism.Aabb(i32),
@@ -76,9 +78,11 @@ procgen_iterate :: proc(pcg: ^PcgState) {
 	}
 
 	pcg.iteration += 1
-	if pcg.iteration >= 1000 || len(pcg.rooms) >= 50 do return
-
-	trace("Iterations %d, rooms %d", pcg.iteration, len(pcg.rooms))
+	if pcg.iteration > 1000 || len(pcg.rooms) >= 50 {
+		info("Procedural generation done in %dms", pcg.total_time)
+		pcg.done = true
+		return
+	}
 
 	_try_add_room(pcg, 5, 5)
 }

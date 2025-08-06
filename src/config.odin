@@ -5,9 +5,7 @@ MAX_PLAYERS :: 8
 MAX_ENTITIES :: 2048
 SPRITE_SIZE :: 16
 GRID_SIZE :: 16
-DEFAULT_ZOOM :: 2
-// Only if running as host
-DEFAULT_DEBUG_RENDER_HOST_STATE :: true
+DEFAULT_ZOOM :: 1
 CAMERA_SPRING_CONSTANT :: 100
 CAMERA_SPRING_DAMPER :: 20
 
@@ -27,10 +25,13 @@ GAME_SEED :: 0xdeadbeef3
  * DEBUG OPTIONS
  *****************/
 
+// Only if running as host
+DEFAULT_DEBUG_RENDER_HOST_STATE :: true
 DEBUG_OVERLAYS_ENABLED :: true
+STUTTER_CHECKER_ENABLED :: false
 // Delay procedural generation iterations by this many frames
 // (to help visualise the generation)
-PCG_ITERATION_DELAY :: 3
+PCG_ITERATION_DELAY :: 0
 
 /***********
  * LOGGING *
