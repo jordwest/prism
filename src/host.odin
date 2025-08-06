@@ -15,6 +15,12 @@ host_tick :: proc(dt: f32) {
 		}
 		t1 := fresnel.now()
 		pcg.total_time += (t1 - t0)
+
+		// TODO: This is just a test for visualisation purposes for now
+		prism.djikstra_clear(&pcg.djikstra_map)
+		prism.djikstra_add_origin(&pcg.djikstra_map, Vec2i(state.client.cursor_pos))
+		prism.djikstra_iterate(&pcg.djikstra_map)
+		fresnel.metric_i32("djikstra_iterations", pcg.djikstra_map.iterations)
 	}
 }
 

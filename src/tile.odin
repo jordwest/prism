@@ -1,5 +1,7 @@
 package main
 
+import "prism"
+
 Tiles :: struct {
 	data: [LEVEL_WIDTH * LEVEL_HEIGHT]TileData,
 }
@@ -13,12 +15,14 @@ TileType :: enum u8 {
 	Floor,
 	BrickWall,
 	RopeBridge,
+	Water,
 }
 
 TileFlag :: enum {
 	Traversable,
 	Obstacle,
 	Flammable,
+	Slow,
 }
 TileFlags :: bit_set[TileFlag]
 
@@ -27,6 +31,7 @@ tile_flags: [TileType]TileFlags = {
 	.Floor      = {.Traversable},
 	.BrickWall  = {.Obstacle},
 	.RopeBridge = {.Traversable, .Flammable},
+	.Water      = {.Traversable, .Slow},
 }
 
 tile_at :: proc(tiles: ^Tiles, tile: TileCoord) -> Maybe(^TileData) {
@@ -49,11 +54,21 @@ tile_draw_room :: proc(pos: TileCoord, size: Vec2i) {
 	for ox: i32 = 0; ox < size.x; ox += 1 {
 		for oy: i32 = 0; oy < size.y; oy += 1 {
 			is_boundary := ox == 0 || oy == 0 || ox == size.x - 1 || oy == size.y - 1
-
 			coord := TileCoord({pos.x + ox, pos.y + oy})
+
 			tile, ok := tile_at(&state.host.shared.tiles, coord).?
 			if ok {
 				tile.type = is_boundary ? .BrickWall : .Floor
+				if !is_boundary &&
+				   coord.y >= 13 &&
+				   coord.y <= 15 &&
+				   coord.x >= 15 &&
+				   coord.x <= 22 {
+					tile.type = .Water
+				}
+				if !is_boundary && coord.x == 5 && coord.y == 15 {
+					tile.type = .Water
+				}
 			}
 		}
 	}

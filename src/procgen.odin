@@ -30,6 +30,7 @@ PcgState :: struct {
 	level_bounds:   prism.Aabb(i32),
 	door_locations: priority_queue.Priority_Queue(PossibleDoorLocation),
 	total_time:     i32,
+	djikstra_map:   prism.DjikstraMap(LEVEL_WIDTH, LEVEL_HEIGHT),
 
 	// Just for visualisation
 	cursor:         prism.Aabb(i32),
@@ -53,6 +54,7 @@ procgen_init :: proc(pcg: ^PcgState) {
 	mem.arena_init(&pcg_arena, pcg_memory[:])
 	pcg_alloc := mem.arena_allocator(&pcg_arena)
 	context.allocator = pcg_alloc
+
 	pcg.rooms = make(map[RoomId]Room, 100)
 	priority_queue.init(
 		&pcg.door_locations,
@@ -63,6 +65,10 @@ procgen_init :: proc(pcg: ^PcgState) {
 	pcg.level_bounds = prism.Aabb(i32) {
 		x2 = LEVEL_WIDTH - 1,
 		y2 = LEVEL_HEIGHT - 1,
+	}
+	e := prism.djikstra_init(&pcg.djikstra_map, _neighbour_cost)
+	if e != nil {
+		err("Error allocating djikstra map: %s", e)
 	}
 }
 
@@ -77,21 +83,28 @@ procgen_iterate :: proc(pcg: ^PcgState) {
 		}
 	}
 
-	pcg.iteration += 1
-	if pcg.iteration > 1000 || len(pcg.rooms) >= 50 {
-		info("Procedural generation done in %dms", pcg.total_time)
+	if pcg.iteration >= 1000 || len(pcg.rooms) >= 50 {
+		info("Procedural generation done in %d iterations, %dms", pcg.iteration, pcg.total_time)
 		pcg.done = true
 		return
 	}
+	pcg.iteration += 1
 
 	_try_add_room(pcg, 5, 5)
 }
 
 @(private = "file")
+_neighbour_cost :: proc(_from: [2]i32, to: [2]i32) -> f32 {
+	tile, valid_tile := tile_at(&state.host.shared.tiles, TileCoord(to)).?
+	if !valid_tile do return -1
+	if .Traversable not_in tile_flags[tile.type] do return -1
+	if .Slow in tile_flags[tile.type] do return 2
+	return 1
+}
+
+@(private = "file")
 _pq_less :: proc(a, b: PossibleDoorLocation) -> bool {
-	if a.attempts == b.attempts {
-		return a.tie_breaker < b.tie_breaker
-	}
+	if a.attempts == b.attempts do return a.tie_breaker < b.tie_breaker
 	return a.attempts < b.attempts
 }
 

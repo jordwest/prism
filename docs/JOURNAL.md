@@ -123,3 +123,19 @@ B:                |------|
 Room generation done to a good enough standard for now. Can tweak the dead ends issue later when there's some actual gameplay (added a todo)
 
 Really feel like I'm hitting the flow in Odin now, haven't hit many roadblocks the last few days. Even allocation is pretty much a non-issue now. The hot reload dev cycle is also just _so_ nice.
+
+Next need to reenable iteration on the djikstra map, host.odin:22 and hopefully start to visualise it
+
+Djikstra map is working, but the issue I'm running into now is that reevaluating tiles for higher cost adds a lot of iterations.
+
+I think maybe the solution will be to only calculate that when totally necessary, in general it's not going to be calculated every frame anyway. Even with cursor pathing, it only needs to be calculated once when the player or any entity moves, then moving the mouse can just trace the path back on the existing djikstra map.
+
+Some creatures might be dumb anyway and head straight for the player, ignoring traps etc.
+
+Perhaps A* would be more effective for the smarter enemies.
+
+I think it's actually gonna be just fine without the reevaluation. I'm reevaluating neighbours at least, just not adding them to the queue again. This works for small cost multiples (like 2x) on small regions of high cost. It works less well on multiples of 5x with large eg bodies of water. But I think this should still be plenty good enough for now.
+
+Ok think I'm gonna have to call it there for the night. Gonna call djikstra maps done. Tomorrow will be fixing the client/server state synchronization, sending tiles to the client, and maybe pathfinding player movement.
+
+# Thursday 7 Aug 2025

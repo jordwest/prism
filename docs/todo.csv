@@ -40,7 +40,7 @@ done,feat,b3,Add procedural generation back in
 done,feat,b3,Add keys to zoom in/out (-/=)
 done,devtool,b3,Added a host state visualisation toggle
 done,devtool,b3,Add a simple stutter checker
-todo,feat,b3,Add djikstra's algorithm
+done,feat,b3,Add djikstra's algorithm
 todo,refactor,b3,Send tile data to client
 todo,bug,b3,"Player cursor missing when net delay=0, race condition?"
 todo,feat,b3,"Add map and list serialization, send game state to newly joined clients"

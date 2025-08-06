@@ -217,12 +217,15 @@ ws.addEventListener("message", async (msg) => {
   }
 });
 
+let lastT: DOMHighResTimeStamp | null = null;
 const frame: FrameRequestCallback = (time) => {
-  if (document.hasFocus()) {
+  if (lastT != null && document.hasFocus()) {
+    let t = (time - lastT) / 1000;
+    t = Math.min(0.5, t);
     canvas.style.opacity = "";
     for (var instance of instances) {
       try {
-        instance.exports.tick(0.016);
+        instance.exports.tick(t);
         instance.input.pressedActionsThisFrame.clear();
       } catch (e) {
         console.error(`Crashed at line`, line);
@@ -244,6 +247,8 @@ const frame: FrameRequestCallback = (time) => {
   } else {
     canvas.style.opacity = "30%";
   }
+
+  lastT = time;
 
   requestAnimationFrame(frame);
 };

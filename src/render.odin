@@ -1,6 +1,7 @@
 package main
 
 import clay "clay-odin"
+import "core:fmt"
 import "core:math"
 import "fresnel"
 import "prism"
@@ -22,15 +23,20 @@ render_debug_overlays :: proc() {
 		fresnel.draw_text(16, 16, 16, "Host state")
 
 		if pcg, ok := state.host.pcg.?; ok {
-			offset := screen_coord(TileCoord({pcg.cursor.x1, pcg.cursor.y1}))
-			dims := vec2f(prism.aabb_size(pcg.cursor)) * GRID_SIZE * state.client.zoom
-			fresnel.fill(255, 200, 200, 0.5)
-			fresnel.draw_rect(offset.x, offset.y, dims.x, dims.y)
+			if !pcg.done {
 
-			offset = screen_coord(TileCoord({pcg.cursor2.x1, pcg.cursor2.y1}))
-			dims = vec2f(prism.aabb_size(pcg.cursor2)) * GRID_SIZE * state.client.zoom
-			fresnel.fill(170, 170, 255, 0.5)
-			fresnel.draw_rect(offset.x, offset.y, dims.x, dims.y)
+				offset := screen_coord(TileCoord({pcg.cursor.x1, pcg.cursor.y1}))
+				dims := vec2f(prism.aabb_size(pcg.cursor)) * GRID_SIZE * state.client.zoom
+				fresnel.fill(255, 200, 200, 0.5)
+				fresnel.draw_rect(offset.x, offset.y, dims.x, dims.y)
+
+				offset = screen_coord(TileCoord({pcg.cursor2.x1, pcg.cursor2.y1}))
+				dims = vec2f(prism.aabb_size(pcg.cursor2)) * GRID_SIZE * state.client.zoom
+				fresnel.fill(170, 170, 255, 0.5)
+				fresnel.draw_rect(offset.x, offset.y, dims.x, dims.y)
+			}
+
+			_visualise_djikstra(&pcg.djikstra_map)
 		}
 	}
 
@@ -39,7 +45,7 @@ render_debug_overlays :: proc() {
 		fresnel.fill(255, 255, 255, 255)
 		screen_mid := f32(state.width / 2)
 		fresnel.draw_rect(
-			screen_mid + math.sin(state.t) * screen_mid * 0.9,
+			screen_mid + math.sin(state.t * math.PI) * screen_mid * 0.9,
 			f32(state.height - 32),
 			2,
 			32,
@@ -100,6 +106,8 @@ render_tiles :: proc() {
 					sprite :=
 						front_facing ? (use_alternative_tile ? SPRITE_COORD_BRICK_WALL_FACE_2 : SPRITE_COORD_BRICK_WALL_FACE) : SPRITE_COORD_BRICK_WALL_BEHIND
 					render_sprite(sprite, screen_c)
+				} else if tile.type == .Water {
+					render_sprite(SPRITE_COORD_RECT, screen_c)
 				}
 			} else {
 				trace("Skipping %d, %d", tile_c.x, tile_c.y)
@@ -228,5 +236,38 @@ render_ui :: proc() {
 			)
 		}
 	}
+}
 
+
+@(private = "file")
+_visualise_djikstra :: proc(dmap: ^prism.DjikstraMap($Width, $Height), offset: [2]i32 = {0, 0}) {
+	for x: i32 = 0; x < Width; x += 1 {
+		for y: i32 = 0; y < Height; y += 1 {
+			coord := TileCoord{x + offset.x, y + offset.y}
+			dtile, ok := prism.djikstra_tile(dmap, Vec2i(coord)).?
+			if ok {
+				offset := screen_coord(coord)
+				dims := GRID_SIZE * state.client.zoom
+
+				cost, has_cost := dtile.cost.?
+				// trace("DMap %w", pcg.djikstra_map._queue, pcg.djikstra_map.done)
+				if has_cost {
+					if cost == 0 {
+						fresnel.fill(0, 255, 0, 0.8)
+					} else {
+						col := (cost / dmap.max_cost) * 255
+						fresnel.fill(255 - col, 100, col, 0.3)
+					}
+					fresnel.draw_rect(offset.x, offset.y, dims, dims)
+
+					cost_str := fmt.tprintf("%.0f", cost)
+					fresnel.fill(255, 255, 255, 0.5)
+					fresnel.draw_text(offset.x, offset.y, 16, cost_str)
+				} else if dtile.visited {
+					fresnel.fill(255, 0, 0, 0.5)
+					fresnel.draw_rect(offset.x, offset.y, dims, dims)
+				}
+			}
+		}
+	}
 }
