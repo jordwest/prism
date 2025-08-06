@@ -2,7 +2,10 @@ package main
 
 import "core:math"
 
-vec2f_from_vec2i :: #force_inline proc(v: [2]i32) -> [2]f32 {
+Vec2i :: [2]i32
+Vec2f :: [2]f32
+
+vec2f_from_vec2i :: #force_inline proc(v: Vec2i) -> Vec2f {
 	return {f32(v.x), f32(v.y)}
 }
 vec2f_from_i32 :: #force_inline proc(v: i32) -> [2]f32 {

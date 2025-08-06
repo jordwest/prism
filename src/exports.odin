@@ -59,12 +59,16 @@ boot :: proc "c" (width: i32, height: i32, flags: i32) {
 	trace("Size of ClientState: %d", size_of(ClientState))
 	trace("Size of SharedState: %d", size_of(SharedState))
 
+	debug_init()
+
 	if (flags == 0) {
 		host_boot_err := host_boot()
 		if host_boot_err != nil {
 			err("Error starting host: %v", host_boot_err)
 		}
 	}
+
+	trace("Is host: %w", state.host.is_host)
 
 	if !hot_reload_hydrate_state() {
 		// Generate token

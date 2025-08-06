@@ -78,3 +78,7 @@ Also need to work out why cursor is missing when net delay is removed, probably 
 # Wednesday 6 Aug 2025
 
 Ok first thing I'm gonna start on procgen because it's fun.
+
+Got tile data struct in place, also tweaked the cursor a bit. Now to draw rooms and render them.
+
+Thinking I'll also add a switch to toggle between rendering host and client state (but keep using client state for things like camera pos)

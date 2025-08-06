@@ -147,7 +147,7 @@ function createCoreImports(instance: FresnelInstance) {
       crypto.getRandomValues(slice);
     },
     print: (ptr: OdinStringPointer, lvl: number) => {
-      const id = `[${instance.instanceId}] `;
+      const id = `[INS:${instance.instanceId}] `;
       const s = readOdinString(instance.memory, ptr);
       switch (lvl) {
         case 0:

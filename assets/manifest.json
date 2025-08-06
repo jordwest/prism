@@ -21,6 +21,11 @@
         "name": "move_right",
         "id": 4,
         "webKeys": ["l", "ArrowRight", "d"]
+      },
+      {
+        "name": "debug_host_render_toggle",
+        "id": 9000,
+        "webKeys": ["0"]
       }
     ]
   }

@@ -3,10 +3,11 @@ package main
 import "fresnel"
 
 InputActions :: enum i32 {
-	MoveUp    = 1,
-	MoveDown  = 2,
-	MoveLeft  = 3,
-	MoveRight = 4,
+	MoveUp                     = 1,
+	MoveDown                   = 2,
+	MoveLeft                   = 3,
+	MoveRight                  = 4,
+	DebugRenderHostStateToggle = 9000,
 }
 
 input_system :: proc(dt: f32) {
@@ -30,6 +31,10 @@ input_system :: proc(dt: f32) {
 			cmd.target_entity = 0
 			command_submit(cmd)
 		}
+	}
+
+	if state.host.is_host && is_action_just_pressed(.DebugRenderHostStateToggle) {
+		state.debug.render_host_state = !state.debug.render_host_state
 	}
 }
 

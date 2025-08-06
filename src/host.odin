@@ -23,6 +23,10 @@ host_boot :: proc() -> HostError {
 	state.host.clients = make(map[i32]Client, 128, allocator = host_arena_alloc) or_return
 	state.host.entities = make(map[EntityId]Entity, MAX_ENTITIES) or_return
 
+	state.debug.render_host_state = DEFAULT_DEBUG_RENDER_HOST_STATE
+
+	procgen_generate_level(0xdeadbeef)
+
 	fresnel.metric_i32("host mem", i32(host_arena.offset))
 	fresnel.metric_i32("host mem peak", i32(host_arena.peak_used))
 

@@ -6,11 +6,28 @@ MAX_ENTITIES :: 2048
 SPRITE_SIZE :: 16
 GRID_SIZE :: 16
 DEFAULT_ZOOM :: 2
+// Only if running as host
+DEFAULT_DEBUG_RENDER_HOST_STATE :: true
 CAMERA_SPRING_CONSTANT :: 100
 CAMERA_SPRING_DAMPER :: 20
 
 // Whether to send cursor coords to the server. It's a nice feature but makes the messaging logs noisy
 CURSOR_REPORTING_ENABLED :: true
+
+LEVEL_WIDTH :: 50
+LEVEL_HEIGHT :: 50
+
+/***************
+ * FUTURE STATE
+ ***************/
+
+GAME_SEED :: 0xdeadbeef
+
+/*****************
+ * DEBUG OPTIONS
+ *****************/
+
+DEBUG_OVERLAYS_ENABLED :: true
 
 /***********
  * LOGGING *

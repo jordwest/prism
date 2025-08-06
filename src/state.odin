@@ -11,10 +11,11 @@ AppState :: struct {
 	host:               HostState,
 	bytes_sent:         int,
 	bytes_received:     i32,
+	debug:              DebugState,
 }
 
 SharedState :: struct {
-	tiles: Tiles(50, 50),
+	tiles: Tiles,
 	// TODO: Move player and entity map here
 }
 

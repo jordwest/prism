@@ -20,40 +20,6 @@ on_panic :: proc(a: string, b: string, loc: runtime.Source_Code_Location) -> ! {
 
 mouse_moved := true
 
-SplitMixState :: struct {
-	state: u64,
-}
-splitmix_state := SplitMixState{}
-
-next_int :: proc() -> u64 {
-	splitmix_state.state += 0x9e3779b97f4a7c15
-	z: u64 = splitmix_state.state
-	z = (z ~ (z >> 30)) * 0xbf58476d1ce4e5b9
-	z = (z ~ (z >> 27)) * 0x94d049bb133111eb
-	return z ~ (z >> 31)
-}
-
-rand_int_at :: proc(x: u64, y: u64) -> u64 {
-	state := x + y * 0x9e3779b97f4a7c15
-	z: u64 = state
-	z = (z ~ (z >> 30)) * 0xbf58476d1ce4e5b9
-	z = (z ~ (z >> 27)) * 0x94d049bb133111eb
-	return z ~ (z >> 31)
-}
-rand_float_at :: proc(x: u64, y: u64) -> f64 {
-	return f64(rand_int_at(x, y)) / f64(1 << 64)
-}
-
-next_float :: proc() -> f64 {
-	return f64(next_int()) / f64(1 << 64)
-}
-
-rand_f32 :: proc(data: []u8) -> f32 {
-	v := f32(next_float())
-
-	return v
-}
-
 // Example measure text function
 clay_measure_text :: proc "c" (
 	text: clay.StringSlice,

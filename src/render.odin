@@ -10,6 +10,16 @@ render_system :: proc(dt: f32) {
 	render_entities()
 	render_tile_cursors(dt)
 	// render_ui()
+	if DEBUG_OVERLAYS_ENABLED {
+		render_debug_overlays()
+	}
+}
+
+render_debug_overlays :: proc() {
+	if state.debug.render_host_state {
+		fresnel.fill(255, 255, 255, 255)
+		fresnel.draw_text(16, 16, 16, "Host state")
+	}
 }
 
 // TODO: Does this really belong in render? Find a better home
@@ -26,36 +36,49 @@ render_move_camera :: proc(dt: f32) {
 }
 
 render_tiles :: proc() {
-	splitmix_state = SplitMixState{}
 	t0 := fresnel.now()
 	cull_margin := GRID_SIZE * state.client.zoom
 
+	tiles := &state.client.shared.tiles
+	if (state.debug.render_host_state) {
+		tiles = &state.host.shared.tiles
+	}
+
 	canvas_size := vec2f(state.width, state.height)
 
-
-	for x: i32 = 0; x < 30; x += 1 {
-		for y: i32 = 0; y < 20; y += 1 {
-			tile := TileCoord{x, y}
-			coord := screen_coord(tile)
+	for x: i32 = 0; x < LEVEL_WIDTH; x += 1 {
+		for y: i32 = 0; y < LEVEL_HEIGHT; y += 1 {
+			tile_c := TileCoord{x, y}
+			screen_c := screen_coord(tile_c)
 			cull :=
-				coord.x < -cull_margin ||
-				coord.y < -cull_margin ||
-				coord.x > (canvas_size.x + cull_margin) ||
-				coord.y > (canvas_size.y + cull_margin)
+				screen_c.x < -cull_margin ||
+				screen_c.y < -cull_margin ||
+				screen_c.x > (canvas_size.x + cull_margin) ||
+				screen_c.y > (canvas_size.y + cull_margin)
 			if cull do continue
 
-			v := rand_float_at(u64(x), u64(y)) //rand_f32(hash_data[:])
-			sprite := SPRITE_COORD_FLOOR_STONE
-			if (v > 0.9) {
-				sprite = SPRITE_COORD_FLOOR_STONE_2
+			tile_randomiser := prism.rand_splitmix_create(GAME_SEED, 1)
+			prism.rand_splitmix_add(&tile_randomiser, x)
+			prism.rand_splitmix_add(&tile_randomiser, y)
+
+			tile_below, has_tile_below := tile_at(tiles, tile_c + {0, 1}).?
+			tile, ok := tile_at(tiles, tile_c).?
+			if ok {
+				// TODO: Reenable this
+				use_alternative_tile := prism.rand_splitmix_get_bool(&tile_randomiser, 50)
+				if tile.type == .Floor {
+					sprite :=
+						use_alternative_tile ? SPRITE_COORD_FLOOR_STONE_2 : SPRITE_COORD_FLOOR_STONE
+					render_sprite(sprite, screen_c)
+				} else if tile.type == .BrickWall {
+					front_facing := has_tile_below && tile_below.type != .BrickWall
+					sprite :=
+						front_facing ? SPRITE_COORD_BRICK_WALL_FACE : SPRITE_COORD_BRICK_WALL_BEHIND
+					render_sprite(sprite, screen_c)
+				}
+			} else {
+				trace("Skipping %d, %d", tile_c.x, tile_c.y)
 			}
-			if ((x == 5 || x == 12) && y == 3) {
-				sprite = SPRITE_COORD_BRICK_WALL_BEHIND
-			}
-			if (x >= 5 && x <= 12 && y == 4) {
-				sprite = SPRITE_COORD_BRICK_WALL_FACE
-			}
-			render_sprite(sprite, coord)
 		}
 	}
 

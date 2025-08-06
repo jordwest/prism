@@ -15,7 +15,7 @@ LogLevel :: enum {
 when LOG_LEVEL <= LogLevel.Trace {
 	trace :: proc(s: string, args: ..any, loc: runtime.Source_Code_Location = #caller_location) {
 		result := fmt.tprintf(s, ..args)
-		str := fmt.tprintf("%s:%d : %s", loc.file_path, loc.line, result)
+		str := fmt.tprintf("%s\n   at %s:%d", result, loc.file_path, loc.line)
 		fresnel.print(str, i32(LogLevel.Trace))
 	}
 } else {
