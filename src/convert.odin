@@ -8,6 +8,9 @@ vec2f_from_vec2i :: #force_inline proc(v: [2]i32) -> [2]f32 {
 vec2f_from_i32 :: #force_inline proc(v: i32) -> [2]f32 {
 	return {f32(v), f32(v)}
 }
+vec2f_from_2xi32 :: #force_inline proc(x: i32, y: i32) -> [2]f32 {
+	return {f32(x), f32(y)}
+}
 vec2f_from_tile_coord :: #force_inline proc(v: TileCoord) -> [2]f32 {
 	return {f32(v.x), f32(v.y)}
 }
@@ -21,6 +24,7 @@ vec2f_from_screen_coord :: #force_inline proc(v: ScreenCoord) -> [2]f32 {
 vec2f :: proc {
 	vec2f_from_vec2i,
 	vec2f_from_i32,
+	vec2f_from_2xi32,
 	vec2f_from_tile_coord,
 	vec2f_from_tile_coord_f,
 	vec2f_from_screen_coord,

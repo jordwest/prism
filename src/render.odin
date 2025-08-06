@@ -29,11 +29,19 @@ render_tiles :: proc() {
 	splitmix_state = SplitMixState{}
 	t0 := fresnel.now()
 	cull_margin := GRID_SIZE * state.client.zoom
+
+	canvas_size := vec2f(state.width, state.height)
+
+
 	for x: i32 = 0; x < 30; x += 1 {
 		for y: i32 = 0; y < 20; y += 1 {
-		    tile := TileCoord{x, y}
-		    coord := screen_coord(tile)
-			cull := coord.x < -cull_margin || coord.y < -cull_margin
+			tile := TileCoord{x, y}
+			coord := screen_coord(tile)
+			cull :=
+				coord.x < -cull_margin ||
+				coord.y < -cull_margin ||
+				coord.x > (canvas_size.x + cull_margin) ||
+				coord.y > (canvas_size.y + cull_margin)
 			if cull do continue
 
 			v := rand_float_at(u64(x), u64(y)) //rand_f32(hash_data[:])
@@ -127,7 +135,7 @@ render_tile_cursors :: proc(dt: f32) {
 			}
 
 			cursor_pos := screen_coord(TileCoordF(p._cursor_spring.pos))
-			text_pos := screen_coord(TileCoordF(p._cursor_spring.pos + {1, 0.25}))
+			text_pos := screen_coord(TileCoordF(p._cursor_spring.pos + {1, 0.75}))
 
 			render_sprite(SPRITE_COORD_OTHER_PLAYER_CURSOR, cursor_pos)
 			fresnel.fill(255, 255, 255, 1)

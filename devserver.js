@@ -116,7 +116,10 @@ async function buildWebRunner() {
         );
       }
     }
+    return true;
   }
+
+  return false;
 }
 
 async function buildWasm() {
@@ -133,6 +136,14 @@ async function buildWasm() {
   });
 }
 
+// type HotUpdate = {"type": "webassembly"} | {"type": "host_source"} | {"type": "resource"}
+
+function sendHotUpdate(data) {
+  for (var s of sockets) {
+    s.send(JSON.stringify(data));
+  }
+}
+
 async function onFileUpdate(event) {
   var tsFileUpdate = event.paths.find(
     (p) =>
@@ -141,21 +152,22 @@ async function onFileUpdate(event) {
         p.endsWith(".css") ||
         p.endsWith(".mp3") ||
         p.endsWith(".ogg") ||
-        p.endsWith(".json" || p.endsWith("png"))) &&
+        p.endsWith(".json") ||
+        p.endsWith(".png")) &&
       !p.includes("build/web"),
   );
   if (tsFileUpdate != null) {
     console.log("🌐 File changed: ", tsFileUpdate);
-    await buildWebRunner();
+    if (await buildWebRunner()) {
+      sendHotUpdate({ type: "host_source" });
+    }
   }
 
   var odinFileUpdate = event.paths.find((p) => p.endsWith(".odin"));
   if (odinFileUpdate != null) {
     console.log("👾 File changed: ", odinFileUpdate);
     if (await buildWasm()) {
-      for (var s of sockets) {
-        s.send(JSON.stringify(odinFileUpdate));
-      }
+      sendHotUpdate({ type: "webassembly" });
     }
   }
 }

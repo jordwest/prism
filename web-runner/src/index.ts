@@ -206,9 +206,15 @@ async function restartWasm() {
 }
 
 const ws = new WebSocket("ws://localhost:8000");
-ws.addEventListener("message", async () => {
+ws.addEventListener("message", async (msg) => {
   console.info("Websocket message received, rebooting wasm");
-  restartWasm();
+  const data = JSON.parse(msg.data);
+  console.log(data);
+  if (data.type == "webassembly") {
+    restartWasm();
+  } else if (data.type == "host_source") {
+    window.location.reload();
+  }
 });
 
 const frame: FrameRequestCallback = (time) => {
