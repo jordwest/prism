@@ -1,5 +1,6 @@
 package main
 
+import "core:math"
 import "fresnel"
 
 InputActions :: enum i32 {
@@ -7,6 +8,8 @@ InputActions :: enum i32 {
 	MoveDown                   = 2,
 	MoveLeft                   = 3,
 	MoveRight                  = 4,
+	ZoomIn                     = 101,
+	ZoomOut                    = 102,
 	DebugRenderHostStateToggle = 9000,
 }
 
@@ -35,6 +38,13 @@ input_system :: proc(dt: f32) {
 
 	if state.host.is_host && is_action_just_pressed(.DebugRenderHostStateToggle) {
 		state.debug.render_host_state = !state.debug.render_host_state
+	}
+
+	if is_action_just_pressed(.ZoomIn) {
+		state.client.zoom = math.min(8, state.client.zoom + 1)
+	}
+	if is_action_just_pressed(.ZoomOut) {
+		state.client.zoom = math.max(1, state.client.zoom - 1)
 	}
 }
 

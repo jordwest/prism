@@ -122,9 +122,6 @@ tick :: proc "c" (dt: f32) {
 
 	mem.arena_free_all(&frame_arena)
 
-	fresnel.metric_i32("persistent mem", i32(persistent_arena.offset))
-	fresnel.metric_i32("persistent mem peak", i32(persistent_arena.peak_used))
-
 	state.t += dt
 
 	if state.host.is_host {
@@ -133,9 +130,7 @@ tick :: proc "c" (dt: f32) {
 
 	client_tick(dt)
 
-	fresnel.metric_i32("temp mem", i32(frame_arena.offset))
-	fresnel.metric_i32("temp mem peak", i32(frame_arena.peak_used))
-	fresnel.metric_i32("temp mem count", i32(frame_arena.temp_count))
+	memory_log_metrics()
 	fresnel.metric_i32("bytes sent", i32(state.bytes_sent))
 	fresnel.metric_i32("bytes received", state.bytes_received)
 }

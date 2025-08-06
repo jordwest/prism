@@ -6,6 +6,10 @@ import "prism"
 
 host_tick :: proc(dt: f32) {
 	host_poll()
+
+	if pcg, ok := state.host.pcg.?; ok {
+		procgen_iterate(pcg)
+	}
 }
 
 HostError :: union {
@@ -25,10 +29,9 @@ host_boot :: proc() -> HostError {
 
 	state.debug.render_host_state = DEFAULT_DEBUG_RENDER_HOST_STATE
 
-	procgen_generate_level(0xdeadbeef)
-
-	fresnel.metric_i32("host mem", i32(host_arena.offset))
-	fresnel.metric_i32("host mem peak", i32(host_arena.peak_used))
+	pcg := new(PcgState)
+	state.host.pcg = pcg
+	procgen_init(pcg)
 
 	return nil
 }
@@ -73,6 +76,7 @@ host_poll :: proc() {
 
 			player_entity := host_spawn_entity(EntityMetaId.Player)
 			player_entity.pos = {2, 5}
+			player_entity.player_id = new_player_id
 
 			state.host.players[new_player_id] = Player {
 				player_id        = new_player_id,

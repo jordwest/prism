@@ -82,3 +82,44 @@ Ok first thing I'm gonna start on procgen because it's fun.
 Got tile data struct in place, also tweaked the cursor a bit. Now to draw rooms and render them.
 
 Thinking I'll also add a switch to toggle between rendering host and client state (but keep using client state for things like camera pos)
+
+Switch is done, added some deterministic randomness thanks to splitmix, got a room rendering. Now need to add more rooms. Getting a bit ahead of myself thinking about all the things I added in the last rewrite such as doors.
+
+I think first thing is to find a place to put another room along the wall of any previous rooms.
+
+Now need to detect overlaps, writing an aabb check.
+
+a.x1 <= b.x1 && a.x2 >= b.x1
+```
+       x1     x2
+A:      |------|
+B:           |-------|
+
+A:      |--------------|
+B:           |-------|
+```
+
+
+b.x1 <= a.x1 && b.x2 >= a.x1
+```
+A:               |------|
+B:           |-------|
+
+A:               |------|
+B:           |-------------|
+```
+
+!(b.x1 < a.x1 && b.x2 > a.x1)
+!(a.x1 < b.x1 && a.x2 > b.x1)
+```
+A:               |------|
+B:     |------|
+
+A:      |------|
+B:                |------|
+```
+
+
+Room generation done to a good enough standard for now. Can tweak the dead ends issue later when there's some actual gameplay (added a todo)
+
+Really feel like I'm hitting the flow in Odin now, haven't hit many roadblocks the last few days. Even allocation is pretty much a non-issue now. The hot reload dev cycle is also just _so_ nice.

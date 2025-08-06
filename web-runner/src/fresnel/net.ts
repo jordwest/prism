@@ -12,7 +12,9 @@ const getMailbox = (state: FresnelState, clientId: number): Mailbox => {
   return mailboxes.get(clientId)!;
 };
 
-const delayMs = () => 150;
+// const delayMs = () => 0;
+// const delayMs = () => 150;
+const delayMs = () => 600;
 
 export function createNetImports(instance: FresnelInstance) {
   return {

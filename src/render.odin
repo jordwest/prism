@@ -19,6 +19,18 @@ render_debug_overlays :: proc() {
 	if state.debug.render_host_state {
 		fresnel.fill(255, 255, 255, 255)
 		fresnel.draw_text(16, 16, 16, "Host state")
+
+		if pcg, ok := state.host.pcg.?; ok {
+			offset := screen_coord(TileCoord({pcg.cursor.x1, pcg.cursor.y1}))
+			dims := vec2f(prism.aabb_size(pcg.cursor)) * GRID_SIZE * state.client.zoom
+			fresnel.fill(255, 200, 200, 0.5)
+			fresnel.draw_rect(offset.x, offset.y, dims.x, dims.y)
+
+			offset = screen_coord(TileCoord({pcg.cursor2.x1, pcg.cursor2.y1}))
+			dims = vec2f(prism.aabb_size(pcg.cursor2)) * GRID_SIZE * state.client.zoom
+			fresnel.fill(170, 170, 255, 0.5)
+			fresnel.draw_rect(offset.x, offset.y, dims.x, dims.y)
+		}
 	}
 }
 
@@ -37,7 +49,7 @@ render_move_camera :: proc(dt: f32) {
 
 render_tiles :: proc() {
 	t0 := fresnel.now()
-	cull_margin := GRID_SIZE * state.client.zoom
+	grid_size := GRID_SIZE * state.client.zoom
 
 	tiles := &state.client.shared.tiles
 	if (state.debug.render_host_state) {
@@ -51,10 +63,10 @@ render_tiles :: proc() {
 			tile_c := TileCoord{x, y}
 			screen_c := screen_coord(tile_c)
 			cull :=
-				screen_c.x < -cull_margin ||
-				screen_c.y < -cull_margin ||
-				screen_c.x > (canvas_size.x + cull_margin) ||
-				screen_c.y > (canvas_size.y + cull_margin)
+				screen_c.x < -grid_size ||
+				screen_c.y < -grid_size ||
+				screen_c.x > (canvas_size.x + grid_size) ||
+				screen_c.y > (canvas_size.y + grid_size)
 			if cull do continue
 
 			tile_randomiser := prism.rand_splitmix_create(GAME_SEED, 1)
@@ -79,6 +91,7 @@ render_tiles :: proc() {
 			} else {
 				trace("Skipping %d, %d", tile_c.x, tile_c.y)
 			}
+
 		}
 	}
 
@@ -100,7 +113,11 @@ render_sprite :: proc(sprite_coords: [2]f32, pos: ScreenCoord) {
 
 render_entities :: proc() {
 	i: i32 = 0
-	for id, &e in state.client.entities {
+	entities := &state.client.entities
+	if (state.debug.render_host_state) {
+		entities = &state.host.entities
+	}
+	for id, &e in entities {
 		i += 1
 		meta := entity_meta[e.meta_id]
 

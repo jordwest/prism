@@ -14,20 +14,23 @@ CAMERA_SPRING_DAMPER :: 20
 // Whether to send cursor coords to the server. It's a nice feature but makes the messaging logs noisy
 CURSOR_REPORTING_ENABLED :: true
 
-LEVEL_WIDTH :: 50
-LEVEL_HEIGHT :: 50
+LEVEL_WIDTH :: 40
+LEVEL_HEIGHT :: 40
 
 /***************
  * FUTURE STATE
  ***************/
 
-GAME_SEED :: 0xdeadbeef
+GAME_SEED :: 0xdeadbeef3
 
 /*****************
  * DEBUG OPTIONS
  *****************/
 
 DEBUG_OVERLAYS_ENABLED :: true
+// Delay procedural generation iterations by this many frames
+// (to help visualise the generation)
+PCG_ITERATION_DELAY :: 3
 
 /***********
  * LOGGING *
@@ -54,3 +57,9 @@ SPRITE_COORD_BRICK_WALL_BEHIND :: [2]f32{1 * 16, 3 * 16}
 SPRITE_COORD_OTHER_PLAYER_CURSOR :: [2]f32{16 * 2, 16 * 5}
 SPRITE_COORD_ACTIVE_CHEVRON :: [2]f32{16, 64}
 SPRITE_COORD_THOUGHT_BUBBLE :: [2]f32{0, 64}
+
+/********************
+ * RANDOMNESS STREAMS
+ ********************/
+
+RNG_ROOM_PLACEMENT :: u64(0x7687ffa2b52a)

@@ -43,6 +43,7 @@ HostState :: struct {
 	clients:          map[i32]Client,
 	players:          map[PlayerId]Player,
 	entities:         map[EntityId]Entity,
+	pcg:              Maybe(^PcgState),
 
 	// The sequence id of the event last fired by the server
 	// See JOURNAL.md, 5 Aug 2025

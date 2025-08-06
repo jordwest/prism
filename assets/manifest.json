@@ -26,6 +26,16 @@
         "name": "debug_host_render_toggle",
         "id": 9000,
         "webKeys": ["0"]
+      },
+      {
+        "name": "zoom_in",
+        "id": 101,
+        "webKeys": ["="]
+      },
+      {
+        "name": "zoom_out",
+        "id": 102,
+        "webKeys": ["-"]
       }
     ]
   }

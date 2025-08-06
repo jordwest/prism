@@ -38,6 +38,13 @@ tile_at :: proc(tiles: ^Tiles, tile: TileCoord) -> Maybe(^TileData) {
 	return &tiles.data[idx]
 }
 
+tile_draw_door :: proc(pos: TileCoord) {
+	tile, ok := tile_at(&state.host.shared.tiles, pos).?
+	if ok {
+		tile.type = .Floor
+	}
+}
+
 tile_draw_room :: proc(pos: TileCoord, size: Vec2i) {
 	for ox: i32 = 0; ox < size.x; ox += 1 {
 		for oy: i32 = 0; oy < size.y; oy += 1 {
