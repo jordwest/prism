@@ -86,6 +86,7 @@ todo,feat,ideas,"The god Thoth is watching over the player, pleased and displeas
 todo,feat,ideas,Net traps
 todo,devtool,ideas,Add a test runner in the fresnel host to call wasm exports prefixed with test_
 todo,refactor,ideas,Add a DirtyEntity Set instead of a flag on each entity (for perf and tidiness)
+todo,feat,ideas,Play as ghost when dead but teammates still alive (see journal for more)
 todo,perf,ideas,Custom binary entity and message serialization for more compact messaging
 todo,perf,ideas,Networkless play (using a dummy server instead of the server connecting to itself)
 todo,feat,ideas,"Randomly generate a list of ""mercenaries"" that the player can choose from to contract. Gate progress through price of hiring them"

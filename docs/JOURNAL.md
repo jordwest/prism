@@ -140,6 +140,18 @@ Ok think I'm gonna have to call it there for the night. Gonna call djikstra maps
 
 Might also try out creating a spawn point, and pathing to the furthest point on the map then regenerating another djikstra's map.
 
-Ok that last bit is done, can't stop
+Ok that last bit is done, can't stop...
+
+Had this idea for what to do when a player dies. They could resurrect as a ghost, which has a few totally different strengths and weaknesses:
+
+ - Players can't see their ghost vision (and maybe can't see the ghost itself?)
+ - Can induce fear into players and enemies by passing through them
+ - Can move very quickly
+ - Can go through walls
+ - Can affect psychic abilities/enemies
+ - Infinite HP (but teammates may stay alive)
+ - Can't carry items - upgrades abilities instead
+    - Telekenesis? Can hurl items around the room
+ - Generally a pretty weak character on its own but should still act as a good support for the team
 
 # Thursday 7 Aug 2025
