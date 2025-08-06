@@ -82,7 +82,7 @@ render_tiles :: proc() {
 				screen_c.y > (canvas_size.y + grid_size)
 			if cull do continue
 
-			tile_randomiser := prism.rand_splitmix_create(GAME_SEED, 1)
+			tile_randomiser := prism.rand_splitmix_create(GAME_SEED, RNG_TILE_VARIANCE)
 			prism.rand_splitmix_add(&tile_randomiser, x)
 			prism.rand_splitmix_add(&tile_randomiser, y)
 
@@ -98,7 +98,7 @@ render_tiles :: proc() {
 				} else if tile.type == .BrickWall {
 					front_facing := has_tile_below && tile_below.type != .BrickWall
 					sprite :=
-						front_facing ? SPRITE_COORD_BRICK_WALL_FACE : SPRITE_COORD_BRICK_WALL_BEHIND
+						front_facing ? (use_alternative_tile ? SPRITE_COORD_BRICK_WALL_FACE_2 : SPRITE_COORD_BRICK_WALL_FACE) : SPRITE_COORD_BRICK_WALL_BEHIND
 					render_sprite(sprite, screen_c)
 				}
 			} else {
