@@ -60,7 +60,7 @@ render_debug_overlays :: proc() {
 
 // TODO: Does this really belong in render? Find a better home
 render_move_camera :: proc(dt: f32) {
-	if e, ok := state.client.entities[state.client.controlling_entity_id]; ok {
+	if e, ok := state.client.common.entities[state.client.controlling_entity_id]; ok {
 		target := vec2f(e.pos.xy)
 		cmd := entity_get_command(&e)
 		if cmd.type == .Move {
@@ -75,9 +75,9 @@ render_tiles :: proc() {
 	t0 := fresnel.now()
 	grid_size := GRID_SIZE * state.client.zoom
 
-	tiles := &state.client.shared.tiles
+	tiles := &state.client.common.tiles
 	if (state.debug.render_host_state) {
-		tiles = &state.host.shared.tiles
+		tiles = &state.host.common.tiles
 	}
 
 	canvas_size := vec2f(state.width, state.height)
@@ -112,7 +112,7 @@ render_tiles :: proc() {
 						front_facing ? (use_alternative_tile ? SPRITE_COORD_BRICK_WALL_FACE_2 : SPRITE_COORD_BRICK_WALL_FACE) : SPRITE_COORD_BRICK_WALL_BEHIND
 					render_sprite(sprite, screen_c)
 				} else if tile.type == .Water {
-					render_sprite(SPRITE_COORD_RECT, screen_c)
+					render_sprite(SPRITE_COORD_WATER, screen_c)
 				}
 			} else {
 				trace("Skipping %d, %d", tile_c.x, tile_c.y)
@@ -139,9 +139,9 @@ render_sprite :: proc(sprite_coords: [2]f32, pos: ScreenCoord) {
 
 render_entities :: proc() {
 	i: i32 = 0
-	entities := &state.client.entities
+	entities := &state.client.common.entities
 	if (state.debug.render_host_state) {
-		entities = &state.host.entities
+		entities = &state.host.common.entities
 	}
 	for id, &e in entities {
 		i += 1
@@ -189,7 +189,7 @@ render_tile_cursors :: proc(dt: f32) {
 	render_sprite(SPRITE_COORD_RECT, screen_coord(state.client.cursor_pos))
 
 	// Draw other players' cursors
-	for _, &p in state.client.players {
+	for _, &p in state.client.common.players {
 		if p.player_id != state.client.player_id {
 			// Like render_move_camera, does this spring logic belong in a separate system (like an animation system)?
 			p._cursor_spring.target = vec2f(p.cursor_tile)

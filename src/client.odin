@@ -10,8 +10,8 @@ ClientError :: union {
 }
 
 client_boot :: proc(width: i32, height: i32) -> ClientError {
-	state.client.players = make(map[PlayerId]Player, 8) or_return
-	state.client.entities = make(map[EntityId]Entity, 2048) or_return
+	state.client.common.players = make(map[PlayerId]Player, 8) or_return
+	state.client.common.entities = make(map[EntityId]Entity, 2048) or_return
 	state.client.zoom = DEFAULT_ZOOM
 	state.client.camera = prism.spring_create(
 		2,
@@ -65,7 +65,7 @@ client_poll :: proc() {
 			state.client.controlling_entity_id = m.entity_id
 
 		case HostMessageCursorPos:
-			player, ok := &state.client.players[m.player_id]
+			player, ok := &state.client.common.players[m.player_id]
 			if ok {
 				player.cursor_tile = m.pos
 				player.cursor_updated_at = state.t
@@ -73,26 +73,31 @@ client_poll :: proc() {
 		case HostMessageEvent:
 			switch ev in m.event {
 			case EventEntitySpawned:
-				state.client.entities[ev.entity.id] = ev.entity
+				state.client.common.entities[ev.entity.id] = ev.entity
 			case EventEntityMoved:
 				client_get_entity(ev.entity_id).pos = ev.pos
 			case EventPlayerJoined:
-				state.client.players[ev.player_id] = Player {
+				state.client.common.players[ev.player_id] = Player {
 					player_id        = ev.player_id,
 					player_entity_id = ev.player_entity_id,
 					cursor_tile      = {0, 0},
 					_cursor_spring   = prism.spring_create(2, [2]f32{0, 0}, k = 40, c = 10),
 				}
-				if e, ok := &state.client.entities[ev.player_entity_id]; ok {
+				if e, ok := &state.client.common.entities[ev.player_entity_id]; ok {
 					e.player_id = ev.player_id
 				} else {
-					warn("Player entity does not exist")
+					warn(
+						"Player entity does not exist %v %w",
+						ev.player_entity_id,
+						state.client.common.entities,
+					)
 				}
 			case EventEntityCommandChanged:
-				e, ok := &state.client.entities[ev.entity_id]
+				e, ok := &state.client.common.entities[ev.entity_id]
 				if ok {
 					e.cmd = ev.cmd
-					if p, is_player := &state.client.players[e.player_id.? or_else 0]; is_player {
+					if p, is_player := &state.client.common.players[e.player_id.? or_else 0];
+					   is_player {
 						// Mark their cursor as stale to hide it immediately
 						p.cursor_updated_at = 0
 					}
@@ -115,7 +120,7 @@ client_poll :: proc() {
 }
 
 client_get_entity :: proc(entity_id: EntityId) -> ^Entity {
-	return &state.client.entities[entity_id]
+	return &state.client.common.entities[entity_id]
 }
 
 client_send_message :: proc(msg: ClientMessage) {

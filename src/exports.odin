@@ -58,7 +58,7 @@ boot :: proc "c" (width: i32, height: i32, flags: i32) {
 	trace("Size of AppState: %d", size_of(AppState))
 	trace("Size of HostState: %d", size_of(HostState))
 	trace("Size of ClientState: %d", size_of(ClientState))
-	trace("Size of SharedState: %d", size_of(SharedState))
+	trace("Size of CommonState: %d", size_of(CommonState))
 
 	debug_init()
 

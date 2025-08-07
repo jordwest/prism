@@ -13,13 +13,16 @@ AppState :: struct {
 	debug:          DebugState,
 }
 
-SharedState :: struct {
-	tiles: Tiles,
+// State common to both host and clients
+CommonState :: struct {
+	tiles:    Tiles,
+	players:  map[PlayerId]Player,
+	entities: map[EntityId]Entity,
 	// TODO: Move player and entity map here
 }
 
 ClientState :: struct {
-	shared:                SharedState,
+	common:                CommonState,
 	cursor_pos:            TileCoord,
 	cursor_screen_pos:     ScreenCoord,
 	zoom:                  f32,
@@ -27,8 +30,6 @@ ClientState :: struct {
 	my_token:              PlayerToken,
 	player_id:             PlayerId,
 	controlling_entity_id: EntityId,
-	players:               map[PlayerId]Player,
-	entities:              map[EntityId]Entity,
 
 	// The sequence id of the command last issued by the client
 	// See JOURNAL.md, 5 Aug 2025
@@ -36,14 +37,12 @@ ClientState :: struct {
 }
 
 HostState :: struct {
-	shared:           SharedState,
+	common:           CommonState,
 	is_host:          bool,
 	newest_entity_id: i32,
 	newest_player_id: i32,
 	spawn_point:      TileCoord,
 	clients:          map[i32]Client,
-	players:          map[PlayerId]Player,
-	entities:         map[EntityId]Entity,
 	pcg:              Maybe(^PcgState),
 
 	// The sequence id of the event last fired by the server

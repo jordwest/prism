@@ -16,7 +16,7 @@ InputActions :: enum i32 {
 }
 
 input_system :: proc(dt: f32) {
-	player_entity, ok := &state.client.entities[state.client.controlling_entity_id]
+	player_entity, ok := &state.client.common.entities[state.client.controlling_entity_id]
 
 	if ok {
 		cmd := entity_get_command(player_entity)

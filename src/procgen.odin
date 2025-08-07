@@ -95,7 +95,7 @@ procgen_iterate :: proc(pcg: ^PcgState) {
 
 @(private = "file")
 _neighbour_cost :: proc(_from: [2]i32, to: [2]i32) -> f32 {
-	tile, valid_tile := tile_at(&state.host.shared.tiles, TileCoord(to)).?
+	tile, valid_tile := tile_at(&state.host.common.tiles, TileCoord(to)).?
 	if !valid_tile do return -1
 	if .Traversable not_in tile_flags[tile.type] do return -1
 	if .Slow in tile_flags[tile.type] do return 2

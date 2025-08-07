@@ -44,14 +44,14 @@ tile_at :: proc(tiles: ^Tiles, tile: TileCoord) -> Maybe(^TileData) {
 }
 
 tile_draw_door :: proc(pos: TileCoord) {
-	tile, ok := tile_at(&state.host.shared.tiles, pos).?
+	tile, ok := tile_at(&state.host.common.tiles, pos).?
 	if ok {
 		tile.type = .Floor
 	}
 }
 
 tile_draw :: proc(pos: TileCoord, type: TileType) {
-	tile, ok := tile_at(&state.host.shared.tiles, pos).?
+	tile, ok := tile_at(&state.host.common.tiles, pos).?
 	if ok {
 		tile.type = type
 	}
@@ -63,7 +63,7 @@ tile_draw_room :: proc(pos: TileCoord, size: Vec2i) {
 			is_boundary := ox == 0 || oy == 0 || ox == size.x - 1 || oy == size.y - 1
 			coord := TileCoord({pos.x + ox, pos.y + oy})
 
-			tile, ok := tile_at(&state.host.shared.tiles, coord).?
+			tile, ok := tile_at(&state.host.common.tiles, coord).?
 			if ok {
 				tile.type = is_boundary ? .BrickWall : .Floor
 				if !is_boundary &&

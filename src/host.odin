@@ -66,9 +66,13 @@ host_boot :: proc() -> HostError {
 	alloc_error: mem.Allocator_Error
 
 	state.host.is_host = true
-	state.host.players = make(map[PlayerId]Player, 8, allocator = host_arena_alloc) or_return
 	state.host.clients = make(map[i32]Client, 128, allocator = host_arena_alloc) or_return
-	state.host.entities = make(map[EntityId]Entity, MAX_ENTITIES) or_return
+	state.host.common.players = make(
+		map[PlayerId]Player,
+		8,
+		allocator = host_arena_alloc,
+	) or_return
+	state.host.common.entities = make(map[EntityId]Entity, MAX_ENTITIES) or_return
 
 	state.debug.render_host_state = DEFAULT_DEBUG_RENDER_HOST_STATE
 
@@ -85,7 +89,7 @@ host_on_client_connected :: proc(clientId: i32) {
 	state.host.clients[clientId] = Client{}
 
 	// TODO: Just send the whole state instead
-	for _, e in state.host.entities {
+	for _, e in state.host.common.entities {
 		host_broadcast_message(HostMessageEvent{event = EventEntitySpawned{entity = e}})
 	}
 }
@@ -111,7 +115,7 @@ host_poll :: proc() {
 		}
 
 		client, client_exists := state.host.clients[client_id]
-		player, player_exists := state.host.players[client.player_id]
+		player, player_exists := state.host.common.players[client.player_id]
 		switch m in msg {
 		case ClientMessageIdentify:
 			state.host.newest_player_id += 1
@@ -121,7 +125,7 @@ host_poll :: proc() {
 			player_entity.pos = {2, 5}
 			player_entity.player_id = new_player_id
 
-			state.host.players[new_player_id] = Player {
+			state.host.common.players[new_player_id] = Player {
 				player_id        = new_player_id,
 				player_entity_id = player_entity.id,
 				_token           = m.token,
@@ -154,7 +158,7 @@ host_poll :: proc() {
 				)
 			}
 		case ClientMessageSubmitCommand:
-			entity := &state.host.entities[player.player_entity_id]
+			entity := &state.host.common.entities[player.player_entity_id]
 			entity.pos = m.command.pos
 			entity.cmd = m.command
 			host_broadcast_message(
@@ -172,7 +176,6 @@ host_poll :: proc() {
 					},
 				},
 			)
-		// todo
 		}
 
 		if HOST_LOG_MESSAGES do info("[HOST] %w", msg)
@@ -203,8 +206,8 @@ host_spawn_entity :: proc(meta_id: EntityMetaId) -> ^Entity {
 		id      = id,
 		meta_id = meta_id,
 	}
-	state.host.entities[id] = new_entity
+	state.host.common.entities[id] = new_entity
 	host_broadcast_message(HostMessageEvent{event = EventEntitySpawned{entity = new_entity}})
 
-	return &state.host.entities[id]
+	return &state.host.common.entities[id]
 }
