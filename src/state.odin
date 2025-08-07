@@ -70,10 +70,12 @@ Client :: struct {
 	player_id: PlayerId,
 }
 
-serialize_state :: proc(s: ^prism.Serializer, state: ^AppState) -> prism.SerializationResult {
-	prism.serialize(s, &state.t) or_return
-	prism.serialize(s, &state.client.my_token) or_return
-	prism.serialize(s, (^i32)(&state.client.player_id)) or_return
+state_players :: proc(s: ^CommonState)
+
+state_serialize :: proc(s: ^prism.Serializer, state: ^AppState) -> prism.SerializationResult {
+	serialize(s, &state.t) or_return
+	serialize(s, &state.client.my_token) or_return
+	serialize(s, (^i32)(&state.client.player_id)) or_return
 
 	return nil
 }

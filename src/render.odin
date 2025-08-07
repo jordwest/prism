@@ -75,13 +75,11 @@ render_tiles :: proc() {
 	t0 := fresnel.now()
 	grid_size := GRID_SIZE * state.client.zoom
 
-	tiles := &state.client.common.tiles
-	if (state.debug.render_host_state) {
-		tiles = &state.host.common.tiles
-	}
+	tiles := state.debug.render_host_state ? &state.host.common.tiles : &state.client.common.tiles
 
 	canvas_size := vec2f(state.width, state.height)
 
+	rng := prism.rand_splitmix_create(GAME_SEED, RNG_TILE_VARIANCE)
 	for x: i32 = 0; x < LEVEL_WIDTH; x += 1 {
 		for y: i32 = 0; y < LEVEL_HEIGHT; y += 1 {
 			tile_c := TileCoord{x, y}
@@ -93,7 +91,7 @@ render_tiles :: proc() {
 				screen_c.y > (canvas_size.y + grid_size)
 			if cull do continue
 
-			tile_randomiser := prism.rand_splitmix_create(GAME_SEED, RNG_TILE_VARIANCE)
+			tile_randomiser := rng // Copy rng for this tile since we'll mutate it
 			prism.rand_splitmix_add(&tile_randomiser, x)
 			prism.rand_splitmix_add(&tile_randomiser, y)
 

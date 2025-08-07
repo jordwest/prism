@@ -140,7 +140,7 @@ tick :: proc "c" (dt: f32) {
 on_dev_hot_unload :: proc "c" () {
 	context = runtime.default_context()
 	szr := prism.create_serializer(frame_arena_alloc)
-	result := serialize_state(&szr, &state)
+	result := serialize(&szr, &state)
 	if result != nil {
 		err("Serialization failed! %s at %d", result, szr.offset)
 	}
