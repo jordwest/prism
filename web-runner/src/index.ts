@@ -234,6 +234,7 @@ ws.addEventListener("message", async (msg) => {
       errorSound.currentTime = 0;
       errorSound.play();
     } else {
+      hotReloadSound.currentTime = 0;
       hotReloadSound.play();
       restartWasm();
     }
@@ -296,7 +297,7 @@ function audioTest() {
   audioElement.src = "/assets/Daudir.mp3";
   errorSound.src = "/assets/miss.ogg";
   audioElement3.src = "/assets/ambience.mp3";
-  hotReloadSound.src = "/assets/player-death.mp3";
+  hotReloadSound.src = "/assets/punch.wav";
   audioElement3.loop = true;
   const track = audioContext.createMediaElementSource(audioElement);
   track.connect(audioContext.destination);
