@@ -228,9 +228,15 @@ const ws = new WebSocket("ws://localhost:8000");
 ws.addEventListener("message", async (msg) => {
   console.info("Websocket message received, rebooting wasm");
   const data = JSON.parse(msg.data);
-  console.log(data);
   if (data.type == "webassembly") {
-    restartWasm();
+    if (data.error != null) {
+      console.error("Error compiling webassembly", data.error);
+      errorSound.currentTime = 0;
+      errorSound.play();
+    } else {
+      hotReloadSound.play();
+      restartWasm();
+    }
   } else if (data.type == "host_source") {
     window.location.reload();
   }
@@ -281,16 +287,16 @@ setTimeout(() => {
 }, 100);
 
 const audioElement = document.createElement("audio");
-const audioElement2 = document.createElement("audio");
+const errorSound = document.createElement("audio");
 const audioElement3 = document.createElement("audio");
-const audioElement4 = document.createElement("audio");
+const hotReloadSound = document.createElement("audio");
 function audioTest() {
   document.body.appendChild(audioElement);
   const audioContext = new AudioContext();
   audioElement.src = "/assets/Daudir.mp3";
-  audioElement2.src = "/assets/miss.ogg";
+  errorSound.src = "/assets/miss.ogg";
   audioElement3.src = "/assets/ambience.mp3";
-  audioElement4.src = "/assets/player-death.mp3";
+  hotReloadSound.src = "/assets/player-death.mp3";
   audioElement3.loop = true;
   const track = audioContext.createMediaElementSource(audioElement);
   track.connect(audioContext.destination);
@@ -305,10 +311,10 @@ audioTest();
 
 canvas.addEventListener("mousedown", () => {
   // audioElement.play();
-  // if (audioElement2.currentTime != 0) {
-  //   audioElement2.currentTime = 0;
+  // if (errorSound.currentTime != 0) {
+  //   errorSound.currentTime = 0;
   // }
-  // audioElement2.play();
+  // errorSound.play();
   audioElement3.play();
-  // audioElement4.play();
+  // hotReloadSound.play();
 });

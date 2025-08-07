@@ -20,9 +20,13 @@ Deno.serve(
 );
 
 async function buildAll() {
-  // Build everything
-  await buildWebRunner();
-  await buildWasm();
+  try {
+    // Build everything
+    await buildWebRunner();
+    await buildWasm();
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 buildAll();
@@ -87,7 +91,7 @@ async function buildCommand({ cmdKey, cmd, args, cwd }) {
     const outStr = new TextDecoder().decode(stdout);
     const outErr = new TextDecoder().decode(stderr);
     console.log(outStr, outErr);
-    return false;
+    throw new Error([outStr, outErr].join("\n"));
   }
 }
 
@@ -166,8 +170,12 @@ async function onFileUpdate(event) {
   var odinFileUpdate = event.paths.find((p) => p.endsWith(".odin"));
   if (odinFileUpdate != null) {
     console.log("👾 File changed: ", odinFileUpdate);
-    if (await buildWasm()) {
-      sendHotUpdate({ type: "webassembly" });
+    try {
+      if (await buildWasm()) {
+        sendHotUpdate({ type: "webassembly" });
+      }
+    } catch (e) {
+      sendHotUpdate({ type: "webassembly", error: e.toString() });
     }
   }
 }
