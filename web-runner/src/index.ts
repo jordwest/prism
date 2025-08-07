@@ -283,12 +283,14 @@ setTimeout(() => {
 const audioElement = document.createElement("audio");
 const audioElement2 = document.createElement("audio");
 const audioElement3 = document.createElement("audio");
+const audioElement4 = document.createElement("audio");
 function audioTest() {
   document.body.appendChild(audioElement);
   const audioContext = new AudioContext();
   audioElement.src = "/assets/Daudir.mp3";
   audioElement2.src = "/assets/miss.ogg";
   audioElement3.src = "/assets/ambience.mp3";
+  audioElement4.src = "/assets/player-death.mp3";
   audioElement3.loop = true;
   const track = audioContext.createMediaElementSource(audioElement);
   track.connect(audioContext.destination);
@@ -296,6 +298,8 @@ function audioTest() {
   track2.connect(audioContext.destination);
   const track3 = audioContext.createMediaElementSource(audioElement);
   track3.connect(audioContext.destination);
+  const track4 = audioContext.createMediaElementSource(audioElement);
+  track4.connect(audioContext.destination);
 }
 audioTest();
 
@@ -306,4 +310,5 @@ canvas.addEventListener("mousedown", () => {
   // }
   // audioElement2.play();
   audioElement3.play();
+  // audioElement4.play();
 });

@@ -42,12 +42,12 @@ done,devtool,b3,Added a host state visualisation toggle
 done,devtool,b3,Add a simple stutter checker
 done,feat,b3,Add djikstra's algorithm
 todo,refactor,b3,Send tile data to client
+todo,refactor,b3,Make event handlers able to operate on both host and client state
 todo,bug,b3,"Player cursor missing when net delay=0, race condition?"
 todo,feat,b3,"Add map and list serialization, send game state to newly joined clients"
 todo,feat,b3,Add player pathfinding
 todo,devtool,b3,Hydrate client and server entity state in hot reload
 todo,refactor,b3,Consider splitting server and client into separate packages
-todo,refactor,b3,Make event handlers able to operate on both host and client state
 todo,feat,b3,Add enemy
 todo,feat,b3,Add melee attacks
 todo,feat,b3,Add hit/miss chance

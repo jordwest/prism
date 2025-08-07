@@ -152,6 +152,8 @@ Had this idea for what to do when a player dies. They could resurrect as a ghost
  - Infinite HP (but teammates may stay alive)
  - Can't carry items - upgrades abilities instead
     - Telekenesis? Can hurl items around the room
- - Generally a pretty weak character on its own but should still act as a good support for the team
+ - Generally a pretty weak character on its own but should still act as a good support for the team (or cause chaos)
 
 # Thursday 7 Aug 2025
+
+First thing I think I'll work on is consolidating event handlers between server/client as I think this is going to be get more challenging the longer I leave it.
