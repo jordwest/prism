@@ -35,11 +35,13 @@ EntityExists :: struct {
 SerializationError :: struct {
 	result: prism.SerializationResult,
 	data:   string,
+	offset: i32,
 }
 
 DeserializationError :: struct {
 	result: prism.SerializationResult,
 	data:   []u8,
+	offset: i32,
 }
 
 InvariantError :: struct {}

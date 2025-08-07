@@ -45,11 +45,10 @@ client_poll :: proc() -> Error {
 		if bytes_read <= 0 do break // No new messages
 		state.bytes_received += bytes_read
 
-		msg_in[0] = 34
 		s := prism.create_deserializer(msg_in)
 		msg: HostMessage
 		e := host_message_union_serialize(&s, &msg)
-		if e != nil do return error(DeserializationError{result = e, data = msg_in[:bytes_read]})
+		if e != nil do return error(DeserializationError{result = e, offset = s.offset, data = msg_in[:bytes_read]})
 
 		switch m in msg {
 		case HostMessageWelcome:

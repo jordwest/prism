@@ -107,7 +107,7 @@ host_poll :: proc() -> Error {
 		s := prism.create_deserializer(msg_in)
 		msg: ClientMessage
 		e := client_message_union_serialize(&s, &msg)
-		if e != nil do return error(DeserializationError{result = e, data = msg_in[:bytes_read]})
+		if e != nil do return error(DeserializationError{result = e, offset = s.offset, data = msg_in[:bytes_read]})
 
 		client, client_exists := state.host.clients[client_id]
 		player, player_exists := state.host.common.players[client.player_id]
