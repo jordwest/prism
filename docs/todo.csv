@@ -47,7 +47,7 @@ todo,bug,b3,"Player cursor missing when net delay=0, race condition?"
 todo,feat,b3,"Add map and list serialization, send game state to newly joined clients"
 todo,feat,b3,Add player pathfinding
 todo,devtool,b3,Hydrate client and server entity state in hot reload
-todo,refactor,b3,Consider splitting server and client into separate packages
+todo,refactor,ideas,Consider splitting server and client into separate packages
 todo,feat,b3,Add enemy
 todo,feat,b3,Add melee attacks
 todo,feat,b3,Add hit/miss chance

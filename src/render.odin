@@ -100,22 +100,23 @@ render_tiles :: proc() {
 			tile_below, has_tile_below := tile_at(tiles, tile_c + {0, 1}).?
 			tile, ok := tile_at(tiles, tile_c).?
 			if ok {
-				// TODO: Reenable this
 				use_alternative_tile := prism.rand_splitmix_get_bool(&tile_randomiser, 50)
-				if tile.type == .Floor {
-					sprite :=
-						use_alternative_tile ? SPRITE_COORD_FLOOR_STONE_2 : SPRITE_COORD_FLOOR_STONE
-					render_sprite(sprite, screen_c)
-				} else if tile.type == .BrickWall {
+				switch tile.type {
+				case .Empty:
+				case .RopeBridge:
+				//TODO
+				case .BrickWall:
 					front_facing := has_tile_below && tile_below.type != .BrickWall
 					sprite :=
 						front_facing ? (use_alternative_tile ? SPRITE_COORD_BRICK_WALL_FACE_2 : SPRITE_COORD_BRICK_WALL_FACE) : SPRITE_COORD_BRICK_WALL_BEHIND
 					render_sprite(sprite, screen_c)
-				} else if tile.type == .Water {
+				case .Floor:
+					sprite :=
+						use_alternative_tile ? SPRITE_COORD_FLOOR_STONE_2 : SPRITE_COORD_FLOOR_STONE
+					render_sprite(sprite, screen_c)
+				case .Water:
 					render_sprite(SPRITE_COORD_WATER, screen_c)
 				}
-			} else {
-				trace("Skipping %d, %d", tile_c.x, tile_c.y)
 			}
 
 		}
