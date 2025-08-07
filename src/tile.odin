@@ -80,3 +80,14 @@ tile_draw_room :: proc(pos: TileCoord, size: Vec2i) {
 		}
 	}
 }
+
+tiles_serialize :: proc(s: ^prism.Serializer, tiles: ^Tiles) -> prism.SerializationResult {
+	prism.serialize_slice(s, tiles.data[:], _tile_data_serialize) or_return
+	return nil
+}
+
+@(private = "file")
+_tile_data_serialize :: proc(s: ^prism.Serializer, tiles: ^TileData) -> prism.SerializationResult {
+	serialize(s, (^u8)(&tiles.type))
+	return nil
+}

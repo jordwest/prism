@@ -12,6 +12,7 @@ InnerError :: union {
 	SerializationError,
 	DeserializationError,
 	mem.Allocator_Error,
+	prism.SerializationResult,
 }
 
 Error :: union {
@@ -50,7 +51,10 @@ error :: proc(e: InnerError, loc: runtime.Source_Code_Location = #caller_locatio
 	return ErrorContainer{source = loc, error = e}
 }
 
-error_log :: proc(e: Error, loc: runtime.Source_Code_Location = #caller_location) -> Error {
+error_log_container :: proc(
+	e: Error,
+	loc: runtime.Source_Code_Location = #caller_location,
+) -> Error {
 	if err_container, ok := e.(ErrorContainer); ok {
 		source := err_container.source
 		err(
@@ -65,4 +69,8 @@ error_log :: proc(e: Error, loc: runtime.Source_Code_Location = #caller_location
 		)
 	}
 	return e
+}
+
+error_log :: proc {
+	error_log_container,
 }

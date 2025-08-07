@@ -72,7 +72,7 @@ async function buildCommand({ cmdKey, cmd, args, cwd }) {
 
   runningCmds.add(cmdKey);
 
-  console.log("⚙️ ", cmdKey);
+  console.log("⚙️ ========== ", cmdKey, " ==========");
   console.log("  🔄 ", cmd, args.join(" "));
 
   const t0 = performance.now();
@@ -80,7 +80,7 @@ async function buildCommand({ cmdKey, cmd, args, cwd }) {
   let { code, stdout, stderr } = await process.output();
   const t1 = performance.now();
 
-  const codePrint = code === 0 ? "  ✅ " : `  ❌ ${code}`;
+  const codePrint = code === 0 ? "  ✅ " : `  🔴 ${code}`;
   console.log(codePrint, `${Number(t1 - t0).toFixed(2)}ms`);
 
   runningCmds.delete(cmdKey);

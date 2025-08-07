@@ -8,6 +8,8 @@ DrawImageArgs :: struct {
 	dest_size:     [2]f32,
 }
 
+TestId :: distinct i32
+
 foreign import core "core"
 @(default_calling_convention = "c")
 foreign core {
@@ -53,6 +55,10 @@ foreign import debug "debug"
 foreign debug {
 	now :: proc() -> i32 ---
 	breakpoint :: proc() ---
+	test_case :: proc(name: string) -> TestId ---
+	test_assert :: proc(name: string, pass: bool) ---
+	test_complete :: proc(pass: bool = true) ---
+	test_report :: proc() -> i32 ---
 	log_panic :: proc(prefix: string, message: string, file: string, line: i32) ---
 	log_slice :: proc(name: string, ptr: []u8) ---
 	metric_i32 :: proc(name: string, val: i32) ---

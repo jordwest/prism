@@ -32,6 +32,7 @@ STUTTER_CHECKER_ENABLED :: false
 // Delay procedural generation iterations by this many frames
 // (to help visualise the generation)
 PCG_ITERATION_DELAY :: 0
+TESTS_ENABLED :: true
 
 /***********
  * LOGGING *

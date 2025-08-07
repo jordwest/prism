@@ -54,6 +54,10 @@ boot :: proc "c" (width: i32, height: i32, flags: i32) {
 	context.allocator = persistent_arena_alloc
 	context.temp_allocator = frame_arena_alloc
 
+	when TESTS_ENABLED {
+		tests()
+	}
+
 	info("Boot width=%d height=%d flags=%d", width, height, flags)
 	info("Size of AppState: %d", size_of(AppState))
 	info("Size of HostState: %d", size_of(HostState))

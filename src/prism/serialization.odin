@@ -3,8 +3,8 @@ package prism
 import "core:mem"
 import "core:slice"
 
-SerializationResult :: enum {
-	Success,
+SerializationResult :: enum byte {
+	Success = 0,
 	TokenMismatch,
 	CounterMismatch,
 	UnionVariantNotFound,
@@ -41,14 +41,13 @@ serialize_counter :: proc(s: ^Serializer) -> SerializationResult {
 }
 
 serialize_u8 :: proc(s: ^Serializer, state: ^u8) -> SerializationResult {
-	serialize_counter(s)
 	if (s.writing) {
 		append(&s.stream, state^)
 	} else {
 		state^ = s.stream[s.offset]
 	}
 	s.offset = s.offset + 1
-	return SerializationResult.Success
+	return nil
 }
 
 serialize_token :: proc(s: ^Serializer, token: string) -> SerializationResult {
@@ -62,7 +61,7 @@ serialize_token :: proc(s: ^Serializer, token: string) -> SerializationResult {
 		}
 	}
 	s.offset = s.offset + i32(len(token))
-	return SerializationResult.Success
+	return nil
 }
 
 serialize_array :: proc(s: ^Serializer, arr: ^[$N]u8) -> SerializationResult {
@@ -73,7 +72,7 @@ serialize_array :: proc(s: ^Serializer, arr: ^[$N]u8) -> SerializationResult {
 		copy(arr[:], str_slice)
 	}
 	s.offset = s.offset + i32(len(arr^))
-	return SerializationResult.Success
+	return nil
 }
 
 serialize_string :: proc(s: ^Serializer, state: ^string) -> SerializationResult {
@@ -92,17 +91,33 @@ serialize_string :: proc(s: ^Serializer, state: ^string) -> SerializationResult 
 		state^ = string(str_slice)
 	}
 	s.offset = s.offset + i32(len(state^))
-	return SerializationResult.Success
+	return nil
+}
+
+serialize_slice :: proc(
+	s: ^Serializer,
+	slice: []$T,
+	serialize_t: proc(_: ^Serializer, _: ^T) -> SerializationResult,
+) -> SerializationResult {
+	if s.writing {
+		length := u32(len(slice))
+		serialize_u32(s, &length) or_return
+		reserve(&s.stream, len(s.stream) + size_of(T) * int(length))
+		for i: u32 = 0; i < length; i += 1 {
+			serialize_t(s, &slice[i]) or_return
+		}
+	} else {
+		// read length
+	}
+	return nil
 }
 
 serialize_vec2i :: proc(s: ^Serializer, state: ^[2]i32) -> SerializationResult {
-	serialize_counter(s)
 	serialize_i32(s, &state[0])
 	serialize_i32(s, &state[1])
 	return nil
 }
 serialize_i32 :: proc(s: ^Serializer, state: ^i32) -> SerializationResult {
-	serialize_counter(s)
 	if (s.writing) {
 		els := transmute([4]u8)(state^)
 		append(&s.stream, ..els[:])
@@ -112,9 +127,18 @@ serialize_i32 :: proc(s: ^Serializer, state: ^i32) -> SerializationResult {
 	s.offset = s.offset + 4
 	return nil
 }
+serialize_u32 :: proc(s: ^Serializer, state: ^u32) -> SerializationResult {
+	if (s.writing) {
+		els := transmute([4]u8)(state^)
+		append(&s.stream, ..els[:])
+	} else {
+		state^ = slice.to_type(s.stream[s.offset:][:4], u32)
+	}
+	s.offset = s.offset + 4
+	return nil
+}
 
 serialize_f32 :: proc(s: ^Serializer, state: ^f32) -> SerializationResult {
-	serialize_counter(s)
 	if (s.writing) {
 		els := transmute([4]u8)(state^)
 		append(&s.stream, ..els[:])
@@ -218,4 +242,5 @@ serialize :: proc {
 	serialize_f32,
 	serialize_u8,
 	serialize_string,
+	serialize_slice,
 }

@@ -157,3 +157,7 @@ Had this idea for what to do when a player dies. They could resurrect as a ghost
 # Thursday 7 Aug 2025
 
 First thing I think I'll work on is consolidating event handlers between server/client as I think this is going to be get more challenging the longer I leave it.
+
+Done and also improved error handling, much easier to see what's going on now when errors and their locations are well reported. Not quite as good as a proper debugger but good enough for now.
+
+Next up is sending the tile data to the client. This might involve some generic array serialization.

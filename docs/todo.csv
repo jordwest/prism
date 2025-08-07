@@ -44,7 +44,7 @@ done,feat,b3,Add djikstra's algorithm
 done,devtool,b3,Hot reload - add sound when rebooting or failing to compile
 done,refactor,b3,Make event handlers able to operate on both host and client state
 done,refactor,b3,App error type that can be returned from various important places
-todo,refactor,b3,Send tile data to client
+doing,refactor,b3,Send tile data to client
 todo,feat,b3,"Add map and list serialization, send game state to newly joined clients"
 todo,bug,b3,"Player cursor missing when net delay=0, race condition?"
 todo,feat,b3,Add player pathfinding

@@ -22,6 +22,12 @@ export type FresnelInstance = {
   exports: FresnelExports;
   instanceId: number;
   region: { y: number; height: number };
+  tests: {
+    name: string | null;
+    hasAssertionFailure: boolean;
+    passed: number;
+    failed: number;
+  };
 
   input: {
     pressedActions: Set<number>;
@@ -51,6 +57,11 @@ export async function instantiate(
   instance.exports = instance.wasmInstance.exports as FresnelExports;
   instance.instanceId = instanceId;
   instance.region = region;
+  instance.tests = {
+    name: null,
+    passed: 0,
+    failed: 0,
+  };
   instance.input = {
     pressedActions: new Set(),
     pressedActionsThisFrame: new Set(),
@@ -84,6 +95,49 @@ function createDebugImports(
     },
     breakpoint() {
       debugger;
+    },
+    test_case(namePtr: OdinStringPointer) {
+      const name = readOdinString(instance.memory, namePtr);
+      instance.tests.hasAssertionFailure = false;
+      instance.tests.name = name;
+
+      console.group(name);
+    },
+    test_assert(name: OdinStringPointer, pass: boolean) {
+      if (!pass) {
+        instance.tests.hasAssertionFailure = true;
+        console.error(
+          "🔴 Assertion failed: ",
+          readOdinString(instance.memory, name),
+        );
+      }
+    },
+    test_complete(pass: boolean) {
+      const failed = !pass || instance.tests.hasAssertionFailure;
+      instance.tests.failed += failed ? 1 : 0;
+      instance.tests.passed += failed ? 0 : 1;
+
+      if (failed) {
+        console.error("🔴 Test ", instance.tests.name, " failed");
+      }
+      console.groupEnd();
+    },
+    test_report(): number {
+      if (instance.tests.failed > 0) {
+        console.error(
+          "🔴 ",
+          instance.tests.failed,
+          " tests failed, ",
+          instance.tests.passed,
+          " tests passed",
+        );
+      } else {
+        console.info(
+          `%c  ✅ All ${instance.tests.passed} tests passed`,
+          "background-color: #226622; display: block; padding: 4px;",
+        );
+      }
+      return instance.tests.failed;
     },
     log_panic(
       prefix: OdinStringPointer,
