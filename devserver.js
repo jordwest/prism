@@ -134,6 +134,7 @@ async function buildWasm() {
       "build",
       "src",
       // "-o:none",
+      "-source-code-locations:filename",
       "-target:freestanding_wasm32",
       "-out:build/web/assets/app.wasm",
     ],

@@ -41,10 +41,12 @@ done,feat,b3,Add keys to zoom in/out (-/=)
 done,devtool,b3,Added a host state visualisation toggle
 done,devtool,b3,Add a simple stutter checker
 done,feat,b3,Add djikstra's algorithm
+done,devtool,b3,Hot reload - add sound when rebooting or failing to compile
+done,refactor,b3,Make event handlers able to operate on both host and client state
+done,refactor,b3,App error type that can be returned from various important places
 todo,refactor,b3,Send tile data to client
-doing,refactor,b3,Make event handlers able to operate on both host and client state
-todo,bug,b3,"Player cursor missing when net delay=0, race condition?"
 todo,feat,b3,"Add map and list serialization, send game state to newly joined clients"
+todo,bug,b3,"Player cursor missing when net delay=0, race condition?"
 todo,feat,b3,Add player pathfinding
 todo,devtool,b3,Hydrate client and server entity state in hot reload
 todo,refactor,ideas,Consider splitting server and client into separate packages
@@ -77,6 +79,7 @@ todo,imp,ideas,Less dead ends - connect rooms that are side by side but have lon
 todo,feat,ideas,Shield ability (potion?)
 todo,feat,ideas,Grappling hook - grapple across to a platform
 todo,imp,ideas,Don't show target for first ~50-100ms of player input to avoid flashes
+todo,refactor,ideas,Add checksum to messaging?
 todo,feat,ideas,Gems that can be attached to weapons for added effects:
 todo,feat,ideas,Gem of lifesteal (lifesteal on crit)
 todo,feat,ideas,Gem of flame (fire effect on crit)

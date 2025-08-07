@@ -65,6 +65,7 @@ hot_reload_hydrate_state :: proc() -> bool {
 
 serialize :: proc {
 	state_serialize,
+	command_serialize,
 	prism.serialize_array,
 	prism.serialize_f32,
 	prism.serialize_i32,

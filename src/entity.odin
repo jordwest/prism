@@ -48,10 +48,11 @@ entity_meta: [EntityMetaId]EntityMeta = {
 }
 
 entity_serialize :: proc(s: ^prism.Serializer, e: ^Entity) -> prism.SerializationResult {
-	prism.serialize(s, (^i32)(&e.id)) or_return
-	prism.serialize(s, (^u8)(&e.meta_id)) or_return
-	prism.serialize(s, (^[2]i32)(&e.pos)) or_return
-	command_serialize(s, &e.cmd) or_return
+	serialize(s, (^i32)(&e.id)) or_return
+	serialize(s, (^u8)(&e.meta_id)) or_return
+	serialize(s, (^[2]i32)(&e.pos)) or_return
+	serialize(s, (^i32)(&e.player_id)) or_return
+	serialize(s, &e.cmd) or_return
 	return nil
 }
 

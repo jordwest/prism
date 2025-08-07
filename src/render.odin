@@ -18,10 +18,6 @@ render_system :: proc(dt: f32) {
 }
 
 render_debug_overlays :: proc() {
-	fresnel.fill(255, 255, 255, 255)
-	cursor_text := fmt.tprintf("(%d, %d)", state.client.cursor_pos.x, state.client.cursor_pos.y)
-	cursor_screen := state.client.cursor_screen_pos + ScreenCoord{32, 32}
-	fresnel.draw_text(cursor_screen.x, cursor_screen.y, 16, cursor_text)
 
 	if state.debug.render_host_state {
 		fresnel.fill(255, 255, 255, 255)
@@ -44,6 +40,11 @@ render_debug_overlays :: proc() {
 			_visualise_djikstra(&pcg.djikstra_map)
 		}
 	}
+
+	fresnel.fill(255, 255, 255, 255)
+	cursor_text := fmt.tprintf("(%d, %d)", state.client.cursor_pos.x, state.client.cursor_pos.y)
+	cursor_screen := state.client.cursor_screen_pos + ScreenCoord{32, 32}
+	fresnel.draw_text(cursor_screen.x, cursor_screen.y, 16, cursor_text)
 
 	when STUTTER_CHECKER_ENABLED {
 		// Stutter checker

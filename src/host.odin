@@ -18,7 +18,6 @@ host_tick :: proc(dt: f32) {
 
 		// TODO: This is just a test for visualisation purposes for now
 		prism.djikstra_clear(&pcg.djikstra_map)
-		// prism.djikstra_add_origin(&pcg.djikstra_map, Vec2i(state.client.cursor_pos))
 		prism.djikstra_add_origin(&pcg.djikstra_map, Vec2i(state.host.spawn_point))
 		prism.djikstra_iterate(&pcg.djikstra_map)
 
@@ -49,6 +48,7 @@ host_tick :: proc(dt: f32) {
 		for path_pos in path {
 			prism.djikstra_add_origin(&pcg.djikstra_map, path_pos)
 		}
+		// prism.djikstra_add_origin(&pcg.djikstra_map, Vec2i(state.client.cursor_pos))
 		prism.djikstra_iterate(&pcg.djikstra_map)
 
 		fresnel.metric_i32("djikstra_iterations", pcg.djikstra_map.iterations)
@@ -95,24 +95,19 @@ host_on_client_connected :: proc(clientId: i32) {
 }
 
 @(private)
-host_poll :: proc() {
+host_poll :: proc() -> Error {
 	msg_in := make([dynamic]u8, 1000, 1000, frame_arena_alloc)
 	client_id: i32
 	bytes_read := 0
 	for {
 		bytes_read := fresnel.server_poll_message(&client_id, msg_in[:])
-		if bytes_read <= 0 {
-			break
-		}
+		if bytes_read <= 0 do break // No new messages
 		state.bytes_received += bytes_read
 
 		s := prism.create_deserializer(msg_in)
 		msg: ClientMessage
 		e := client_message_union_serialize(&s, &msg)
-
-		if e != nil {
-			err("Failed to deserialize %v", e)
-		}
+		if e != nil do return error(DeserializationError{result = e, data = msg_in[:bytes_read]})
 
 		client, client_exists := state.host.clients[client_id]
 		player, player_exists := state.host.common.players[client.player_id]
@@ -121,15 +116,11 @@ host_poll :: proc() {
 			state.host.newest_player_id += 1
 			new_player_id := PlayerId(state.host.newest_player_id)
 
-			player_entity := host_spawn_entity(EntityMetaId.Player)
+			// player_entity := host_spawn_entity(EntityMetaId.Player)
+			player_entity := host_create_entity(EntityMetaId.Player)
 			player_entity.pos = {2, 5}
 			player_entity.player_id = new_player_id
-
-			state.host.common.players[new_player_id] = Player {
-				player_id        = new_player_id,
-				player_entity_id = player_entity.id,
-				_token           = m.token,
-			}
+			host_spawn_entity(player_entity)
 
 			if client, ok := &state.host.clients[client_id]; ok {
 				client.player_id = new_player_id
@@ -143,12 +134,11 @@ host_poll :: proc() {
 				},
 			)
 
-			host_broadcast_message(
-				HostMessageEvent {
-					event = EventPlayerJoined {
-						player_id = new_player_id,
-						player_entity_id = player_entity.id,
-					},
+			host_fire_event(
+				EventPlayerJoined {
+					player_id = new_player_id,
+					player_entity_id = player_entity.id,
+					_token = m.token,
 				},
 			)
 		case ClientMessageCursorPosUpdate:
@@ -158,27 +148,30 @@ host_poll :: proc() {
 				)
 			}
 		case ClientMessageSubmitCommand:
-			entity := &state.host.common.entities[player.player_entity_id]
-			entity.pos = m.command.pos
-			entity.cmd = m.command
-			host_broadcast_message(
-				HostMessageEvent {
-					event = EventEntityMoved{entity_id = entity.id, pos = m.command.pos},
-				},
+			host_fire_event(
+				EventEntityMoved{entity_id = player.player_entity_id, pos = m.command.pos},
 			)
-			host_broadcast_message(
-				HostMessageEvent {
-					event = EventEntityCommandChanged {
-						entity_id = entity.id,
-						// cmd = entity.cmd,
-						cmd       = Command{},
-						seq       = m.seq,
-					},
+			host_fire_event(
+				EventEntityCommandChanged {
+					entity_id = player.player_entity_id,
+					cmd = Command{},
+					seq = m.seq,
 				},
 			)
 		}
 
 		if HOST_LOG_MESSAGES do info("[HOST] %w", msg)
+	}
+	return nil
+}
+
+host_fire_event :: proc(event: Event) {
+	error := event_handle(&state.host.common, event, true)
+
+	if error != nil {
+		err("Handling event on host\n\n%w\n\n%w", error, event)
+	} else {
+		host_broadcast_message(HostMessageEvent{event = event})
 	}
 }
 
@@ -198,16 +191,17 @@ host_broadcast_message :: proc(msg: HostMessage) {
 	fresnel.server_broadcast_message(s.stream[:])
 }
 
-host_spawn_entity :: proc(meta_id: EntityMetaId) -> ^Entity {
+// Assign a new entity ID and return it (does not yet spawn it, it doesn't live anywhere except on the stack!)
+host_create_entity :: proc(meta_id: EntityMetaId) -> Entity {
 	state.host.newest_entity_id += 1
 	id := EntityId(state.host.newest_entity_id)
 
-	new_entity := Entity {
-		id      = id,
-		meta_id = meta_id,
-	}
-	state.host.common.entities[id] = new_entity
-	host_broadcast_message(HostMessageEvent{event = EventEntitySpawned{entity = new_entity}})
+	return Entity{id = id, meta_id = meta_id}
+}
 
-	return &state.host.common.entities[id]
+// Actually spawn an entity created with host_create_entity
+host_spawn_entity :: proc(new_entity: Entity) -> ^Entity {
+	host_fire_event(EventEntitySpawned{entity = new_entity})
+
+	return &state.host.common.entities[new_entity.id]
 }
