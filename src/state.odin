@@ -23,6 +23,8 @@ ClientState :: struct {
 	game:                  GameState,
 	bytes_sent:            i32,
 	bytes_received:        i32,
+	djikstra_temp:         prism.DjikstraMap(LEVEL_WIDTH, LEVEL_HEIGHT),
+	djikstra:              prism.DjikstraAlgo(LEVEL_WIDTH, LEVEL_HEIGHT),
 
 	// The sequence id of the command last issued by the client
 	// See JOURNAL.md, 5 Aug 2025
@@ -79,6 +81,7 @@ Player :: struct {
 	cursor_tile:       TileCoord,
 	cursor_updated_at: f32,
 	cursor_spring:     prism.Spring(2),
+	djikstra_to:       prism.DjikstraMap(LEVEL_WIDTH, LEVEL_HEIGHT),
 }
 
 Client :: union {
@@ -88,8 +91,8 @@ Client :: union {
 
 UnidentifiedClient :: struct {}
 IdentifiedClient :: struct {
-	player_id: PlayerId,
-	token:     PlayerToken,
+	player_id:   PlayerId,
+	token:       PlayerToken,
 	next_seq_id: LogSeqId,
 }
 

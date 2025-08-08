@@ -15,6 +15,7 @@ InnerError :: union {
 	UnexpectedSeqId,
 	mem.Allocator_Error,
 	prism.SerializationResult,
+	prism.DjikstraError,
 }
 
 Error :: union {

@@ -66,10 +66,6 @@ procgen_init :: proc(pcg: ^PcgState) {
 		x2 = LEVEL_WIDTH - 1,
 		y2 = LEVEL_HEIGHT - 1,
 	}
-	e := prism.djikstra_init(&pcg.djikstra_map, _neighbour_cost)
-	if e != nil {
-		err("Error allocating djikstra map: %s", e)
-	}
 }
 
 procgen_iterate :: proc(pcg: ^PcgState) {

@@ -5,13 +5,14 @@ import "core:mem"
 import "fresnel"
 import "prism"
 
-ClientError :: union {
-	mem.Allocator_Error,
-}
+client_boot :: proc(width: i32, height: i32) -> Error {
+	e_alloc: mem.Allocator_Error
 
-client_boot :: proc(width: i32, height: i32) -> ClientError {
-	state.client.game.players = make(map[PlayerId]Player, 8) or_return
-	state.client.game.entities = make(map[EntityId]Entity, 2048) or_return
+	state.client.game.players, e_alloc = make(map[PlayerId]Player, 8)
+	if e_alloc != nil do return error(e_alloc)
+	state.client.game.entities, e_alloc = make(map[EntityId]Entity, 2048)
+	if e_alloc != nil do return error(e_alloc)
+
 	state.client.zoom = DEFAULT_ZOOM
 	state.client.camera = prism.spring_create(
 		2,
@@ -19,6 +20,8 @@ client_boot :: proc(width: i32, height: i32) -> ClientError {
 		k = CAMERA_SPRING_CONSTANT,
 		c = CAMERA_SPRING_DAMPER,
 	)
+	e_alloc = prism.djikstra_init(&state.client.djikstra)
+	if e_alloc != nil do return error(e_alloc)
 
 	pcg := new(PcgState)
 	state.client.game.pcg = pcg
@@ -47,6 +50,7 @@ client_tick :: proc(dt: f32) {
 		t1 := fresnel.now()
 		pcg.total_time += (t1 - t0)
 
+		/*
 		// TODO: This is just a test for visualisation purposes for now
 		prism.djikstra_clear(&pcg.djikstra_map)
 		prism.djikstra_add_origin(&pcg.djikstra_map, Vec2i(game.spawn_point))
@@ -81,6 +85,7 @@ client_tick :: proc(dt: f32) {
 		}
 		// prism.djikstra_add_origin(&pcg.djikstra_map, Vec2i(state.client.cursor_pos))
 		prism.djikstra_iterate(&pcg.djikstra_map)
+		*/
 
 		fresnel.metric_i32("djikstra_iterations", pcg.djikstra_map.iterations)
 	}

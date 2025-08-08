@@ -185,3 +185,5 @@ UnexpectedSeqId{expected = 0, actual = 14}
 ```
 
 I guess the server is sending any updates immediately before the client has sent off the identify command. Yep, fixed.
+
+Finally, time to start working on gameplay mechanics again. Player pathfinding is first, although I kinda want to start getting combat going. Ah might as well do pathfinding since the djikstra stuff is still fresh on my mind. Gosh it's going to be so much easier not having to serialize all the entity data like HP etc.

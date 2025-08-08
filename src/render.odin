@@ -267,7 +267,7 @@ _visualise_djikstra :: proc(dmap: ^prism.DjikstraMap($Width, $Height), offset: [
 					if cost == 0 {
 						fresnel.fill(0, 255, 0, 0.8)
 					} else {
-						col := (cost / dmap.max_cost) * 255
+						col := (f32(cost) / f32(dmap.max_cost)) * 255
 						fresnel.fill(255 - col, 100, col, 0.3)
 					}
 					fresnel.draw_rect(offset.x, offset.y, dims, dims)

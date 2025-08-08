@@ -49,7 +49,7 @@ done,refactor,b3,Switch to deterministic state recreation on all clients
 done,feat,b3,Send game state to newly joined players
 done,devtool,b3,Add a test runner in the fresnel host to call wasm tests() export
 nope,bug,b3,"Player cursor missing when net delay=0, race condition?"
-todo,feat,b3,Add player pathfinding
+doing,feat,b3,Add player pathfinding
 todo,refactor,ideas,Consider splitting server and client into separate packages
 todo,devtool,b3,Hydrate client and server entity state in hot reload
 todo,feat,b3,Add enemy
