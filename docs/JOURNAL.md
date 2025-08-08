@@ -199,3 +199,13 @@ Each evaluation, we first need to check if any players have actions points avail
 If all players have been evaluated and have no more action points or no commands, then:
 1. NPCs are executed
 2. Action points are added to all players
+
+Turn system works well.
+
+Tomorrow: Add a delay between turns. To do this, I'm gonna need to push log entries onto a queue for processing, then pull them off in the tick function to ensure they're still replayed deterministically. The tick function also means I can remove the loop and the `turn_evaluate_all` function. Instead, just call turn_evaluate when either:
+ - There's a new log entry in the queue
+ - It has been more than 0.25 seconds since the last turn was completed
+
+ Now I'm realising a problem with this setup. What if the player wants to interrupt movement while the animation is happening? If events are queued and played until the next event is received, it's impossible.
+
+ The solution I can think of right now is to have the host trigger end of turn events, which it forwards to clients and those clients then process the turn. That way if the server receives a new entry, it will appear in the queue before the turn event that executes the movement. Nearly 12 hours today, time for bed...

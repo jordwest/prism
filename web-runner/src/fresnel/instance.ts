@@ -280,6 +280,7 @@ function createCoreImports(instance: FresnelInstance) {
       const dy = view.getFloat32(24, true);
       const dw = view.getFloat32(28, true);
       const dh = view.getFloat32(32, true);
+      const alpha = view.getUint8(36);
 
       const image = instance.state.images[imageId];
       if (image == null) {
@@ -301,6 +302,10 @@ function createCoreImports(instance: FresnelInstance) {
       //   -dx,
       //   -(dy + instance.state.canvas.height * instance.region.y),
       // );
+      //
+      const opacity = instance.state.canvasContext.globalAlpha;
+      instance.state.canvasContext.globalAlpha = alpha / 255;
+
       instance.state.canvasContext.drawImage(
         image,
         sx,
@@ -312,6 +317,8 @@ function createCoreImports(instance: FresnelInstance) {
         dw,
         dh,
       );
+
+      instance.state.canvasContext.globalAlpha = opacity;
       // Needed if rotation enabled
       // instance.state.canvasContext.resetTransform();
     },

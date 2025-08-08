@@ -125,7 +125,7 @@ render_tiles :: proc() {
 	fresnel.metric_i32("Tile loop", t1 - t0)
 }
 
-render_sprite :: proc(sprite_coords: [2]f32, pos: ScreenCoord) {
+render_sprite :: proc(sprite_coords: [2]f32, pos: ScreenCoord, alpha: u8 = 255) {
 	fresnel.draw_image(
 		&fresnel.DrawImageArgs {
 			image_id = 1,
@@ -133,6 +133,7 @@ render_sprite :: proc(sprite_coords: [2]f32, pos: ScreenCoord) {
 			source_size = {SPRITE_SIZE, SPRITE_SIZE},
 			dest_offset = pos.xy,
 			dest_size = state.client.zoom * GRID_SIZE,
+			alpha = alpha,
 		},
 	)
 }
@@ -146,27 +147,35 @@ render_entities :: proc() {
 
 		coord := screen_coord(e.pos).xy
 		if id, is_player := e.player_id.?; is_player {
+			awaiting_cmd := e.cmd.type == .None
+			has_ap := e.action_points > 0
+			is_current_player := e.id == state.client.controlling_entity_id
+
+			alpha: u8 = has_ap && awaiting_cmd ? 255 : 128
+
 			switch id {
 			case 3:
-				render_sprite(SPRITE_COORD_PLAYER_A, coord)
+				render_sprite(SPRITE_COORD_PLAYER_A, coord, alpha)
 			case 2:
-				render_sprite(SPRITE_COORD_PLAYER_B, coord)
+				render_sprite(SPRITE_COORD_PLAYER_B, coord, alpha)
 			case 1:
-				render_sprite(SPRITE_COORD_PLAYER_C, coord)
+				render_sprite(SPRITE_COORD_PLAYER_C, coord, alpha)
 			case:
-				render_sprite(meta.spritesheet_coord, coord)
+				render_sprite(meta.spritesheet_coord, coord, alpha)
 			}
 
-			if e.id == state.client.controlling_entity_id {
-				render_sprite(
-					SPRITE_COORD_ACTIVE_CHEVRON,
-					screen_coord(tile_coord_f(e.pos) + TileCoordF({0, -0.5})),
-				)
-			} else {
-				render_sprite(
-					SPRITE_COORD_THOUGHT_BUBBLE,
-					screen_coord(tile_coord_f(e.pos) + TileCoordF({0.75, -0.75})),
-				)
+			if has_ap && awaiting_cmd {
+				if is_current_player {
+					render_sprite(
+						SPRITE_COORD_ACTIVE_CHEVRON,
+						screen_coord(tile_coord_f(e.pos) + TileCoordF({0, -0.5})),
+					)
+				} else {
+					render_sprite(
+						SPRITE_COORD_THOUGHT_BUBBLE,
+						screen_coord(tile_coord_f(e.pos) + TileCoordF({0.75, -0.75})),
+					)
+				}
 			}
 		} else {
 			render_sprite(meta.spritesheet_coord, coord)
@@ -322,6 +331,7 @@ render_mouse_path :: proc() {
 				dest_size = {dims, dims},
 				source_offset = SPRITE_COORD_DOT,
 				source_size = SPRITE_SIZE,
+				alpha = 255,
 			},
 		)
 	}

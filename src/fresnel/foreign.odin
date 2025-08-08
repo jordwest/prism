@@ -6,6 +6,7 @@ DrawImageArgs :: struct {
 	source_size:   [2]f32,
 	dest_offset:   [2]f32,
 	dest_size:     [2]f32,
+	alpha:         u8,
 }
 
 TestId :: distinct i32
