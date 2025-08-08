@@ -31,6 +31,11 @@ spring_create :: proc(
 	return Spring(N){k = k, m = m, c = c, pos = initial_position, target = initial_position}
 }
 
+spring_reset_to :: proc(spring: ^Spring($N), pos: [N]f32) {
+	spring.pos = pos
+	spring.target = pos
+}
+
 spring_tick :: proc(spring: ^Spring($N), dt: f32) {
 	x := spring.pos - spring.target
 	f := -spring.k * x - spring.c * spring.vel

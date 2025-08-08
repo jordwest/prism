@@ -43,7 +43,13 @@ export type OdinSlicePointer = number & { __odinSlicePointer: never };
 export type I32Pointer = number & { __i32Pointer: never };
 
 export type FresnelExports = {
-  on_mouse_update?: (x: number, y: number, down: boolean) => void;
+  on_mouse_move?: (x: number, y: number, down: boolean) => void;
+  on_mouse_button?: (
+    x: number,
+    y: number,
+    down: boolean,
+    button: number,
+  ) => void;
   on_resize?: (w: number, h: number) => void;
 
   on_client_connected?: (clientId: number) => void;

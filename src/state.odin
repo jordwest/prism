@@ -15,6 +15,7 @@ ClientState :: struct {
 	crashed:               bool,
 	cursor_pos:            TileCoord,
 	cursor_screen_pos:     ScreenCoord,
+	cursor_hidden:         bool,
 	zoom:                  f32,
 	camera:                prism.Spring(2),
 	my_token:              PlayerToken,

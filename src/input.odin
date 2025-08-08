@@ -28,6 +28,9 @@ input_system :: proc(dt: f32) {
 		if is_action_just_pressed(.MoveDown) do delta_pos.y += 1
 
 		if delta_pos != {0, 0} {
+			// Hide cursor when keys are pressed
+			state.client.cursor_hidden = true
+
 			if cmd.type == .None {
 				cmd.pos = player_entity.pos
 			}
@@ -51,6 +54,7 @@ input_system :: proc(dt: f32) {
 
 	if ok && is_action_pressed(.LeftClick) {
 		command_submit(Command{type = .Move, pos = state.client.cursor_pos})
+		state.client.cursor_hidden = true
 	}
 
 	// TODO Cheat commands later?

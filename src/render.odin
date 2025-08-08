@@ -185,9 +185,12 @@ render_entities :: proc() {
 }
 
 render_tile_cursors :: proc(dt: f32) {
-	// Draw this player's cursor
-	render_sprite(SPRITE_COORD_RECT, screen_coord(state.client.cursor_pos))
-	render_sprite(SPRITE_COORD_FOOTSTEPS, screen_coord(state.client.cursor_pos))
+
+	if !state.client.cursor_hidden {
+		// Draw this player's cursor
+		render_sprite(SPRITE_COORD_RECT, screen_coord(state.client.cursor_pos))
+		render_sprite(SPRITE_COORD_FOOTSTEPS, screen_coord(state.client.cursor_pos))
+	}
 
 	// Draw other players' cursors
 	for _, &p in state.client.game.players {
@@ -295,6 +298,8 @@ _visualise_djikstra :: proc(dmap: ^prism.DjikstraMap($Width, $Height), offset: [
 }
 
 render_mouse_path :: proc() {
+	if state.client.cursor_hidden do return
+
 	dmap, e := entity_djikstra_map_to(state.client.controlling_entity_id)
 	if dmap.state == .Empty do return
 

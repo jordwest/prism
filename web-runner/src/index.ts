@@ -125,7 +125,7 @@ function sendMouseUpdate() {
     focusedInstance = instance?.instanceId;
   }
 
-  instance?.exports.on_mouse_update?.(
+  instance?.exports.on_mouse_move?.(
     pointerState.x,
     regionCoord.regionY,
     pointerState.down,

@@ -171,6 +171,7 @@ _try_add_room :: proc(
 			prism.rand_splitmix_get_i32_range(&rng, room_aabb.x1, room_aabb.x2),
 			prism.rand_splitmix_get_i32_range(&rng, room_aabb.y1, room_aabb.y2),
 		}
+		prism.spring_reset_to(&state.client.camera, vec2f(state.client.game.spawn_point))
 	}
 
 	pcg.newest_room_id += 1
