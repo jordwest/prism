@@ -173,3 +173,15 @@ Ok that took 3h but I think totally worth it, and knocked off the issue with rep
 Wow, 59 hours tracked in the past 7 days... crazy. I don't think I've every worked so much on a project in my life.
 
 Listening to [this](https://www.youtube.com/watch?v=_ie639ilKW8) after listening to Jayasara's Rumi reading, and thinking this kind of music would really fit with the theme of the game. Perhaps it could be about diving deep in a desert dungeon to discover hidden parts of yourself, and the twist at the end could be discovering that all the characters you've played are the same all-knowing one.
+
+Next thing is I'm getting these errors when moving the character quickly before the second client start up:
+
+```
+[INS:1]  Error reported at
+client.odin:31:client_tick
+client.odin:128:client_poll
+
+UnexpectedSeqId{expected = 0, actual = 14}
+```
+
+I guess the server is sending any updates immediately before the client has sent off the identify command. Yep, fixed.

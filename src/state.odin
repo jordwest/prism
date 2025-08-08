@@ -90,6 +90,7 @@ UnidentifiedClient :: struct {}
 IdentifiedClient :: struct {
 	player_id: PlayerId,
 	token:     PlayerToken,
+	next_seq_id: LogSeqId,
 }
 
 state_serialize :: proc(s: ^prism.Serializer, state: ^AppState) -> prism.SerializationResult {

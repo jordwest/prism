@@ -67,8 +67,9 @@ host_poll :: proc() -> Error {
 			new_player_id := PlayerId(state.client.game.newest_player_id)
 
 			client^ = IdentifiedClient {
-				player_id = new_player_id,
-				token     = m.token,
+				player_id   = new_player_id,
+				token       = m.token,
+				next_seq_id = m.next_log_seq,
 			}
 
 			host_send_message(client_id, HostMessageIdentifyResponse{player_id = new_player_id})
@@ -119,7 +120,17 @@ host_log_entry :: proc(entry: LogEntry) {
 
 	append(&state.host.game_log, entry)
 
-	host_broadcast_message(HostMessageLogEntry{seq = seq, entry = entry})
+	for client_id, &client in &state.host.clients {
+		switch &c in client {
+		case UnidentifiedClient:
+		// Don't send new updates to unidentified clients
+		case IdentifiedClient:
+			if c.next_seq_id == seq {
+				host_send_message(client_id, HostMessageLogEntry{seq = seq, entry = entry})
+			}
+			c.next_seq_id += 1
+		}
+	}
 }
 
 host_catch_up_client :: proc(client_id: ClientId, start_at: LogSeqId) {
@@ -130,5 +141,11 @@ host_catch_up_client :: proc(client_id: ClientId, start_at: LogSeqId) {
 			client_id,
 			HostMessageLogEntry{entry = state.host.game_log[i], seq = LogSeqId(i), catchup = 1},
 		)
+	}
+
+	if c, ok := &state.host.clients[client_id]; ok {
+		if ic, ok2 := &c.(IdentifiedClient); ok2 {
+			ic.next_seq_id = LogSeqId(len(state.host.game_log))
+		}
 	}
 }
