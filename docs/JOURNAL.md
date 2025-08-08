@@ -163,3 +163,8 @@ Done and also improved error handling, much easier to see what's going on now wh
 Next up is sending the tile data to the client. This might involve some generic array serialization.
 
 So many tangents... I think I've got serialization working (but not deserialization), but that led to writing a unit test runner, and now trying to implement a basic version of the runner in rust to see if the serialization tests will pass. This whole project is bringing together so many things I've been thinking about for a long time and it's very exciting.
+
+# Friday 8 Aug 2025
+
+Ok so today I watched [a video](https://www.youtube.com/watch?v=MEZoKKAoUAU) that sparked an idea - why not simulate the game state completely on every client? From tile generation to monster spawning to pathfinding... it can simply be simulated deterministically on every client and then the only thing that needs to be synced between clients are the player inputs. It would simplify things so much, no more serializing game events, only player inputs (and player join/leave events/mouse cursors).
+

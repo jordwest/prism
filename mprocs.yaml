@@ -8,3 +8,6 @@ procs:
   todo:
     cwd: "docs"
     shell: "flatlite-cli"
+  journal:
+    cwd: "docs"
+    shell: "nvim JOURNAL.md"
