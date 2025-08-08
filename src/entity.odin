@@ -19,6 +19,7 @@ Entity :: struct {
 LocalCommand :: struct {
 	cmd:     Command,
 	cmd_seq: CmdSeqId,
+	t:       f32,
 }
 
 EntityMeta :: struct {
@@ -93,8 +94,12 @@ entity_serialize :: proc(s: ^prism.Serializer, e: ^Entity) -> prism.Serializatio
 	return nil
 }
 
-entity_get_command :: proc(e: ^Entity) -> Command {
+entity_get_command :: proc(e: ^Entity, ignore_new := false) -> Command {
 	if local_cmd, has_local := e._local_cmd.?; has_local {
+		// Don't show local command until we've given the server a chance to respond.
+		// Stops the flashing on low latency connections
+		if ignore_new && state.t - local_cmd.t < 0.1 do return e.cmd
+
 		return local_cmd.cmd
 	}
 

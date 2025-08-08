@@ -131,6 +131,7 @@ command_submit :: proc(cmd: Command) {
 		entity._local_cmd = LocalCommand {
 			cmd     = cmd,
 			cmd_seq = state.client.cmd_seq,
+			t       = state.t,
 		}
 		client_send_message(
 			ClientMessageSubmitCommand {

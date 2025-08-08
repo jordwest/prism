@@ -11,7 +11,9 @@ render_system :: proc(dt: f32) {
 	render_tiles()
 	render_entities()
 	render_tile_cursors(dt)
-	render_mouse_path()
+	if !state.client.cursor_hidden {
+		render_path_to(state.client.cursor_pos)
+	}
 	// render_ui()
 	if state.debug.render_debug_overlays {
 		render_debug_overlays()
@@ -177,11 +179,15 @@ render_entities :: proc() {
 					)
 				}
 			}
+
+			if e.cmd.type == .Move {
+				render_path_to(e.cmd.pos, e.id, 128)
+			}
 		} else {
 			render_sprite(meta.spritesheet_coord, coord)
 		}
 
-		cmd := entity_get_command(&e)
+		cmd := entity_get_command(&e, ignore_new = true)
 		if cmd.type == .Move && .IsAllied in meta.flags {
 			render_sprite(SPRITE_COORD_PLAYER_OUTLINE, screen_coord(cmd.pos))
 		}
@@ -312,13 +318,15 @@ _visualise_djikstra :: proc(dmap: ^prism.DjikstraMap($Width, $Height), offset: [
 	}
 }
 
-render_mouse_path :: proc() {
-	if state.client.cursor_hidden do return
-
-	dmap, e := entity_djikstra_map_to(state.client.controlling_entity_id)
+render_path_to :: proc(
+	from_pos: TileCoord,
+	to_entity: EntityId = state.client.controlling_entity_id,
+	alpha: u8 = 255,
+) {
+	dmap, e := entity_djikstra_map_to(to_entity)
 	if dmap.state == .Empty do return
 
-	path_len := prism.djikstra_path(dmap, tmp_path[:], Vec2i(state.client.cursor_pos))
+	path_len := prism.djikstra_path(dmap, tmp_path[:], Vec2i(from_pos))
 
 	for p in tmp_path[:path_len] {
 		offset := screen_coord(TileCoord(p))
@@ -331,7 +339,7 @@ render_mouse_path :: proc() {
 				dest_size = {dims, dims},
 				source_offset = SPRITE_COORD_DOT,
 				source_size = SPRITE_SIZE,
-				alpha = 255,
+				alpha = alpha,
 			},
 		)
 	}
