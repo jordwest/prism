@@ -12,10 +12,6 @@ fn log_panic(_ctx: tinywasm::FuncContext<'_>, args: (i32, i32, i32, i32)) -> tin
 fn test_assert(_ctx: tinywasm::FuncContext<'_>, args: (i32, i32)) -> tinywasm::Result<()> {
     let mem_ref = _ctx.exported_memory("memory")?;
 
-    // println!(
-    //     "Test assertion {}",
-    //     if args.1 { "passed" } else { "failed" }
-    // );
     let pass = args.0 == 1;
     let msg_ptr = args.1;
 
@@ -23,7 +19,7 @@ fn test_assert(_ctx: tinywasm::FuncContext<'_>, args: (i32, i32)) -> tinywasm::R
 
     let pass_icon = match pass {
         true => "✅",
-        false => "❌",
+        false => "🔴",
     };
 
     println!("{} {}", pass_icon, msg);
