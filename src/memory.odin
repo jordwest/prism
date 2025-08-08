@@ -11,7 +11,7 @@ persistent_arena_alloc: mem.Allocator
 
 // For data that persists for the life of the app
 @(private = "file")
-host_memory: [1049600]u8
+host_memory: [5242880]u8
 @(private = "file")
 host_arena: mem.Arena
 host_arena_alloc: mem.Allocator

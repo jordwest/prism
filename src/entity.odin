@@ -16,8 +16,8 @@ Entity :: struct {
 }
 
 LocalCommand :: struct {
-	cmd: Command,
-	seq: i32,
+	cmd:     Command,
+	cmd_seq: CmdSeqId,
 }
 
 EntityMeta :: struct {
@@ -45,6 +45,10 @@ entity_meta: [EntityMetaId]EntityMeta = {
 		spritesheet_coord = SPRITE_COORD_PLAYER,
 		flags = {.IsPlayerControlled, .IsAllied},
 	},
+}
+
+entity_id_serialize :: proc(s: ^prism.Serializer, eid: ^EntityId) -> prism.SerializationResult {
+	return prism.serialize_i32(s, (^i32)(eid))
 }
 
 entity_serialize :: proc(s: ^prism.Serializer, e: ^Entity) -> prism.SerializationResult {

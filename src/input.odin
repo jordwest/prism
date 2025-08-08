@@ -4,19 +4,19 @@ import "core:math"
 import "fresnel"
 
 InputActions :: enum i32 {
-	MoveUp                     = 1,
-	MoveDown                   = 2,
-	MoveLeft                   = 3,
-	MoveRight                  = 4,
-	LeftClick                  = 5,
-	RightClick                 = 6,
-	ZoomIn                     = 101,
-	ZoomOut                    = 102,
-	DebugRenderHostStateToggle = 9000,
+	MoveUp                    = 1,
+	MoveDown                  = 2,
+	MoveLeft                  = 3,
+	MoveRight                 = 4,
+	LeftClick                 = 5,
+	RightClick                = 6,
+	ZoomIn                    = 101,
+	ZoomOut                   = 102,
+	DebugRenderOverlaysToggle = 9000,
 }
 
 input_system :: proc(dt: f32) {
-	player_entity, ok := &state.client.common.entities[state.client.controlling_entity_id]
+	player_entity, ok := &state.client.game.entities[state.client.controlling_entity_id]
 
 	if ok {
 		cmd := entity_get_command(player_entity)
@@ -38,8 +38,8 @@ input_system :: proc(dt: f32) {
 		}
 	}
 
-	if state.host.is_host && is_action_just_pressed(.DebugRenderHostStateToggle) {
-		state.debug.render_host_state = !state.debug.render_host_state
+	if is_action_just_pressed(.DebugRenderOverlaysToggle) {
+		state.debug.render_debug_overlays = !state.debug.render_debug_overlays
 	}
 
 	if is_action_just_pressed(.ZoomIn) {

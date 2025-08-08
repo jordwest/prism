@@ -23,12 +23,18 @@ command_serialize :: proc(s: ^prism.Serializer, cmd: ^Command) -> prism.Serializ
 
 // Client-side command submission
 command_submit :: proc(cmd: Command) {
-	state.client._cmd_seq += 1
-	if entity, ok := &state.client.common.entities[state.client.controlling_entity_id]; ok {
+	state.client.cmd_seq += 1
+	if entity, ok := &state.client.game.entities[state.client.controlling_entity_id]; ok {
 		entity._local_cmd = LocalCommand {
-			cmd = cmd,
-			seq = state.client._cmd_seq,
+			cmd     = cmd,
+			cmd_seq = state.client.cmd_seq,
 		}
-		client_send_message(ClientMessageSubmitCommand{command = cmd, seq = state.client._cmd_seq})
+		client_send_message(
+			ClientMessageSubmitCommand {
+				entity_id = state.client.controlling_entity_id,
+				cmd = cmd,
+				cmd_seq = state.client.cmd_seq,
+			},
+		)
 	}
 }

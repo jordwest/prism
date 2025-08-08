@@ -42,7 +42,7 @@ on_client_connected :: proc "c" (clientId: i32) {
 
 	trace("Client connected id %d", clientId)
 
-	host_on_client_connected(clientId)
+	host_on_client_connected(ClientId(clientId))
 }
 
 @(export)
@@ -58,14 +58,15 @@ boot :: proc "c" (width: i32, height: i32, flags: i32) {
 	info("Size of AppState: %d", size_of(AppState))
 	info("Size of HostState: %d", size_of(HostState))
 	info("Size of ClientState: %d", size_of(ClientState))
-	info("Size of CommonState: %d", size_of(CommonState))
+	info("Size of GameState: %d", size_of(GameState))
 
 	debug_init()
 
 	if (flags == 0) {
 		host_boot_err := host_boot()
 		if host_boot_err != nil {
-			err("Error starting host: %v", host_boot_err)
+			err("Error booting host: %v", host_boot_err)
+			state.host.crashed = true
 		}
 	}
 
@@ -80,7 +81,8 @@ boot :: proc "c" (width: i32, height: i32, flags: i32) {
 
 	boot_err := client_boot(width, height)
 	if boot_err != nil {
-		err("Error booting: %v", boot_err)
+		err("Error booting client: %v", boot_err)
+		state.client.crashed = true
 	}
 
 	// Boot clay
@@ -125,15 +127,21 @@ tick :: proc "c" (dt: f32) {
 
 	state.t += dt
 
-	if state.host.is_host {
+	if state.host.is_host && !state.host.crashed {
 		host_tick(dt)
 	}
 
-	client_tick(dt)
+	if !state.client.crashed {
+		client_tick(dt)
+	}
 
+	if state.host.is_host {
+		fresnel.metric_i32("host tx ↑", state.host.bytes_sent)
+		fresnel.metric_i32("host rx ↓", state.host.bytes_received)
+	}
+	fresnel.metric_i32("tx ↑", state.client.bytes_sent)
+	fresnel.metric_i32("rx ↓", state.client.bytes_received)
 	memory_log_metrics()
-	fresnel.metric_i32("bytes sent", i32(state.bytes_sent))
-	fresnel.metric_i32("bytes received", state.bytes_received)
 }
 
 @(export)

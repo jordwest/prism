@@ -8,10 +8,6 @@ GRID_SIZE :: 16
 DEFAULT_ZOOM :: 2
 CAMERA_SPRING_CONSTANT :: 100
 CAMERA_SPRING_DAMPER :: 20
-
-// Whether to send cursor coords to the server. It's a nice feature but makes the messaging logs noisy
-CURSOR_REPORTING_ENABLED :: true
-
 LEVEL_WIDTH :: 40
 LEVEL_HEIGHT :: 40
 
@@ -25,8 +21,6 @@ GAME_SEED :: 0xdeadbeef
  * DEBUG OPTIONS
  *****************/
 
-// Only if running as host
-DEFAULT_DEBUG_RENDER_HOST_STATE :: true
 DEBUG_OVERLAYS_ENABLED :: true
 STUTTER_CHECKER_ENABLED :: true
 // Delay procedural generation iterations by this many frames
@@ -42,6 +36,13 @@ LOG_LEVEL :: LogLevel.Trace
 HOST_LOG_MESSAGES :: false
 // Whether to record messages received by client
 CLIENT_LOG_MESSAGES :: false
+
+/***********
+ * DERIVED *
+ ***********/
+
+// Whether to send cursor coords to the server. It's a nice feature but makes the messaging logs noisy
+CURSOR_REPORTING_ENABLED :: HOST_LOG_MESSAGES == false && CLIENT_LOG_MESSAGES == false
 
 /**********************
  * SPRITE COORDINATES *

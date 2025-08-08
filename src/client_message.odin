@@ -58,6 +58,7 @@ _cursor_pos_update_serialize :: proc(
 ClientMessageIdentify :: struct {
 	token:        PlayerToken,
 	display_name: string,
+	next_log_seq: LogSeqId,
 }
 
 @(private)
@@ -71,8 +72,9 @@ _identify_serialize :: proc(
 }
 
 ClientMessageSubmitCommand :: struct {
-	seq:     i32,
-	command: Command,
+	entity_id: EntityId,
+	cmd_seq:   CmdSeqId,
+	cmd:       Command,
 }
 
 @(private)
@@ -80,7 +82,8 @@ _submit_command_serialize :: proc(
 	s: ^prism.Serializer,
 	msg: ^ClientMessageSubmitCommand,
 ) -> prism.SerializationResult {
-	prism.serialize(s, &msg.seq) or_return
-	command_serialize(s, &msg.command) or_return
+	serialize(s, &msg.entity_id) or_return
+	serialize(s, &msg.cmd_seq) or_return
+	serialize(s, &msg.cmd) or_return
 	return nil
 }

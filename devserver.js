@@ -8,6 +8,11 @@ Deno.addSignalListener("SIGINT", () => {
   Deno.exit();
 });
 
+Deno.addSignalListener("SIGTERM", () => {
+  console.log("Shutting down");
+  Deno.exit();
+});
+
 Deno.serve(
   { hostname: "localhost", port: 8000, hostname: "0.0.0.0" },
   async (request) => {

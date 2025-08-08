@@ -56,7 +56,7 @@ hot_reload_hydrate_state :: proc() -> bool {
 	ds := prism.create_deserializer(hot_reload_data)
 	result := serialize(&ds, &state)
 	if result != nil {
-		err("Hot reload deserialization failed! %s at %d", result, ds.offset)
+		err("hot reload deserialization failed! %s at %d", result, ds.offset)
 		return false
 	}
 
@@ -66,6 +66,11 @@ hot_reload_hydrate_state :: proc() -> bool {
 serialize :: proc {
 	state_serialize,
 	command_serialize,
+	entity_id_serialize,
+	player_id_serialize,
+	log_entry_serialize,
+	log_seq_id_serialize,
+	cmd_seq_id_serialize,
 	prism.serialize_array,
 	prism.serialize_f32,
 	prism.serialize_i32,

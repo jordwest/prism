@@ -6,53 +6,6 @@ import "prism"
 
 host_tick :: proc(dt: f32) {
 	host_poll()
-
-	if pcg, ok := state.host.pcg.?; ok {
-		max_iterations := PCG_ITERATION_DELAY == 0 ? 100 : 1
-		t0 := fresnel.now()
-		for i := 0; i < max_iterations && !pcg.done; i += 1 {
-			procgen_iterate(pcg)
-		}
-		t1 := fresnel.now()
-		pcg.total_time += (t1 - t0)
-
-		// TODO: This is just a test for visualisation purposes for now
-		prism.djikstra_clear(&pcg.djikstra_map)
-		prism.djikstra_add_origin(&pcg.djikstra_map, Vec2i(state.host.spawn_point))
-		prism.djikstra_iterate(&pcg.djikstra_map)
-
-		current_cost := pcg.djikstra_map.max_cost
-		path := make([dynamic]([2]i32), 0, int(current_cost), allocator = context.temp_allocator)
-
-		// Path to origin
-		for pos := pcg.djikstra_map.max_cost_coord; pos != Vec2i(state.host.spawn_point); {
-			append(&path, pos)
-			cheapest_next_pos := pos
-			for offset in prism.NEIGHBOUR_TILES_8D {
-				check_coord := pos + offset
-				tile, ok := prism.djikstra_tile(&pcg.djikstra_map, check_coord).?
-				if ok {
-					if cost, has_cost := tile.cost.?; has_cost {
-						if cost < current_cost {
-							current_cost = cost
-							cheapest_next_pos = check_coord
-						}
-					}
-				}
-			}
-			pos = cheapest_next_pos
-		}
-
-		// Rerun djikstra with path to exit
-		prism.djikstra_clear(&pcg.djikstra_map)
-		for path_pos in path {
-			prism.djikstra_add_origin(&pcg.djikstra_map, path_pos)
-		}
-		// prism.djikstra_add_origin(&pcg.djikstra_map, Vec2i(state.client.cursor_pos))
-		prism.djikstra_iterate(&pcg.djikstra_map)
-
-		fresnel.metric_i32("djikstra_iterations", pcg.djikstra_map.iterations)
-	}
 }
 
 HostError :: union {
@@ -65,143 +18,117 @@ host_boot :: proc() -> HostError {
 
 	alloc_error: mem.Allocator_Error
 
+	game := state.client.game
+
+	info("Size of game log %d", size_of(LogEntry) * 100_000)
 	state.host.is_host = true
-	state.host.clients = make(map[i32]Client, 128, allocator = host_arena_alloc) or_return
-	state.host.common.players = make(
-		map[PlayerId]Player,
-		8,
+	state.host.game_log = make(
+		[dynamic]LogEntry,
+		0,
+		100_000,
 		allocator = host_arena_alloc,
 	) or_return
-	state.host.common.entities = make(map[EntityId]Entity, MAX_ENTITIES) or_return
-
-	state.debug.render_host_state = DEFAULT_DEBUG_RENDER_HOST_STATE
-
-	pcg := new(PcgState)
-	state.host.pcg = pcg
-	procgen_init(pcg)
+	state.host.clients = make(map[ClientId]Client, 128, allocator = host_arena_alloc) or_return
+	game.players = make(map[PlayerId]Player, 8, allocator = host_arena_alloc) or_return
+	game.entities = make(map[EntityId]Entity, MAX_ENTITIES) or_return
 
 	return nil
 }
 
-host_on_client_connected :: proc(clientId: i32) {
+host_on_client_connected :: proc(clientId: ClientId) {
 	host_send_message(clientId, HostMessageWelcome{})
-
-	state.host.clients[clientId] = Client{}
-
-	// TODO: Just send the whole state instead
-	for _, e in state.host.common.entities {
-		host_broadcast_message(HostMessageEvent{event = EventEntitySpawned{entity = e}})
-	}
+	state.host.clients[clientId] = UnidentifiedClient{}
 }
 
 @(private)
 host_poll :: proc() -> Error {
 	msg_in := make([dynamic]u8, 1000, 1000, frame_arena_alloc)
-	client_id: i32
+	client_id: ClientId
 	bytes_read := 0
 	for {
-		bytes_read := fresnel.server_poll_message(&client_id, msg_in[:])
+		bytes_read := fresnel.server_poll_message((^i32)(&client_id), msg_in[:])
 		if bytes_read <= 0 do break // No new messages
-		state.bytes_received += bytes_read
+		state.host.bytes_received += bytes_read
 
 		s := prism.create_deserializer(msg_in)
 		msg: ClientMessage
 		e := client_message_union_serialize(&s, &msg)
 		if e != nil do return error(DeserializationError{result = e, offset = s.offset, data = msg_in[:bytes_read]})
 
-		client, client_exists := state.host.clients[client_id]
-		player, player_exists := state.host.common.players[client.player_id]
-		switch m in msg {
-		case ClientMessageIdentify:
-			state.host.newest_player_id += 1
-			new_player_id := PlayerId(state.host.newest_player_id)
-
-			// player_entity := host_spawn_entity(EntityMetaId.Player)
-			player_entity := host_create_entity(EntityMetaId.Player)
-			player_entity.pos = {2, 5}
-			player_entity.player_id = new_player_id
-			host_spawn_entity(player_entity)
-
-			if client, ok := &state.host.clients[client_id]; ok {
-				client.player_id = new_player_id
-			}
-
-			host_send_message(
-				client_id,
-				HostMessageIdentifyResponse {
-					player_id = new_player_id,
-					entity_id = player_entity.id,
-				},
-			)
-
-			host_fire_event(
-				EventPlayerJoined {
-					player_id = new_player_id,
-					player_entity_id = player_entity.id,
-					_token = m.token,
-				},
-			)
-		case ClientMessageCursorPosUpdate:
-			if player_exists {
-				host_broadcast_message(
-					HostMessageCursorPos{player_id = client.player_id, pos = m.pos},
-				)
-			}
-		case ClientMessageSubmitCommand:
-			host_fire_event(
-				EventEntityMoved{entity_id = player.player_entity_id, pos = m.command.pos},
-			)
-			host_fire_event(
-				EventEntityCommandChanged {
-					entity_id = player.player_entity_id,
-					cmd = Command{},
-					seq = m.seq,
-				},
-			)
-		}
+		client, client_exists := &state.host.clients[client_id]
+		if !client_exists do return error(ClientNotFound{client_id = client_id})
+		client_ident, client_identified := client.(IdentifiedClient)
 
 		if HOST_LOG_MESSAGES do info("[HOST] %w", msg)
+
+		switch m in msg {
+		case ClientMessageIdentify:
+			state.client.game.newest_player_id += 1
+			new_player_id := PlayerId(state.client.game.newest_player_id)
+
+			client^ = IdentifiedClient {
+				player_id = new_player_id,
+				token     = m.token,
+			}
+
+			host_send_message(client_id, HostMessageIdentifyResponse{player_id = new_player_id})
+
+			if int(m.next_log_seq) < len(state.host.game_log) {
+				host_catch_up_client(client_id, m.next_log_seq)
+			}
+
+			host_log_entry(LogEntryPlayerJoined{player_id = new_player_id})
+		case ClientMessageCursorPosUpdate:
+			if !client_identified do break
+			host_broadcast_message(
+				HostMessageCursorPos{player_id = client_ident.player_id, pos = m.pos},
+			)
+		case ClientMessageSubmitCommand:
+			if !client_identified do break
+			host_log_entry(
+				LogEntryCommand {
+					player_id = client_ident.player_id,
+					entity_id = m.entity_id,
+					cmd = m.cmd,
+				},
+			)
+			host_send_message(client_id, HostMessageCommandAck{cmd_seq = m.cmd_seq})
+		}
 	}
 	return nil
 }
 
-host_fire_event :: proc(event: Event) {
-	error := event_handle(&state.host.common, event, true)
-
-	if error != nil {
-		err("Handling event on host\n\n%w\n\n%w", error, event)
-	} else {
-		host_broadcast_message(HostMessageEvent{event = event})
-	}
-}
-
-host_send_message :: proc(clientId: i32, msg: HostMessage) {
+host_send_message :: proc(client_id: ClientId, msg: HostMessage) {
 	m: HostMessage = msg
 	s := prism.create_serializer(frame_arena_alloc)
 	host_message_union_serialize(&s, &m)
-	state.bytes_sent += len(s.stream)
-	fresnel.server_send_message(clientId, s.stream[:])
+	state.host.bytes_sent += i32(len(s.stream))
+	fresnel.server_send_message(i32(client_id), s.stream[:])
 }
 
 host_broadcast_message :: proc(msg: HostMessage) {
 	m: HostMessage = msg
 	s := prism.create_serializer(frame_arena_alloc)
 	host_message_union_serialize(&s, &m)
-	state.bytes_sent += len(s.stream)
+	state.host.bytes_sent += i32(len(s.stream) * len(state.host.clients))
 	fresnel.server_broadcast_message(s.stream[:])
 }
 
-// Assign a new entity ID and return it (does not yet spawn it, it doesn't live anywhere except on the stack!)
-host_create_entity :: proc(meta_id: EntityMetaId) -> Entity {
-	state.host.newest_entity_id += 1
-	id := EntityId(state.host.newest_entity_id)
+host_log_entry :: proc(entry: LogEntry) {
+	seq := LogSeqId(len(state.host.game_log))
 
-	return Entity{id = id, meta_id = meta_id}
+	append(&state.host.game_log, entry)
+
+	host_broadcast_message(HostMessageLogEntry{seq = seq, entry = entry})
 }
 
-// Actually spawn an entity created with host_create_entity
-host_spawn_entity :: proc(new_entity: Entity) -> ^Entity {
-	host_fire_event(EventEntitySpawned{entity = new_entity})
-
-	return &state.host.common.entities[new_entity.id]
+host_catch_up_client :: proc(client_id: ClientId, start_at: LogSeqId) {
+	total := len(state.host.game_log)
+	for i := int(start_at); i < total; i += 1 {
+		trace("Catching up from %d, send %d, %v", start_at, i, state.host.game_log[i])
+		host_send_message(
+			client_id,
+			HostMessageLogEntry{entry = state.host.game_log[i], seq = LogSeqId(i), catchup = 1},
+		)
+	}
 }

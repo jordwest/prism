@@ -10,8 +10,8 @@ ClientError :: union {
 }
 
 client_boot :: proc(width: i32, height: i32) -> ClientError {
-	state.client.common.players = make(map[PlayerId]Player, 8) or_return
-	state.client.common.entities = make(map[EntityId]Entity, 2048) or_return
+	state.client.game.players = make(map[PlayerId]Player, 8) or_return
+	state.client.game.entities = make(map[EntityId]Entity, 2048) or_return
 	state.client.zoom = DEFAULT_ZOOM
 	state.client.camera = prism.spring_create(
 		2,
@@ -19,6 +19,11 @@ client_boot :: proc(width: i32, height: i32) -> ClientError {
 		k = CAMERA_SPRING_CONSTANT,
 		c = CAMERA_SPRING_DAMPER,
 	)
+
+	pcg := new(PcgState)
+	state.client.game.pcg = pcg
+	procgen_init(pcg)
+
 	return nil
 }
 
@@ -30,6 +35,55 @@ client_tick :: proc(dt: f32) {
 	fresnel.draw_rect(0, 0, f32(state.width), f32(state.height))
 
 	fresnel.fill(0, 0, 0, 255)
+
+	game := state.client.game
+
+	if pcg, ok := game.pcg.?; ok {
+		max_iterations := PCG_ITERATION_DELAY == 0 ? 100 : 1
+		t0 := fresnel.now()
+		for i := 0; i < max_iterations && !pcg.done; i += 1 {
+			procgen_iterate(pcg)
+		}
+		t1 := fresnel.now()
+		pcg.total_time += (t1 - t0)
+
+		// TODO: This is just a test for visualisation purposes for now
+		prism.djikstra_clear(&pcg.djikstra_map)
+		prism.djikstra_add_origin(&pcg.djikstra_map, Vec2i(game.spawn_point))
+		prism.djikstra_iterate(&pcg.djikstra_map)
+
+		current_cost := pcg.djikstra_map.max_cost
+		path := make([dynamic]([2]i32), 0, int(current_cost), allocator = context.temp_allocator)
+
+		// Path to origin
+		for pos := pcg.djikstra_map.max_cost_coord; pos != Vec2i(game.spawn_point); {
+			append(&path, pos)
+			cheapest_next_pos := pos
+			for offset in prism.NEIGHBOUR_TILES_8D {
+				check_coord := pos + offset
+				tile, ok := prism.djikstra_tile(&pcg.djikstra_map, check_coord).?
+				if ok {
+					if cost, has_cost := tile.cost.?; has_cost {
+						if cost < current_cost {
+							current_cost = cost
+							cheapest_next_pos = check_coord
+						}
+					}
+				}
+			}
+			pos = cheapest_next_pos
+		}
+
+		// Rerun djikstra with path to exit
+		prism.djikstra_clear(&pcg.djikstra_map)
+		for path_pos in path {
+			prism.djikstra_add_origin(&pcg.djikstra_map, path_pos)
+		}
+		// prism.djikstra_add_origin(&pcg.djikstra_map, Vec2i(state.client.cursor_pos))
+		prism.djikstra_iterate(&pcg.djikstra_map)
+
+		fresnel.metric_i32("djikstra_iterations", pcg.djikstra_map.iterations)
+	}
 
 	input_system(dt)
 	render_system(dt)
@@ -43,51 +97,75 @@ client_poll :: proc() -> Error {
 	for {
 		bytes_read := fresnel.client_poll_message(msg_in[:])
 		if bytes_read <= 0 do break // No new messages
-		state.bytes_received += bytes_read
+		state.client.bytes_received += bytes_read
 
 		s := prism.create_deserializer(msg_in)
 		msg: HostMessage
 		e := host_message_union_serialize(&s, &msg)
 		if e != nil do return error(DeserializationError{result = e, offset = s.offset, data = msg_in[:bytes_read]})
 
+		if CLIENT_LOG_MESSAGES do info("[CLIENT]: %w", msg)
+
 		switch m in msg {
 		case HostMessageWelcome:
 			client_send_message(
-				ClientMessageIdentify{token = state.client.my_token, display_name = "Player me"},
+				ClientMessageIdentify {
+					token = state.client.my_token,
+					display_name = "Player me",
+					next_log_seq = state.client.game.next_log_seq,
+				},
 			)
 		case HostMessageIdentifyResponse:
 			state.client.player_id = m.player_id
-			state.client.controlling_entity_id = m.entity_id
 		case HostMessageCursorPos:
-			player, ok := &state.client.common.players[m.player_id]
-			if ok {
+			if player, ok := &state.client.game.players[m.player_id]; ok {
 				player.cursor_tile = m.pos
 				player.cursor_updated_at = state.t
 			}
-		case HostMessageEvent:
-			client_replay_event(m.event)
+		case HostMessageLogEntry:
+			expected_seq := state.client.game.next_log_seq
+			if m.seq > expected_seq {
+				return error(
+					UnexpectedSeqId{expected = state.client.game.next_log_seq, actual = m.seq},
+				)
+			}
+			if m.seq < expected_seq {
+				warn("Ignoring stale update seq=%d, expect=%d", m.seq, expected_seq)
+				break
+			}
+			log_replay_entry(m.entry)
+			state.client.game.next_log_seq += 1
+		case HostMessageCommandAck:
+			entity, ok := &state.client.game.entities[state.client.controlling_entity_id]
+			if _local_cmd, has_local := entity._local_cmd.?; has_local {
+				if m.cmd_seq >= _local_cmd.cmd_seq {
+					trace("Clearing local cmd %d, %d", m.cmd_seq, _local_cmd.cmd_seq)
+					// Server is now ahead of our local state so we can safely clear it
+					entity._local_cmd = nil
+				} else {
+					trace("Local cmd is still newer than server")
+				}
+			}
 		}
-
-		if CLIENT_LOG_MESSAGES do info("[CLIENT]: %w", msg)
 	}
 	return nil
 }
 
 client_replay_event :: proc(event: Event) {
-	error := event_handle(&state.client.common, event, false)
+	error := event_handle(&state.client.game, event, false)
 	if error != nil {
 		err("Replaying event on client\n\n%w\n\n%w", error, event)
 	}
 }
 
 client_get_entity :: proc(entity_id: EntityId) -> ^Entity {
-	return &state.client.common.entities[entity_id]
+	return &state.client.game.entities[entity_id]
 }
 
 client_send_message :: proc(msg: ClientMessage) {
 	m: ClientMessage = msg
 	s := prism.create_serializer(frame_arena_alloc)
 	client_message_union_serialize(&s, &m)
-	state.bytes_sent += len(s.stream)
+	state.client.bytes_sent += i32(len(s.stream))
 	fresnel.client_send_message(s.stream[:])
 }

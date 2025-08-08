@@ -12,33 +12,31 @@ render_system :: proc(dt: f32) {
 	render_entities()
 	render_tile_cursors(dt)
 	// render_ui()
-	when DEBUG_OVERLAYS_ENABLED {
+	if state.debug.render_debug_overlays {
 		render_debug_overlays()
 	}
 }
 
 render_debug_overlays :: proc() {
 
-	if state.debug.render_host_state {
-		fresnel.fill(255, 255, 255, 255)
-		fresnel.draw_text(16, 16, 16, "Host state")
+	fresnel.fill(255, 255, 255, 255)
+	fresnel.draw_text(16, 16, 16, "Host state")
 
-		if pcg, ok := state.host.pcg.?; ok {
-			if !pcg.done {
+	if pcg, ok := state.client.game.pcg.?; ok {
+		if !pcg.done {
 
-				offset := screen_coord(TileCoord({pcg.cursor.x1, pcg.cursor.y1}))
-				dims := vec2f(prism.aabb_size(pcg.cursor)) * GRID_SIZE * state.client.zoom
-				fresnel.fill(255, 200, 200, 0.5)
-				fresnel.draw_rect(offset.x, offset.y, dims.x, dims.y)
+			offset := screen_coord(TileCoord({pcg.cursor.x1, pcg.cursor.y1}))
+			dims := vec2f(prism.aabb_size(pcg.cursor)) * GRID_SIZE * state.client.zoom
+			fresnel.fill(255, 200, 200, 0.5)
+			fresnel.draw_rect(offset.x, offset.y, dims.x, dims.y)
 
-				offset = screen_coord(TileCoord({pcg.cursor2.x1, pcg.cursor2.y1}))
-				dims = vec2f(prism.aabb_size(pcg.cursor2)) * GRID_SIZE * state.client.zoom
-				fresnel.fill(170, 170, 255, 0.5)
-				fresnel.draw_rect(offset.x, offset.y, dims.x, dims.y)
-			}
-
-			_visualise_djikstra(&pcg.djikstra_map)
+			offset = screen_coord(TileCoord({pcg.cursor2.x1, pcg.cursor2.y1}))
+			dims = vec2f(prism.aabb_size(pcg.cursor2)) * GRID_SIZE * state.client.zoom
+			fresnel.fill(170, 170, 255, 0.5)
+			fresnel.draw_rect(offset.x, offset.y, dims.x, dims.y)
 		}
+
+		_visualise_djikstra(&pcg.djikstra_map)
 	}
 
 	fresnel.fill(255, 255, 255, 255)
@@ -61,7 +59,7 @@ render_debug_overlays :: proc() {
 
 // TODO: Does this really belong in render? Find a better home
 render_move_camera :: proc(dt: f32) {
-	if e, ok := state.client.common.entities[state.client.controlling_entity_id]; ok {
+	if e, ok := state.client.game.entities[state.client.controlling_entity_id]; ok {
 		target := vec2f(e.pos.xy)
 		cmd := entity_get_command(&e)
 		if cmd.type == .Move {
@@ -76,7 +74,7 @@ render_tiles :: proc() {
 	t0 := fresnel.now()
 	grid_size := GRID_SIZE * state.client.zoom
 
-	tiles := state.debug.render_host_state ? &state.host.common.tiles : &state.client.common.tiles
+	tiles := &state.client.game.tiles
 
 	canvas_size := vec2f(state.width, state.height)
 
@@ -139,10 +137,7 @@ render_sprite :: proc(sprite_coords: [2]f32, pos: ScreenCoord) {
 
 render_entities :: proc() {
 	i: i32 = 0
-	entities := &state.client.common.entities
-	if (state.debug.render_host_state) {
-		entities = &state.host.common.entities
-	}
+	entities := &state.client.game.entities
 	for id, &e in entities {
 		i += 1
 		meta := entity_meta[e.meta_id]
@@ -189,19 +184,19 @@ render_tile_cursors :: proc(dt: f32) {
 	render_sprite(SPRITE_COORD_RECT, screen_coord(state.client.cursor_pos))
 
 	// Draw other players' cursors
-	for _, &p in state.client.common.players {
+	for _, &p in state.client.game.players {
 		if p.player_id != state.client.player_id {
 			// Like render_move_camera, does this spring logic belong in a separate system (like an animation system)?
-			p._cursor_spring.target = vec2f(p.cursor_tile)
-			prism.spring_tick(&p._cursor_spring, dt)
+			p.cursor_spring.target = vec2f(p.cursor_tile)
+			prism.spring_tick(&p.cursor_spring, dt)
 
 			if p.cursor_updated_at == 0 || (state.t - p.cursor_updated_at > 3) {
 				// Don't render stale cursors
 				continue
 			}
 
-			cursor_pos := screen_coord(TileCoordF(p._cursor_spring.pos))
-			text_pos := screen_coord(TileCoordF(p._cursor_spring.pos + {1, 0.75}))
+			cursor_pos := screen_coord(TileCoordF(p.cursor_spring.pos))
+			text_pos := screen_coord(TileCoordF(p.cursor_spring.pos + {1, 0.75}))
 
 			render_sprite(SPRITE_COORD_OTHER_PLAYER_CURSOR, cursor_pos)
 			fresnel.fill(255, 255, 255, 1)

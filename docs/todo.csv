@@ -44,20 +44,20 @@ done,feat,b3,Add djikstra's algorithm
 done,devtool,b3,Hot reload - add sound when rebooting or failing to compile
 done,refactor,b3,Make event handlers able to operate on both host and client state
 done,refactor,b3,App error type that can be returned from various important places
-doing,refactor,b3,Send tile data to client
-todo,refactor,b3,Switch to deterministic state recreation on all clients
-todo,feat,b3,"Add map and list serialization, send game state to newly joined clients"
-todo,bug,b3,"Player cursor missing when net delay=0, race condition?"
+nope,refactor,b3,Send tile data to client
+done,refactor,b3,Switch to deterministic state recreation on all clients
+done,feat,b3,Send game state to newly joined players
+done,devtool,b3,Add a test runner in the fresnel host to call wasm tests() export
+nope,bug,b3,"Player cursor missing when net delay=0, race condition?"
 todo,feat,b3,Add player pathfinding
-todo,devtool,b3,Hydrate client and server entity state in hot reload
 todo,refactor,ideas,Consider splitting server and client into separate packages
+todo,devtool,b3,Hydrate client and server entity state in hot reload
 todo,feat,b3,Add enemy
 todo,feat,b3,Add melee attacks
 todo,feat,b3,Add hit/miss chance
 todo,imp,b3,Add hit indicators
 todo,devtool,b3,Add microui for debug tools
 todo,feat,b3,Make rust websocket server and connect it up
-todo,feat,b3,Make use of client token to relogin a user (and store it in localstorage)
 todo,refactor,b4,Test turn system and iron out weird bugs with a refactor
 todo,feat,b4,Heal ability (potion?)
 todo,feat,b4,Add fog of war (and add it to the dijkstra map calcs)
@@ -88,10 +88,8 @@ todo,feat,ideas,Gem of parry (increased speed after dodging an attack)
 todo,feat,ideas,Character upgrades when drinking from a well (drinking twice shocks player instead)
 todo,feat,ideas,"The god Thoth is watching over the player, pleased and displeased with actions"
 todo,feat,ideas,Net traps
-todo,devtool,ideas,Add a test runner in the fresnel host to call wasm exports prefixed with test_
-todo,refactor,ideas,Add a DirtyEntity Set instead of a flag on each entity (for perf and tidiness)
+todo,feat,b3,Make use of client token to relogin a user (and store it in localstorage)
 todo,feat,ideas,Play as ghost when dead but teammates still alive (see journal for more)
-todo,perf,ideas,Custom binary entity and message serialization for more compact messaging
 todo,perf,ideas,Networkless play (using a dummy server instead of the server connecting to itself)
 todo,feat,ideas,"Randomly generate a list of ""mercenaries"" that the player can choose from to contract. Gate progress through price of hiring them"
 todo,feat,ideas,Show when another player has their inventory open - their cursor and what they're looking at

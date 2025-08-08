@@ -168,3 +168,8 @@ So many tangents... I think I've got serialization working (but not deserializat
 
 Ok so today I watched [a video](https://www.youtube.com/watch?v=MEZoKKAoUAU) that sparked an idea - why not simulate the game state completely on every client? From tile generation to monster spawning to pathfinding... it can simply be simulated deterministically on every client and then the only thing that needs to be synced between clients are the player inputs. It would simplify things so much, no more serializing game events, only player inputs (and player join/leave events/mouse cursors).
 
+Ok that took 3h but I think totally worth it, and knocked off the issue with replaying state to newly joined clients. The network consumption is also down _hugely_. This means catching up is likely to be CPU bound rather than network bound, so probably can happen super quickly.
+
+Wow, 59 hours tracked in the past 7 days... crazy. I don't think I've every worked so much on a project in my life.
+
+Listening to [this](https://www.youtube.com/watch?v=_ie639ilKW8) after listening to Jayasara's Rumi reading, and thinking this kind of music would really fit with the theme of the game. Perhaps it could be about diving deep in a desert dungeon to discover hidden parts of yourself, and the twist at the end could be discovering that all the characters you've played are the same all-knowing one.

@@ -4,6 +4,7 @@ schema {
             option "todo" label="🔘 Todo"
             option "doing" label="🔵 Doing"
             option "done" label="✅ Done"
+            option "nope" label="❎ Cancelled"
         }
         field "type" type="select" {
             option "feat" label="❇️ Feature"

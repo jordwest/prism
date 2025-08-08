@@ -182,6 +182,8 @@ const notifyHostOfConnection = (clientId: number) => {
   }
 };
 
+const delay = (ms: number) =>
+  new Promise<void>((resolve) => setTimeout(() => resolve(), ms));
 async function initWasm(instanceCount: number) {
   let height = 1 / instanceCount;
   for (var i = 0; i < instanceCount; i++) {
@@ -191,7 +193,9 @@ async function initWasm(instanceCount: number) {
     );
     const y = height * i;
     instances.push(await instantiate(state, i, { y, height }, i));
+    await delay(100);
     notifyHostOfConnection(i + 1);
+    await delay(1000);
   }
 }
 initWasm(2);

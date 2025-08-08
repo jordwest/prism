@@ -47,7 +47,7 @@ foreign net {
 	server_broadcast_message :: proc(slice: []u8) -> i32 ---
 	// Receive messages from clients.
 	// Writes output to both client_id and slice
-	server_poll_message :: proc(client_id: ^i32, slice: []u8) -> i32 ---
+	server_poll_message :: proc(client_id_out: ^i32, slice: []u8) -> i32 ---
 }
 
 foreign import debug "debug"

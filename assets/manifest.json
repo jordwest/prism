@@ -33,7 +33,7 @@
         "mouseButtons": [2]
       },
       {
-        "name": "debug_host_render_toggle",
+        "name": "debug_render_toggle",
         "id": 9000,
         "webKeys": ["1"]
       },

@@ -11,6 +11,8 @@ InnerError :: union {
 	InvariantError,
 	SerializationError,
 	DeserializationError,
+	ClientNotFound,
+	UnexpectedSeqId,
 	mem.Allocator_Error,
 	prism.SerializationResult,
 }
@@ -22,6 +24,15 @@ Error :: union {
 ErrorContainer :: struct {
 	source: runtime.Source_Code_Location,
 	error:  InnerError,
+}
+
+UnexpectedSeqId :: struct {
+	expected: LogSeqId,
+	actual:   LogSeqId,
+}
+
+ClientNotFound :: struct {
+	client_id: ClientId,
 }
 
 EntityNotFound :: struct {
