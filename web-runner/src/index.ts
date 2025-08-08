@@ -117,21 +117,6 @@ let pointerState = {
   down: false,
 };
 
-function sendMouseUpdate() {
-  const regionCoord = getRegionCoord(pointerState.y);
-  if (regionCoord == null) return;
-  const instance = instances[regionCoord.instanceId];
-  if (instance != null) {
-    focusedInstance = instance?.instanceId;
-  }
-
-  instance?.exports.on_mouse_move?.(
-    pointerState.x,
-    regionCoord.regionY,
-    pointerState.down,
-  );
-}
-
 function getRegionCoord(
   y: number,
 ): { instanceId: number; regionY: number } | null {
@@ -151,7 +136,18 @@ canvas.addEventListener("mousemove", (evt) => {
   pointerState.x = evt.offsetX;
   pointerState.y = evt.offsetY;
 
-  sendMouseUpdate();
+  const regionCoord = getRegionCoord(pointerState.y);
+  if (regionCoord == null) return;
+  const instance = instances[regionCoord.instanceId];
+  if (instance != null) {
+    focusedInstance = instance?.instanceId;
+  }
+
+  instance?.exports.on_mouse_move?.(
+    pointerState.x,
+    regionCoord.regionY,
+    pointerState.down,
+  );
 });
 canvas.addEventListener("mousedown", (evt) => {
   pointerState.down = true;
@@ -160,7 +156,16 @@ canvas.addEventListener("mousedown", (evt) => {
     evt.preventDefault();
     setAction(actionId);
   }
-  sendMouseUpdate();
+
+  const regionCoord = getRegionCoord(pointerState.y);
+  if (regionCoord == null) return;
+  const instance = instances[regionCoord.instanceId];
+  instance?.exports.on_mouse_button?.(
+    pointerState.x,
+    regionCoord.regionY,
+    true,
+    evt.button,
+  );
 });
 canvas.addEventListener("contextmenu", (evt) => {
   evt.preventDefault();
@@ -171,7 +176,16 @@ canvas.addEventListener("mouseup", (evt) => {
   if (actionId != null) {
     clearAction(actionId);
   }
-  sendMouseUpdate();
+
+  const regionCoord = getRegionCoord(pointerState.y);
+  if (regionCoord == null) return;
+  const instance = instances[regionCoord.instanceId];
+  instance?.exports.on_mouse_button?.(
+    pointerState.x,
+    regionCoord.regionY,
+    false,
+    evt.button,
+  );
 });
 
 // Temp function for notifying instances of a "connection"
