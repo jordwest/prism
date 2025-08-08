@@ -13,6 +13,10 @@ aabb_overlaps :: proc(a: Aabb($T), b: Aabb(T)) -> bool {
 	return overlaps_x && overlaps_y
 }
 
+aabb_is_edge :: proc(a: Aabb($T), coord: [2]T) -> bool {
+	return coord.x == a.x1 || coord.x == a.x2 || coord.y == a.y1 || coord.y == a.y2
+}
+
 // Inner aabb does not cross outside the container aabb
 aabb_fully_contains :: proc(container: Aabb($T), inner: Aabb(T)) -> bool {
 	return(

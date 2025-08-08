@@ -9,13 +9,15 @@ LogEntry :: union {
 	LogEntryCommand,
 }
 
-log_replay_entry :: proc(entry: LogEntry) {
+log_replay_entry :: proc(entry: LogEntry) -> Error {
 	switch e in entry {
 	case LogEntryPlayerJoined:
-		_on_player_joined(e)
+		_on_player_joined(e) or_return
 	case LogEntryCommand:
-		_on_command(e)
+		_on_command(e) or_return
 	}
+
+	return nil
 }
 
 ///////////////////// VARIANTS ////////////////////
@@ -43,7 +45,10 @@ _on_player_joined :: proc(entry: LogEntryPlayerJoined) -> Error {
 	// Create an entity
 	player_entity := game_spawn_entity({meta_id = .Player})
 	player_entity.player_id = entry.player_id
-	player_entity.pos = state.client.game.spawn_point
+	spawn, ok := game_find_nearest_traversable_space(state.client.game.spawn_point)
+	if !ok do return error(NoSpaceForEntity{entity_id = player_entity.id, pos = state.client.game.spawn_point})
+	player_entity.pos = spawn
+
 	if state.client.player_id == entry.player_id {
 		state.client.controlling_entity_id = player_entity.id
 	}

@@ -13,6 +13,7 @@ InnerError :: union {
 	DeserializationError,
 	ClientNotFound,
 	UnexpectedSeqId,
+	NoSpaceForEntity,
 	mem.Allocator_Error,
 	prism.SerializationResult,
 	prism.DjikstraError,
@@ -25,6 +26,11 @@ Error :: union {
 ErrorContainer :: struct {
 	source: runtime.Source_Code_Location,
 	error:  InnerError,
+}
+
+NoSpaceForEntity :: struct {
+	entity_id: EntityId,
+	pos:       TileCoord,
 }
 
 UnexpectedSeqId :: struct {

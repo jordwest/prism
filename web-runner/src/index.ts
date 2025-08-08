@@ -195,7 +195,7 @@ async function initWasm(instanceCount: number) {
     instances.push(await instantiate(state, i, { y, height }, i));
     await delay(100);
     notifyHostOfConnection(i + 1);
-    await delay(1000);
+    await delay(5000);
   }
 }
 initWasm(2);

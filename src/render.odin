@@ -18,8 +18,10 @@ render_system :: proc(dt: f32) {
 	}
 }
 
-render_debug_overlays :: proc() {
+@(private = "file")
+path := [200][2]i32{} // Stores temporary paths generated from djikstra maps
 
+render_debug_overlays :: proc() {
 	fresnel.fill(255, 255, 255, 255)
 	fresnel.draw_text(16, 16, 16, "Debug overlays on")
 
@@ -296,7 +298,6 @@ render_mouse_path :: proc() {
 	dmap, e := entity_djikstra_map_to(state.client.controlling_entity_id)
 	if dmap.state == .Empty do return
 
-	path := [30][2]i32{}
 	path_len := prism.djikstra_path(dmap, path[:], Vec2i(state.client.cursor_pos))
 
 	for p in path[:path_len] {

@@ -111,8 +111,10 @@ client_poll :: proc() -> Error {
 
 		s := prism.create_deserializer(msg_in)
 		msg: HostMessage
-		e := host_message_union_serialize(&s, &msg)
-		if e != nil do return error(DeserializationError{result = e, offset = s.offset, data = msg_in[:bytes_read]})
+		e_serialization := host_message_union_serialize(&s, &msg)
+		if e_serialization != nil do return error(DeserializationError{result = e_serialization, offset = s.offset, data = msg_in[:bytes_read]})
+
+		e: Error
 
 		if CLIENT_LOG_MESSAGES do info("[CLIENT]: %w", msg)
 
@@ -143,7 +145,8 @@ client_poll :: proc() -> Error {
 				warn("Ignoring stale update seq=%d, expect=%d", m.seq, expected_seq)
 				break
 			}
-			log_replay_entry(m.entry)
+			e = log_replay_entry(m.entry)
+			if e != nil do error_log(e)
 			state_clear_djikstra_maps()
 			state.client.game.next_log_seq += 1
 		case HostMessageCommandAck:
