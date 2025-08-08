@@ -15,13 +15,13 @@ LEVEL_HEIGHT :: 40
  * FUTURE STATE
  ***************/
 
-GAME_SEED :: 0xdeadbeef
+GAME_SEED :: 0xdeadbeef2
 
 /*****************
  * DEBUG OPTIONS
  *****************/
 
-DEBUG_OVERLAYS_ENABLED :: true
+DEBUG_OVERLAYS_ENABLED :: false
 STUTTER_CHECKER_ENABLED :: true
 // Delay procedural generation iterations by this many frames
 // (to help visualise the generation)

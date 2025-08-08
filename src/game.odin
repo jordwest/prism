@@ -20,3 +20,5 @@ game_calculate_move_cost :: proc(_from: [2]i32, to: [2]i32) -> i32 {
 	if .Slow in tile_flags[tile.type] do return 2
 	return 1
 }
+
+// game_find_nearest_traversable_space :: proc(start: TileCoord) -> TileCoord

@@ -21,7 +21,7 @@ render_system :: proc(dt: f32) {
 render_debug_overlays :: proc() {
 
 	fresnel.fill(255, 255, 255, 255)
-	fresnel.draw_text(16, 16, 16, "Host state")
+	fresnel.draw_text(16, 16, 16, "Debug overlays on")
 
 	if pcg, ok := state.client.game.pcg.?; ok {
 		if !pcg.done {

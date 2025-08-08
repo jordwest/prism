@@ -43,6 +43,7 @@ _on_player_joined :: proc(entry: LogEntryPlayerJoined) -> Error {
 	// Create an entity
 	player_entity := game_spawn_entity({meta_id = .Player})
 	player_entity.player_id = entry.player_id
+	player_entity.pos = state.client.game.spawn_point
 	if state.client.player_id == entry.player_id {
 		state.client.controlling_entity_id = player_entity.id
 	}
