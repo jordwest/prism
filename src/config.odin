@@ -28,7 +28,7 @@ GAME_SEED :: 0xdeadbeef
 // Only if running as host
 DEFAULT_DEBUG_RENDER_HOST_STATE :: true
 DEBUG_OVERLAYS_ENABLED :: true
-STUTTER_CHECKER_ENABLED :: false
+STUTTER_CHECKER_ENABLED :: true
 // Delay procedural generation iterations by this many frames
 // (to help visualise the generation)
 PCG_ITERATION_DELAY :: 0

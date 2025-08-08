@@ -53,6 +53,7 @@ export type FresnelExports = {
    * can be reloaded when booting again
    */
   on_dev_hot_unload?: () => void;
+  tests?: () => void;
   tick: (delta_time: number) => void;
   boot: (w: number, h: number, flags: number) => void;
 };

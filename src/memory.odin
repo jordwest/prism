@@ -26,7 +26,11 @@ frame_arena_alloc: mem.Allocator
 // Clay layout arena
 clay_memory: [5116736]u8
 
+_memory_init_done: bool
+
 memory_init :: proc() {
+	if _memory_init_done do return
+
 	persistent_arena = mem.Arena {
 		data = persistent_memory[:],
 	}
@@ -35,6 +39,8 @@ memory_init :: proc() {
 	}
 	persistent_arena_alloc = mem.arena_allocator(&persistent_arena)
 	frame_arena_alloc = mem.arena_allocator(&frame_arena)
+
+	_memory_init_done = true
 }
 
 memory_init_host :: proc() {
@@ -45,11 +51,11 @@ memory_init_host :: proc() {
 }
 
 memory_log_metrics :: proc() {
-    if state.host.is_host {
-    	fresnel.metric_i32("host mem", i32(host_arena.offset))
-    	fresnel.metric_i32("host mem peak", i32(host_arena.peak_used))
-    }
-    fresnel.metric_i32("persistent mem", i32(persistent_arena.offset))
+	if state.host.is_host {
+		fresnel.metric_i32("host mem", i32(host_arena.offset))
+		fresnel.metric_i32("host mem peak", i32(host_arena.peak_used))
+	}
+	fresnel.metric_i32("persistent mem", i32(persistent_arena.offset))
 	fresnel.metric_i32("persistent mem peak", i32(persistent_arena.peak_used))
 	fresnel.metric_i32("temp mem", i32(frame_arena.offset))
 	fresnel.metric_i32("temp mem peak", i32(frame_arena.peak_used))

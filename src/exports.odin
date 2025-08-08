@@ -54,10 +54,6 @@ boot :: proc "c" (width: i32, height: i32, flags: i32) {
 	context.allocator = persistent_arena_alloc
 	context.temp_allocator = frame_arena_alloc
 
-	when TESTS_ENABLED {
-		tests()
-	}
-
 	info("Boot width=%d height=%d flags=%d", width, height, flags)
 	info("Size of AppState: %d", size_of(AppState))
 	info("Size of HostState: %d", size_of(HostState))
@@ -150,4 +146,18 @@ on_dev_hot_unload :: proc "c" () {
 	}
 
 	fresnel.storage_set("dev_state", szr.stream[:])
+}
+
+when TESTS_ENABLED {
+	@(export)
+	tests :: proc "c" () {
+		context = runtime.default_context()
+		memory_init()
+
+		context.assertion_failure_proc = on_panic
+		context.allocator = persistent_arena_alloc
+		context.temp_allocator = frame_arena_alloc
+
+		tests_run_all()
+	}
 }

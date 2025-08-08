@@ -69,7 +69,7 @@ test_case :: proc(name: string, loc := #caller_location) {
 	fresnel.test_case(test_name)
 }
 
-tests :: proc() {
+tests_run_all :: proc() {
 	test_serialize_tiles()
 	fresnel.test_report()
 }

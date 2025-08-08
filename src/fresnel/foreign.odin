@@ -55,7 +55,7 @@ foreign import debug "debug"
 foreign debug {
 	now :: proc() -> i32 ---
 	breakpoint :: proc() ---
-	test_case :: proc(name: string) -> TestId ---
+	test_case :: proc(name: string) ---
 	test_assert :: proc(name: string, pass: bool) ---
 	test_complete :: proc(pass: bool = true) ---
 	test_report :: proc() -> i32 ---

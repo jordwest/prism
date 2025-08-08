@@ -58,6 +58,7 @@ export async function instantiate(
   instance.instanceId = instanceId;
   instance.region = region;
   instance.tests = {
+    hasAssertionFailure: false,
     name: null,
     passed: 0,
     failed: 0,
@@ -66,6 +67,8 @@ export async function instantiate(
     pressedActions: new Set(),
     pressedActionsThisFrame: new Set(),
   };
+
+  instance.exports.tests?.();
 
   instance.exports.boot(
     state.canvas.width,

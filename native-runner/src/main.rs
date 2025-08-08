@@ -1,4 +1,4 @@
-use tinywasm::{Extern, Imports, Module, Store};
+use tinywasm::{Extern, Imports, MemoryRef, Module, Store};
 
 fn main() {
     start_wasm().unwrap();
@@ -6,6 +6,27 @@ fn main() {
 
 fn log_panic(_ctx: tinywasm::FuncContext<'_>, args: (i32, i32, i32, i32)) -> tinywasm::Result<()> {
     println!("Module panic on line {}", args.3);
+    Ok(())
+}
+
+fn test_assert(_ctx: tinywasm::FuncContext<'_>, args: (i32, i32)) -> tinywasm::Result<()> {
+    let mem_ref = _ctx.exported_memory("memory")?;
+
+    // println!(
+    //     "Test assertion {}",
+    //     if args.1 { "passed" } else { "failed" }
+    // );
+    let pass = args.0 == 1;
+    let msg_ptr = args.1;
+
+    let msg = read_string_slice(mem_ref, msg_ptr);
+
+    let pass_icon = match pass {
+        true => "✅",
+        false => "❌",
+    };
+
+    println!("{} {}", pass_icon, msg);
     Ok(())
 }
 
@@ -32,13 +53,33 @@ fn dummy_i32_i32(_ctx: tinywasm::FuncContext<'_>, _: i32) -> tinywasm::Result<i3
     Ok(0)
 }
 
+fn dummy_i32(_ctx: tinywasm::FuncContext<'_>, _: ()) -> tinywasm::Result<i32> {
+    Ok(0)
+}
+
 fn dummy_i32_i32_i32(_ctx: tinywasm::FuncContext<'_>, _: (i32, i32)) -> tinywasm::Result<i32> {
     Ok(0)
 }
 
-fn dummy_i32_void(_ctx: tinywasm::FuncContext<'_>, _: i32) -> tinywasm::Result<()> {
-    println!("i32 -> void");
+fn dummy_i32_void(_ctx: tinywasm::FuncContext<'_>, a: i32) -> tinywasm::Result<()> {
+    println!("({}: i32) -> void", a);
     Ok(())
+}
+
+fn dummy_strptr_void(_ctx: tinywasm::FuncContext<'_>, strptr: i32) -> tinywasm::Result<()> {
+    let mem_ref = _ctx.exported_memory("memory")?;
+    println!("=== {} ===", read_string_slice(mem_ref, strptr));
+    return Ok(());
+}
+
+fn read_string_slice(mem_ref: MemoryRef, ptr: i32) -> String {
+    let slice = mem_ref.load(ptr as usize, 8).unwrap();
+    let ptr: u32 = u32::from_le_bytes(slice[0..4].try_into().unwrap());
+    let len: u32 = u32::from_le_bytes(slice[4..8].try_into().unwrap());
+
+    let str_bytes = mem_ref.load(ptr as usize, len as usize).unwrap();
+    let string = str::from_utf8(str_bytes).unwrap();
+    return string.to_string();
 }
 
 fn dummy_f32_f32(_ctx: tinywasm::FuncContext<'_>, _: f32) -> tinywasm::Result<f32> {
@@ -77,6 +118,20 @@ fn start_wasm() -> tinywasm::Result<()> {
             "metric_i32",
             Extern::typed_func(dummy_i32_i32_void),
         )?
+        .define("debug", "test_case", Extern::typed_func(dummy_strptr_void))?
+        .define("debug", "test_report", Extern::typed_func(dummy_i32))?
+        .define("debug", "test_complete", Extern::typed_func(dummy_i32_void))?
+        .define(
+            "input",
+            "is_action_pressed",
+            Extern::typed_func(dummy_i32_i32),
+        )?
+        .define(
+            "input",
+            "is_action_just_pressed",
+            Extern::typed_func(dummy_i32_i32),
+        )?
+        .define("debug", "test_assert", Extern::typed_func(test_assert))?
         .define("core", "print", Extern::typed_func(dummy_i32_i32_void))?
         .define("core", "clear", Extern::typed_func(dummy_void))?
         .define(
@@ -154,9 +209,13 @@ fn start_wasm() -> tinywasm::Result<()> {
     let tick = instance
         .exported_func::<(f32), ()>(&mut store, "tick")
         .expect("export tick");
+    let test = instance
+        .exported_func::<(), ()>(&mut store, "tests")
+        .expect("export test");
 
-    let _ = boot.call(&mut store, (800, 600, 0)).expect("call boot");
-    let _ = tick.call(&mut store, (0.016)).expect("call tick");
+    let _ = test.call(&mut store, ()).expect("call test");
+    // let _ = boot.call(&mut store, (800, 600, 0)).expect("call boot");
+    // let _ = tick.call(&mut store, (0.016)).expect("call tick");
 
     Ok(())
 }

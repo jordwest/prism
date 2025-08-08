@@ -161,3 +161,5 @@ First thing I think I'll work on is consolidating event handlers between server/
 Done and also improved error handling, much easier to see what's going on now when errors and their locations are well reported. Not quite as good as a proper debugger but good enough for now.
 
 Next up is sending the tile data to the client. This might involve some generic array serialization.
+
+So many tangents... I think I've got serialization working (but not deserialization), but that led to writing a unit test runner, and now trying to implement a basic version of the runner in rust to see if the serialization tests will pass. This whole project is bringing together so many things I've been thinking about for a long time and it's very exciting.
