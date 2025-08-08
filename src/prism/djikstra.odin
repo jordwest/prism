@@ -1,6 +1,7 @@
 package prism
 import "core:container/queue"
 import "core:math"
+import "core:math/bits"
 import "core:mem"
 
 DjikstraError :: enum u8 {
@@ -10,8 +11,14 @@ DjikstraError :: enum u8 {
 	InvalidTile,
 }
 
+DjikstraMapState :: enum {
+	Empty = 0,
+	PartiallyComplete,
+	Complete,
+}
+
 DjikstraMap :: struct($Width: i32, $Height: i32) {
-	done:           bool,
+	state:          DjikstraMapState,
 	tiles:          [Width * Height]DjikstraTile,
 	max_cost:       i32,
 	max_cost_coord: [2]i32,
@@ -49,7 +56,7 @@ djikstra_map_init :: proc(
 
 	// Clear existing data first
 	queue.clear(&algo._queue)
-	dmap.done = false
+	dmap.state = .Empty
 	dmap.max_cost = 0
 	dmap.max_cost_coord = {0, 0}
 	dmap.iterations = 0
@@ -86,7 +93,8 @@ djikstra_map_generate :: proc(
 
 	algo._move_cost = move_cost
 
-	for i := 0; i < max_iterations && !dmap.done; i += 1 {
+	dmap.state = .PartiallyComplete
+	for i := 0; i < max_iterations && dmap.state != .Complete; i += 1 {
 		_iterate(algo, dmap)
 	}
 
@@ -98,7 +106,7 @@ djikstra_tile :: proc(
 	djikstra_map: ^DjikstraMap($Width, $Height),
 	coord: [2]i32,
 ) -> Maybe(^DjikstraTile) {
-	if coord.x >= Width {
+	if coord.x >= Width || coord.x < 0 || coord.y < 0 {
 		return nil
 	}
 	idx := _idx(Width, coord)
@@ -106,6 +114,59 @@ djikstra_tile :: proc(
 		return nil
 	}
 	return &djikstra_map.tiles[idx]
+}
+
+djikstra_path :: proc(
+	dmap: ^DjikstraMap($Width, $Height),
+	path_out: [][2]i32,
+	start_at: [2]i32,
+) -> (
+	steps: i32,
+) {
+	coord := start_at
+	max_iterations := i32(len(path_out))
+	for steps = 0; steps < max_iterations; steps += 1 {
+		next_coord, cost, ok := djikstra_next(dmap, coord)
+		if !ok do break // No valid next tile
+		if cost == 0 do break // Finished pathing to origin
+		coord = next_coord
+		path_out[steps] = coord
+	}
+
+	return steps
+}
+
+djikstra_next :: proc(
+	dmap: ^DjikstraMap($Width, $Height),
+	coord_in: [2]i32,
+) -> (
+	coord_out: [2]i32,
+	lowest_cost: i32,
+	ok: bool,
+) {
+	coord_out = coord_in
+	ok = false
+
+	tile, valid_tile := djikstra_tile(dmap, coord_in).?
+	if !valid_tile do return
+
+	lowest_cost = tile.cost.? or_else bits.I32_MAX
+
+	for offset in NEIGHBOUR_TILES_8D {
+		check_coord := coord_in + offset
+		tile, valid_tile := djikstra_tile(dmap, check_coord).?
+		if valid_tile {
+			if cost, has_cost := tile.cost.?; has_cost {
+				if cost < lowest_cost {
+					lowest_cost = cost
+					coord_out = check_coord
+					ok = true
+				}
+			}
+		}
+	}
+
+	return coord_out, lowest_cost, ok
 }
 
 @(private = "file")
@@ -118,7 +179,7 @@ _iterate :: proc(algo: ^DjikstraAlgo($Width, $Height), dmap: ^DjikstraMap(Width,
 	current_coord, ok := queue.pop_front_safe(&algo._queue)
 	if !ok {
 		// No more tiles to check, we're done
-		dmap.done = true
+		dmap.state = .Complete
 		algo._current_map = nil
 		return
 	}

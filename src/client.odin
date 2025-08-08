@@ -12,6 +12,11 @@ client_boot :: proc(width: i32, height: i32) -> Error {
 	if e_alloc != nil do return error(e_alloc)
 	state.client.game.entities, e_alloc = make(map[EntityId]Entity, 2048)
 	if e_alloc != nil do return error(e_alloc)
+	state.client.game.entity_djikstra_maps, e_alloc = make(
+		map[EntityId]prism.DjikstraMap(LEVEL_WIDTH, LEVEL_HEIGHT),
+		MAX_PLAYERS,
+	)
+	if e_alloc != nil do return error(e_alloc)
 
 	state.client.zoom = DEFAULT_ZOOM
 	state.client.camera = prism.spring_create(
@@ -139,6 +144,7 @@ client_poll :: proc() -> Error {
 				break
 			}
 			log_replay_entry(m.entry)
+			state_clear_djikstra_maps()
 			state.client.game.next_log_seq += 1
 		case HostMessageCommandAck:
 			entity, ok := &state.client.game.entities[state.client.controlling_entity_id]

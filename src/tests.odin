@@ -18,6 +18,7 @@ test_generate_djikstra_map :: proc() {
 		return 1
 	})
 
+	assert_eq(dmap.state, prism.DjikstraMapState.Complete)
 
 	tile, ok := prism.djikstra_tile(&dmap, {7, 5}).?
 	assert_eq(tile^, prism.DjikstraTile{cost = 2, visited = true})

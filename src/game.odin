@@ -12,3 +12,11 @@ game_spawn_entity :: proc(entity: Entity) -> ^Entity {
 
 	return new_entity
 }
+
+game_calculate_move_cost :: proc(_from: [2]i32, to: [2]i32) -> i32 {
+	tile, valid_tile := tile_at(&state.client.game.tiles, TileCoord(to)).?
+	if !valid_tile do return -1
+	if .Traversable not_in tile_flags[tile.type] do return -1
+	if .Slow in tile_flags[tile.type] do return 2
+	return 1
+}

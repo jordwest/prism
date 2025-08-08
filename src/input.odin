@@ -49,12 +49,19 @@ input_system :: proc(dt: f32) {
 		state.client.zoom = math.max(1, state.client.zoom - 1)
 	}
 
-	if is_action_pressed(.LeftClick) {
-		tile_draw(state.client.cursor_pos, .BrickWall)
+	if ok && is_action_pressed(.LeftClick) {
+		command_submit(Command{type = .Move, pos = state.client.cursor_pos})
 	}
-	if is_action_pressed(.RightClick) {
-		tile_draw(state.client.cursor_pos, .Floor)
-	}
+
+	// TODO Cheat commands later?
+	// if is_action_pressed(.LeftClick) {
+	// 	tile_draw(state.client.cursor_pos, .BrickWall)
+	// 	state_clear_djikstra_maps()
+	// }
+	// if is_action_pressed(.RightClick) {
+	// 	tile_draw(state.client.cursor_pos, .Floor)
+	// 	state_clear_djikstra_maps()
+	// }
 
 }
 

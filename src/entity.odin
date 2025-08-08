@@ -47,6 +47,38 @@ entity_meta: [EntityMetaId]EntityMeta = {
 	},
 }
 
+entity_djikstra_map_to :: proc(
+	eid: EntityId,
+) -> (
+	^prism.DjikstraMap(LEVEL_WIDTH, LEVEL_HEIGHT),
+	Error,
+) {
+	existing_map, has_existing_map := &state.client.game.entity_djikstra_maps[eid]
+	if has_existing_map do return existing_map, nil
+
+	entity, entity_exists := state.client.game.entities[eid]
+	if !entity_exists do return nil, error(EntityNotFound{entity_id = eid})
+
+	trace("Regenerating djikstra map for entity %d", eid)
+
+	e: prism.DjikstraError
+
+	algo := &state.client.djikstra
+	state.client.game.entity_djikstra_maps[eid] = prism.DjikstraMap(LEVEL_WIDTH, LEVEL_HEIGHT){}
+	new_map := &state.client.game.entity_djikstra_maps[eid]
+
+	e = prism.djikstra_map_init(new_map, algo)
+	if e != nil do return nil, error(e)
+
+	prism.djikstra_map_add_origin(algo, Vec2i(entity.pos))
+	if e != nil do return nil, error(e)
+
+	prism.djikstra_map_generate(algo, game_calculate_move_cost)
+	if e != nil do return nil, error(e)
+
+	return new_map, nil
+}
+
 entity_id_serialize :: proc(s: ^prism.Serializer, eid: ^EntityId) -> prism.SerializationResult {
 	return prism.serialize_i32(s, (^i32)(eid))
 }

@@ -11,6 +11,7 @@ render_system :: proc(dt: f32) {
 	render_tiles()
 	render_entities()
 	render_tile_cursors(dt)
+	render_mouse_path()
 	// render_ui()
 	if state.debug.render_debug_overlays {
 		render_debug_overlays()
@@ -36,8 +37,10 @@ render_debug_overlays :: proc() {
 			fresnel.draw_rect(offset.x, offset.y, dims.x, dims.y)
 		}
 
-		_visualise_djikstra(&pcg.djikstra_map)
 	}
+
+	dmap, e := entity_djikstra_map_to(state.client.controlling_entity_id)
+	_visualise_djikstra(dmap)
 
 	fresnel.fill(255, 255, 255, 255)
 	cursor_text := fmt.tprintf("(%d, %d)", state.client.cursor_pos.x, state.client.cursor_pos.y)
@@ -182,6 +185,7 @@ render_entities :: proc() {
 render_tile_cursors :: proc(dt: f32) {
 	// Draw this player's cursor
 	render_sprite(SPRITE_COORD_RECT, screen_coord(state.client.cursor_pos))
+	render_sprite(SPRITE_COORD_FOOTSTEPS, screen_coord(state.client.cursor_pos))
 
 	// Draw other players' cursors
 	for _, &p in state.client.game.players {
@@ -251,6 +255,10 @@ _should_cull :: proc(screen_c: ScreenCoord, tile_size: f32 = 1.0) -> bool {
 
 @(private = "file")
 _visualise_djikstra :: proc(dmap: ^prism.DjikstraMap($Width, $Height), offset: [2]i32 = {0, 0}) {
+	if dmap.state == .Empty {
+		return
+	}
+
 	for x: i32 = 0; x < Width; x += 1 {
 		for y: i32 = 0; y < Height; y += 1 {
 			coord := TileCoord{x + offset.x, y + offset.y}
@@ -272,7 +280,7 @@ _visualise_djikstra :: proc(dmap: ^prism.DjikstraMap($Width, $Height), offset: [
 					}
 					fresnel.draw_rect(offset.x, offset.y, dims, dims)
 
-					cost_str := fmt.tprintf("%.0f", cost)
+					cost_str := fmt.tprintf("%d", cost)
 					fresnel.fill(255, 255, 255, 0.5)
 					fresnel.draw_text(offset.x, offset.y, 16, cost_str)
 				} else if dtile.visited {
@@ -281,5 +289,28 @@ _visualise_djikstra :: proc(dmap: ^prism.DjikstraMap($Width, $Height), offset: [
 				}
 			}
 		}
+	}
+}
+
+render_mouse_path :: proc() {
+	dmap, e := entity_djikstra_map_to(state.client.controlling_entity_id)
+	if dmap.state == .Empty do return
+
+	path := [30][2]i32{}
+	path_len := prism.djikstra_path(dmap, path[:], Vec2i(state.client.cursor_pos))
+
+	for p in path[:path_len] {
+		offset := screen_coord(TileCoord(p))
+		dims := GRID_SIZE * state.client.zoom
+		fresnel.fill(0, 255, 0, 1.0)
+		fresnel.draw_image(
+			&fresnel.DrawImageArgs {
+				image_id = 1,
+				dest_offset = Vec2f(offset),
+				dest_size = {dims, dims},
+				source_offset = SPRITE_COORD_DOT,
+				source_size = SPRITE_SIZE,
+			},
+		)
 	}
 }

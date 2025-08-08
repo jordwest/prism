@@ -33,14 +33,15 @@ ClientState :: struct {
 
 // Game state (generally expected to be deterministic across clients)
 GameState :: struct {
-	spawn_point:      TileCoord,
-	newest_entity_id: i32,
-	newest_player_id: i32,
-	tiles:            Tiles,
-	players:          map[PlayerId]Player,
-	entities:         map[EntityId]Entity,
-	pcg:              Maybe(^PcgState),
-	next_log_seq:     LogSeqId,
+	spawn_point:          TileCoord,
+	newest_entity_id:     i32,
+	newest_player_id:     i32,
+	tiles:                Tiles,
+	players:              map[PlayerId]Player,
+	entities:             map[EntityId]Entity,
+	entity_djikstra_maps: map[EntityId]prism.DjikstraMap(LEVEL_WIDTH, LEVEL_HEIGHT),
+	pcg:                  Maybe(^PcgState),
+	next_log_seq:         LogSeqId,
 }
 
 HostState :: struct {
@@ -81,7 +82,6 @@ Player :: struct {
 	cursor_tile:       TileCoord,
 	cursor_updated_at: f32,
 	cursor_spring:     prism.Spring(2),
-	djikstra_to:       prism.DjikstraMap(LEVEL_WIDTH, LEVEL_HEIGHT),
 }
 
 Client :: union {
@@ -102,4 +102,8 @@ state_serialize :: proc(s: ^prism.Serializer, state: ^AppState) -> prism.Seriali
 	serialize(s, &state.client.player_id) or_return
 
 	return nil
+}
+
+state_clear_djikstra_maps :: proc() {
+	clear(&state.client.game.entity_djikstra_maps)
 }
