@@ -191,3 +191,11 @@ Finally, time to start working on gameplay mechanics again. Player pathfinding i
 Just had a thought that it's pretty important to not do any framerate dependent changes to game state, like for example iterating djikstra maps a certain number of times per frame, since the map could potentially end up with a different number of iterations depending on framerate. Would be fine if it does it but also always requires a certain number of iterations before evaluating the map.
 
 Next need to add mouse button events, to differentiate from mouse move.
+
+Thinking about how to do the turn system. So first I'm pretty sure I just need to check only when a new log entry occurs. Otherwise not necessary.
+
+Each evaluation, we first need to check if any players have actions points available _or_ have an active command. Then if the command can't be executed, it gets cancelled.
+
+If all players have been evaluated and have no more action points or no commands, then:
+1. NPCs are executed
+2. Action points are added to all players

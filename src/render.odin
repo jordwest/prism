@@ -18,9 +18,6 @@ render_system :: proc(dt: f32) {
 	}
 }
 
-@(private = "file")
-path := [200][2]i32{} // Stores temporary paths generated from djikstra maps
-
 render_debug_overlays :: proc() {
 	fresnel.fill(255, 255, 255, 255)
 	fresnel.draw_text(16, 16, 16, "Debug overlays on")
@@ -41,8 +38,8 @@ render_debug_overlays :: proc() {
 
 	}
 
-	dmap, e := entity_djikstra_map_to(state.client.controlling_entity_id)
-	_visualise_djikstra(dmap)
+	// dmap, e := entity_djikstra_map_to(state.client.controlling_entity_id)
+	// _visualise_djikstra(dmap)
 
 	fresnel.fill(255, 255, 255, 255)
 	cursor_text := fmt.tprintf("(%d, %d)", state.client.cursor_pos.x, state.client.cursor_pos.y)
@@ -179,6 +176,15 @@ render_entities :: proc() {
 		if cmd.type == .Move && .IsAllied in meta.flags {
 			render_sprite(SPRITE_COORD_PLAYER_OUTLINE, screen_coord(cmd.pos))
 		}
+
+
+		if state.debug.render_debug_overlays {
+			fresnel.fill(255, 255, 255, 1)
+			ap := fmt.tprintf("%d AP", e.action_points)
+			cmd_str := fmt.tprintf("%v", e.cmd)
+			fresnel.draw_text(coord.x + 32, coord.y, 16, ap)
+			fresnel.draw_text(coord.x + 32, coord.y + 16, 16, cmd_str)
+		}
 	}
 
 	fresnel.metric_i32("entities rendered", i)
@@ -303,9 +309,9 @@ render_mouse_path :: proc() {
 	dmap, e := entity_djikstra_map_to(state.client.controlling_entity_id)
 	if dmap.state == .Empty do return
 
-	path_len := prism.djikstra_path(dmap, path[:], Vec2i(state.client.cursor_pos))
+	path_len := prism.djikstra_path(dmap, tmp_path[:], Vec2i(state.client.cursor_pos))
 
-	for p in path[:path_len] {
+	for p in tmp_path[:path_len] {
 		offset := screen_coord(TileCoord(p))
 		dims := GRID_SIZE * state.client.zoom
 		fresnel.fill(0, 255, 0, 1.0)

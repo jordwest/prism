@@ -1,9 +1,11 @@
 package main
 
+import "core:math/linalg"
 import "prism"
 
 CommandTypeId :: enum u8 {
 	None,
+	Skip,
 	Move,
 	Attack,
 }
@@ -12,6 +14,102 @@ Command :: struct {
 	type:          CommandTypeId,
 	pos:           TileCoord,
 	target_entity: EntityId,
+}
+
+CommandOutcome :: enum {
+	// Executed command successfully, continue
+	Ok,
+
+	// Something went wrong when executing command, probably don't want to retry
+	CommandFailed,
+
+	// Has command but no action points
+	NeedsActionPoints,
+
+	// Has action points but no command
+	NeedsInput,
+
+	// Has no action points or commands
+	AwaitingNextTurn,
+}
+
+// Execute current command for this entity as long as possible this turn
+command_execute_all :: proc(entity: ^Entity) -> CommandOutcome {
+	outcome: CommandOutcome = .Ok
+
+	for outcome == .Ok {
+		outcome = command_execute(entity)
+	}
+
+	return outcome
+}
+
+command_execute :: proc(entity: ^Entity) -> CommandOutcome {
+	cmd := entity.cmd
+	ap := entity.action_points
+	if ap <= 0 && cmd.type == .None do return .AwaitingNextTurn
+	if ap <= 0 do return .NeedsActionPoints
+
+	trace("Execute command %v", cmd)
+
+	// Have command and action points, try to move
+	switch cmd.type {
+	case .None:
+		return .NeedsInput
+	case .Move:
+		return _move(entity)
+	case .Attack:
+		return _skip(entity) // TODO
+	case .Skip:
+		return _skip(entity)
+	}
+
+	return .Ok
+}
+
+_move :: proc(entity: ^Entity) -> CommandOutcome {
+	dist_to_target := linalg.vector_length(vec2f(entity.cmd.pos - entity.pos))
+
+	if dist_to_target < 2 {
+		entity.pos = entity.cmd.pos
+		entity.action_points -= 100
+		state_clear_djikstra_maps()
+		// Reached destination
+		entity.cmd = Command{}
+		return .Ok
+	}
+
+	dmap, e := entity_djikstra_map_to(entity.id)
+	if e != nil {
+		entity.cmd = Command{}
+		err("No path to target")
+		return .CommandFailed
+	}
+
+	// Find path to player from target
+	path_len := prism.djikstra_path(dmap, tmp_path[:], Vec2i(entity.cmd.pos))
+	if path_len == 0 {
+		entity.cmd = Command{}
+		err("Path len 0")
+		return .CommandFailed
+	}
+
+	next_step := TileCoord(tmp_path[path_len - 1])
+	entity.pos = next_step
+	entity.action_points -= 100
+	state_clear_djikstra_maps()
+
+	if next_step == entity.cmd.pos {
+		// Reached destination
+		entity.cmd = Command{}
+	}
+	return .Ok
+}
+
+_skip :: proc(entity: ^Entity) -> CommandOutcome {
+	entity.action_points -= 100
+	entity.cmd = Command{}
+	return .Ok
 }
 
 command_serialize :: proc(s: ^prism.Serializer, cmd: ^Command) -> prism.SerializationResult {

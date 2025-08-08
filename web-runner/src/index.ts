@@ -212,6 +212,7 @@ async function initWasm(instanceCount: number) {
     await delay(5000);
   }
 }
+// initWasm(2);
 initWasm(2);
 
 async function restartWasm() {

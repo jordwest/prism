@@ -147,8 +147,9 @@ client_poll :: proc() -> Error {
 			}
 			e = log_replay_entry(m.entry)
 			if e != nil do error_log(e)
-			state_clear_djikstra_maps()
 			state.client.game.next_log_seq += 1
+			e = turn_evaluate_all()
+			if e != nil do error_log(e)
 		case HostMessageCommandAck:
 			entity, ok := &state.client.game.entities[state.client.controlling_entity_id]
 			if _local_cmd, has_local := entity._local_cmd.?; has_local {
@@ -163,13 +164,6 @@ client_poll :: proc() -> Error {
 		}
 	}
 	return nil
-}
-
-client_replay_event :: proc(event: Event) {
-	error := event_handle(&state.client.game, event, false)
-	if error != nil {
-		err("Replaying event on client\n\n%w\n\n%w", error, event)
-	}
 }
 
 client_get_entity :: proc(entity_id: EntityId) -> ^Entity {

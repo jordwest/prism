@@ -8,6 +8,8 @@ import "prism"
 InnerError :: union {
 	EntityNotFound,
 	EntityExists,
+	PlayerCommandWrongEntity,
+	TooManyIterations,
 	InvariantError,
 	SerializationError,
 	DeserializationError,
@@ -19,6 +21,8 @@ InnerError :: union {
 	prism.DjikstraError,
 }
 
+None :: struct {}
+
 Error :: union {
 	ErrorContainer,
 }
@@ -26,6 +30,14 @@ Error :: union {
 ErrorContainer :: struct {
 	source: runtime.Source_Code_Location,
 	error:  InnerError,
+}
+
+TooManyIterations :: struct {}
+
+PlayerCommandWrongEntity :: struct {
+	entity_id:        EntityId,
+	entity_player_id: Maybe(PlayerId),
+	cmd_player_id:    PlayerId,
 }
 
 NoSpaceForEntity :: struct {

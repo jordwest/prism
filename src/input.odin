@@ -52,7 +52,7 @@ input_system :: proc(dt: f32) {
 		state.client.zoom = math.max(1, state.client.zoom - 1)
 	}
 
-	if ok && is_action_pressed(.LeftClick) {
+	if ok && is_action_just_pressed(.LeftClick) {
 		command_submit(Command{type = .Move, pos = state.client.cursor_pos})
 		state.client.cursor_hidden = true
 	}

@@ -61,12 +61,17 @@ _on_command :: proc(entry: LogEntryCommand) -> Error {
 	s := &state.client.game
 	entity, ok := &s.entities[entry.entity_id]
 	if !ok do return error(EntityNotFound{entity_id = entry.entity_id})
+	if entity.player_id != entry.player_id {
+		return error(
+			PlayerCommandWrongEntity {
+				entity_id = entity.id,
+				entity_player_id = entity.player_id,
+				cmd_player_id = entry.player_id,
+			},
+		)
+	}
 
-	entity.pos = entry.cmd.pos
-
-	// TODO
-	// entity.cmd = entry.cmd
-	entity.cmd = {}
+	entity.cmd = entry.cmd
 
 	if p, is_player := &s.players[entity.player_id.? or_else 0]; is_player {
 		// Mark their cursor as stale to hide it immediately

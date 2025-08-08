@@ -5,14 +5,15 @@ import "prism"
 EntityId :: distinct i32
 
 Entity :: struct {
-	id:         EntityId,
-	meta_id:    EntityMetaId,
-	pos:        TileCoord,
-	cmd:        Command,
-	player_id:  Maybe(PlayerId),
+	id:            EntityId,
+	meta_id:       EntityMetaId,
+	pos:           TileCoord,
+	cmd:           Command,
+	action_points: i32,
+	player_id:     Maybe(PlayerId),
 
 	// Not serialized
-	_local_cmd: Maybe(LocalCommand),
+	_local_cmd:    Maybe(LocalCommand),
 }
 
 LocalCommand :: struct {
