@@ -51,14 +51,16 @@ done,devtool,b3,Add a test runner in the fresnel host to call wasm tests() expor
 nope,bug,b3,"Player cursor missing when net delay=0, race condition?"
 done,bug,b3,Make players spawn in a room
 done,feat,b3,Add player pathfinding
-doing,feat,b3,Add turn system again
+done,feat,b3,Add turn system again
+todo,imp,b3,Make turns delayed and interruptable
+todo,imp,b3,Continue showing planned path after setting player cmd
 todo,refactor,ideas,Consider splitting server and client into separate packages
-todo,devtool,b3,Hydrate client and server entity state in hot reload
 todo,feat,b3,Add enemy
 todo,feat,b3,Add melee attacks
 todo,feat,b3,Add hit/miss chance
 todo,imp,b3,Add hit indicators
 todo,devtool,b3,Add microui for debug tools
+todo,devtool,b3,Hydrate client and server entity state in hot reload
 todo,feat,b3,Make rust websocket server and connect it up
 todo,refactor,b4,Test turn system and iron out weird bugs with a refactor
 todo,feat,b4,Heal ability (potion?)

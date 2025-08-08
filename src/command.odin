@@ -70,6 +70,11 @@ command_execute :: proc(entity: ^Entity) -> CommandOutcome {
 _move :: proc(entity: ^Entity) -> CommandOutcome {
 	dist_to_target := linalg.vector_length(vec2f(entity.cmd.pos - entity.pos))
 
+	if dist_to_target == 0 {
+		entity.cmd = Command{}
+		return .Ok
+	}
+
 	if dist_to_target < 2 {
 		entity.pos = entity.cmd.pos
 		entity.action_points -= 100
