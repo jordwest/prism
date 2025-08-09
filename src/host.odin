@@ -4,10 +4,6 @@ import "core:mem"
 import "fresnel"
 import "prism"
 
-host_tick :: proc(dt: f32) {
-	host_poll()
-}
-
 HostError :: union {
 	mem.Allocator_Error,
 }
@@ -33,6 +29,17 @@ host_boot :: proc() -> HostError {
 	game.entities = make(map[EntityId]Entity, MAX_ENTITIES) or_return
 
 	return nil
+}
+
+host_tick :: proc(dt: f32) {
+	host_poll()
+
+	if state.client.game.turn_complete && state.t - state.host.last_turn_at >= TURN_DELAY {
+		state.client.game.turn_complete = false
+		state.host.last_turn_at = state.t
+
+		host_log_entry(LogEntryAdvanceTurn{})
+	}
 }
 
 host_on_client_connected :: proc(clientId: ClientId) {

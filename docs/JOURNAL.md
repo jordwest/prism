@@ -209,3 +209,11 @@ Tomorrow: Add a delay between turns. To do this, I'm gonna need to push log entr
  Now I'm realising a problem with this setup. What if the player wants to interrupt movement while the animation is happening? If events are queued and played until the next event is received, it's impossible.
 
  The solution I can think of right now is to have the host trigger end of turn events, which it forwards to clients and those clients then process the turn. That way if the server receives a new entry, it will appear in the queue before the turn event that executes the movement. Nearly 12 hours today, time for bed...
+
+# Saturday 9 Aug 2025
+
+It's 11:30pm and I'm starting... spent 6 hours playing with an isometric renderer idea.
+
+Going to add turn progressing events. Hmm that was easier than I thought it would be... I guess the sleepless night thinking about it last night helped...
+
+I do need to add command cancellation actually, might do that and test. Pretty easy.

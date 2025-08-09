@@ -1,25 +1,20 @@
 package main
 
 TurnOutcome :: enum {
-	Ok,
-	Error,
+	TurnComplete,
 	AwaitingInput,
+	Error,
 }
 
 turn_evaluate_all :: proc() -> Error {
-	outcome: TurnOutcome = .Ok
-	e: Error
-
-	for i := 0; outcome == .Ok; i += 1 {
-		outcome, e = turn_evaluate()
-		if e != nil do return e
-		if i >= 100 do return error(TooManyIterations{})
-	}
+	outcome, e := turn_evaluate()
+	if e != nil do return e
 
 	return nil
 }
 
 turn_evaluate :: proc() -> (outcome: TurnOutcome, e: Error) {
+	awaiting_input := false
 	// Execute any pending player commands first
 	for _, &entity in state.client.game.entities {
 		_, is_player := entity.player_id.?
@@ -30,26 +25,29 @@ turn_evaluate :: proc() -> (outcome: TurnOutcome, e: Error) {
 
 			switch outcome {
 			case .NeedsActionPoints:
-			case .AwaitingNextTurn:
 			case .CommandFailed:
-				return .AwaitingInput, nil
+				awaiting_input = true
 			case .NeedsInput:
-				return .AwaitingInput, nil
+				awaiting_input = true
 			case .Ok:
+				// Current command should have executed until
+				// it has been exhausted and is waiting on input
+				// or action points, so we should never get an
+				// `Ok` from command_execute_all
 				return .Error, error(InvariantError{})
 			}
 		}
 	}
 
+	if awaiting_input do return .AwaitingInput, nil
+
 	// Player input complete, AI would be executed here
 	trace("New turn")
 	turn_complete()
 
-	return .Ok, nil
+	return .TurnComplete, nil
 }
 
 turn_complete :: proc() {
-	for _, &entity in state.client.game.entities {
-		entity.action_points += 100
-	}
+	state.client.game.turn_complete = true
 }

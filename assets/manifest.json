@@ -33,6 +33,16 @@
         "mouseButtons": [2]
       },
       {
+        "name": "escape",
+        "id": 7,
+        "webKeys": ["Escape"]
+      },
+      {
+        "name": "skip",
+        "id": 8,
+        "webKeys": [" "]
+      },
+      {
         "name": "debug_render_toggle",
         "id": 9000,
         "webKeys": ["1"]

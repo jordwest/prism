@@ -52,7 +52,7 @@ nope,bug,b3,"Player cursor missing when net delay=0, race condition?"
 done,bug,b3,Make players spawn in a room
 done,feat,b3,Add player pathfinding
 done,feat,b3,Add turn system again
-todo,imp,b3,Make turns delayed and interruptable
+done,imp,b3,Make turns delayed and interruptable
 todo,imp,b3,Continue showing planned path after setting player cmd
 todo,refactor,ideas,Consider splitting server and client into separate packages
 todo,feat,b3,Add enemy

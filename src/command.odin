@@ -23,14 +23,11 @@ CommandOutcome :: enum {
 	// Something went wrong when executing command, probably don't want to retry
 	CommandFailed,
 
-	// Has command but no action points
+	// Has no action points, can't proceed
 	NeedsActionPoints,
 
 	// Has action points but no command
 	NeedsInput,
-
-	// Has no action points or commands
-	AwaitingNextTurn,
 }
 
 // Execute current command for this entity as long as possible this turn
@@ -47,7 +44,6 @@ command_execute_all :: proc(entity: ^Entity) -> CommandOutcome {
 command_execute :: proc(entity: ^Entity) -> CommandOutcome {
 	cmd := entity.cmd
 	ap := entity.action_points
-	if ap <= 0 && cmd.type == .None do return .AwaitingNextTurn
 	if ap <= 0 do return .NeedsActionPoints
 
 	trace("Execute command %v", cmd)

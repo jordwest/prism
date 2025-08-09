@@ -10,6 +10,8 @@ InputActions :: enum i32 {
 	MoveRight                 = 4,
 	LeftClick                 = 5,
 	RightClick                = 6,
+	Escape                    = 7,
+	Skip                      = 8,
 	ZoomIn                    = 101,
 	ZoomOut                   = 102,
 	DebugRenderOverlaysToggle = 9000,
@@ -39,6 +41,13 @@ input_system :: proc(dt: f32) {
 			cmd.target_entity = 0
 			command_submit(cmd)
 		}
+	}
+
+	if is_action_just_pressed(.Escape) {
+		command_submit(Command{})
+	}
+	if is_action_just_pressed(.Skip) {
+		command_submit(Command{type = .Skip})
 	}
 
 	if is_action_just_pressed(.DebugRenderOverlaysToggle) {

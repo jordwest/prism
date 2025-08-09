@@ -16,6 +16,7 @@ LEVEL_HEIGHT :: 40
  ***************/
 
 GAME_SEED :: 0xdeadbeef2
+TURN_DELAY :: 0.1
 
 /*****************
  * DEBUG OPTIONS

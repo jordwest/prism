@@ -37,6 +37,7 @@ GameState :: struct {
 	spawn_point:          TileCoord,
 	newest_entity_id:     i32,
 	newest_player_id:     i32,
+	turn_complete:        bool, // All players have completed their turn and waiting for turn to advance
 	tiles:                Tiles,
 	players:              map[PlayerId]Player,
 	entities:             map[EntityId]Entity,
@@ -48,6 +49,7 @@ GameState :: struct {
 HostState :: struct {
 	crashed:        bool,
 	is_host:        bool,
+	last_turn_at:   f32,
 	clients:        map[ClientId]Client,
 	bytes_sent:     i32,
 	bytes_received: i32,
