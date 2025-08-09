@@ -20,9 +20,13 @@ render_system :: proc(dt: f32) {
 	}
 }
 
+
 render_debug_overlays :: proc() {
 	fresnel.fill(255, 255, 255, 255)
 	fresnel.draw_text(16, 16, 16, "Debug overlays on")
+	fresnel.fill(255, 255, 255, 255)
+	fps_str := fmt.tprintf("%.0f FPS", debug_get_fps())
+	fresnel.draw_text(16, 32, 16, fps_str)
 
 	if pcg, ok := state.client.game.pcg.?; ok {
 		if !pcg.done {

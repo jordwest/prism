@@ -134,16 +134,18 @@ async function buildWebRunner() {
 async function buildWasm() {
   return await buildCommand({
     cmdKey: "wasm-build",
-    cmd: "odin",
-    args: [
-      "build",
-      "src",
-      // "-o:none",
-      "-debug",
-      "-source-code-locations:filename",
-      "-target:freestanding_wasm32",
-      "-out:build/web/assets/app.wasm",
-    ],
+    cmd: "just",
+    args: ["build-wasm-dev"],
+    // cmd: "odin",
+    // args: [
+    //   "build",
+    //   "src",
+    //   // "-o:none",
+    //   "-debug",
+    //   "-source-code-locations:filename",
+    //   "-target:freestanding_wasm32",
+    //   "-out:build/web/assets/app.wasm",
+    // ],
   });
 }
 

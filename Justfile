@@ -3,5 +3,12 @@ dev:
 clean:
     rm -rf build
 optimize-wasm:
-    wasm-opt build/web/assets/app.wasm -o build/web/assets/app-optimised.wasm -O3
+    wasm-opt build/web/assets/app.wasm -o build/web/assets/app-optimised.wasm -O4
     ls -la build/web/assets/*.wasm
+build-wasm-dev: clean
+    odin build src -debug -source-code-locations:filename -target:freestanding_wasm32 -out:build/web/assets/app.wasm
+    ls -la build/web/assets > .dev.asset-sizes
+build-wasm-release: clean
+    odin build src -source-code-locations:filename -target:freestanding_wasm32 -out:build/web/assets/app.wasm
+    wasm-opt build/web/assets/app.wasm -o build/web/assets/app.wasm -O3
+    ls -la build/web/assets > .release.asset-sizes

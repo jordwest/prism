@@ -143,6 +143,8 @@ tick :: proc "c" (dt: f32) {
 		client_tick(dt)
 	}
 
+	debug_tick(dt)
+
 	if state.host.is_host {
 		fresnel.metric_i32("host tx ↑", state.host.bytes_sent)
 		fresnel.metric_i32("host rx ↓", state.host.bytes_received)
