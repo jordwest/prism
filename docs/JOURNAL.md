@@ -217,3 +217,5 @@ It's 11:30pm and I'm starting... spent 6 hours playing with an isometric rendere
 Going to add turn progressing events. Hmm that was easier than I thought it would be... I guess the sleepless night thinking about it last night helped...
 
 I do need to add command cancellation actually, might do that and test. Pretty easy.
+
+Tomorrow -
