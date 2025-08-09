@@ -15,7 +15,7 @@ LEVEL_HEIGHT :: 40
  * FUTURE STATE
  ***************/
 
-GAME_SEED :: 0xdeadbeef2
+GAME_SEED :: 0xdeadbeef3
 TURN_DELAY :: 0.1
 
 /*****************

@@ -23,6 +23,37 @@ game_calculate_move_cost :: proc(_from: [2]i32, to: [2]i32) -> i32 {
 	return 1
 }
 
+// Get the command that will be set if a given tile is clicked on (or walked into)
+game_command_for_tile :: proc(coord: TileCoord) -> Command {
+	tile, valid_tile := tile_at(&state.client.game.tiles, TileCoord(coord)).?
+	if !valid_tile do return Command{}
+	if .Traversable not_in tile_flags[tile.type] do return Command{}
+
+	obstacle, has_obstacle := game_entity_at(coord, entity_is_obstacle).?
+
+	if has_obstacle {
+		if .IsAllied in entity_meta[obstacle.meta_id].flags {
+			return Command{type = .Follow, target_entity = obstacle.id}
+		} else {
+			return Command{}
+		}
+	}
+
+	return Command{type = .Move, pos = coord}
+}
+
+game_entity_at :: proc(
+	pos: TileCoord,
+	filter := proc(_: ^Entity) -> bool {return true},
+) -> Maybe(^Entity) {
+	entity: [1]^Entity
+
+	count := game_entities_at(pos, entity[:], filter)
+
+	if count == 1 do return entity[0]
+	return nil
+}
+
 game_entities_at :: proc(
 	pos: TileCoord,
 	out_entities: []^Entity,
@@ -73,7 +104,7 @@ game_find_nearest_traversable_space :: proc(
 					out_coord = TileCoord{x, y}
 					tile, valid_tile := tile_at(&state.client.game.tiles, out_coord).?
 					if !valid_tile do continue
-					if game_entities_at(out_coord, temp_entities[:]) > 0 do continue
+					if game_entities_at(out_coord, temp_entities[:], entity_is_obstacle) > 0 do continue
 					if .Traversable in tile_flags[tile.type] do return out_coord, true
 				}
 			}

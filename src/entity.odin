@@ -39,14 +39,19 @@ EntityMetaId :: enum u8 {
 EntityMetaFlags :: enum {
 	IsPlayerControlled,
 	IsAllied,
+	IsObstacle,
 }
 
 entity_meta: [EntityMetaId]EntityMeta = {
 	.None = EntityMeta{spritesheet_coord = {0, 0}},
 	.Player = EntityMeta {
 		spritesheet_coord = SPRITE_COORD_PLAYER,
-		flags = {.IsPlayerControlled, .IsAllied},
+		flags = {.IsPlayerControlled, .IsAllied, .IsObstacle},
 	},
+}
+
+entity_is_obstacle :: proc(entity: ^Entity) -> bool {
+	return .IsObstacle in entity_meta[entity.meta_id].flags
 }
 
 entity_djikstra_map_to :: proc(

@@ -209,8 +209,10 @@ render_tile_cursors :: proc(dt: f32) {
 
 	if !state.client.cursor_hidden {
 		// Draw this player's cursor
-		render_sprite(SPRITE_COORD_RECT, screen_coord(state.client.cursor_pos))
-		render_sprite(SPRITE_COORD_FOOTSTEPS, screen_coord(state.client.cursor_pos))
+		if game_command_for_tile(state.client.cursor_pos).type == .Move {
+			render_sprite(SPRITE_COORD_RECT, screen_coord(state.client.cursor_pos))
+			render_sprite(SPRITE_COORD_FOOTSTEPS, screen_coord(state.client.cursor_pos))
+		}
 	}
 
 	// Draw other players' cursors
@@ -323,6 +325,8 @@ render_path_to :: proc(
 	to_entity: EntityId = state.client.controlling_entity_id,
 	alpha: u8 = 255,
 ) {
+	if game_command_for_tile(state.client.cursor_pos).type == .None do return
+
 	dmap, e := entity_djikstra_map_to(to_entity)
 	if dmap.state == .Empty do return
 

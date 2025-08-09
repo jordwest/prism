@@ -33,7 +33,7 @@ input_system :: proc(dt: f32) {
 			// Hide cursor when keys are pressed
 			state.client.cursor_hidden = true
 
-			if cmd.type == .None {
+			if cmd.type != .Move {
 				cmd.pos = player_entity.pos
 			}
 			cmd.pos += delta_pos
@@ -62,7 +62,10 @@ input_system :: proc(dt: f32) {
 	}
 
 	if ok && is_action_just_pressed(.LeftClick) {
-		command_submit(Command{type = .Move, pos = state.client.cursor_pos})
+		cmd := game_command_for_tile(state.client.cursor_pos)
+		if cmd.type == .None do return
+
+		command_submit(cmd)
 		state.client.cursor_hidden = true
 	}
 

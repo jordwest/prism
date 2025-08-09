@@ -53,7 +53,9 @@ done,bug,b3,Make players spawn in a room
 done,feat,b3,Add player pathfinding
 done,feat,b3,Add turn system again
 done,imp,b3,Make turns delayed and interruptable
-todo,imp,b3,Continue showing planned path after setting player cmd
+done,imp,b3,Continue showing planned path after setting player cmd
+done,feat,b3,Added follow command
+todo,bug,b3,Make obstacle entities not step on top of each other
 todo,refactor,ideas,Consider splitting server and client into separate packages
 todo,feat,b3,Add enemy
 todo,feat,b3,Add melee attacks
