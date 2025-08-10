@@ -1,13 +1,13 @@
-total 26656
+total 26640
 drwxr-xr-x  14 jordan  staff      448  .
 drwxr-xr-x   4 jordan  staff      128  ..
 -rw-rw-r--   1 jordan  staff    28600  CompaqThin.ttf
 -rw-r--r--@  1 jordan  staff  9204012  Daudir.mp3
 -rw-rw-r--   1 jordan  staff    70640  PxPlus_IBM_VGA_8x16.ttf
 -rw-r--r--   1 jordan  staff  3083520  ambience.mp3
--rwxr-xr-x   1 jordan  staff   979282  app.wasm
--rw-r--r--   1 jordan  staff    23923  index-B6miJeRK.js
--rw-r--r--   1 jordan  staff      619  index-DetKZnNd.css
+-rwxr-xr-x   1 jordan  staff   986325  app.wasm
+-rw-r--r--   1 jordan  staff      449  index-BNqKUXoe.css
+-rw-r--r--   1 jordan  staff    12266  index-Bf0m0-iQ.js
 -rw-r--r--   1 jordan  staff     1159  manifest.json
 -rw-r--r--   1 jordan  staff    22401  miss.ogg
 -rw-r--r--   1 jordan  staff   153850  player-death.mp3

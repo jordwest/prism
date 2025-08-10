@@ -60,19 +60,21 @@ done,feat,b3,Allow allies to swap positions without AP cost
 done,feat,b3,Add a DerivedState struct and arena that gets flushed away after each entity movement
 done,feat,b3,Consume more AP when walking through water
 done,imp,b3,Route around friendly players to avoid swapping when possible
-doing,feat,b3,Add enemy
-doing,feat,b3,Add melee attacks
-todo,refactor,ideas,Consider splitting server and client into separate packages
+done,feat,b3,Add enemy
+done,feat,b3,Add melee attacks
 todo,feat,b3,Add hit/miss chance
+todo,feat,b3,Add enemy AI
 todo,imp,b3,Player indicators should appear above all entities (render order)
 todo,imp,b3,Consider setting a delay after actions (like attack) instead of after every turn
 todo,imp,b3,Add hit indicators
-todo,devtool,ideas,Add microui for debug tools
+todo,bug,b3,"Weirdness when delay=0, out of order messages or something"
 todo,imp,b3,Add SFX again
-todo,refactor,b4,Add sprite meta instead of just coordinates (like frames for animations)
-todo,perf,ideas,Divide calculations across frames to reduce stutter
-todo,devtool,ideas,Hydrate client and server entity state in hot reload
 todo,feat,b3,Make rust websocket server and connect it up
+todo,perf,ideas,Divide calculations across frames to reduce stutter
+todo,devtool,ideas,Add microui for debug tools
+todo,devtool,ideas,Hydrate client and server entity state in hot reload
+todo,refactor,ideas,Consider splitting server and client into separate packages
+todo,refactor,b4,Add sprite meta instead of just coordinates (like frames for animations)
 todo,refactor,b4,Test turn system and iron out weird bugs with a refactor
 todo,feat,b4,Heal ability (potion?)
 todo,feat,b4,Add fog of war (and add it to the dijkstra map calcs)

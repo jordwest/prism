@@ -95,10 +95,14 @@ _attack :: proc(e: ^Entity) -> CommandOutcome {
 
 	if dist_to_target == 1 {
 		// Melee
-		trace("ATTACK")
-		target.hp -= 5
+		target.hp -= 4
 		entity_consume_ap(e, 100)
 		entity_clear_cmd(e)
+
+		if target.hp <= 0 {
+			entity_despawn(target)
+			game_spawn_entity(.Corpse, Entity{pos = target.pos})
+		}
 		return .Ok
 	}
 

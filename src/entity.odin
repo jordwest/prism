@@ -13,6 +13,7 @@ Entity :: struct {
 	hp:            i32,
 	player_id:     Maybe(PlayerId),
 	spring:        prism.Spring(2),
+	despawning:    bool,
 
 	// Not serialized
 	_local_cmd:    Maybe(LocalCommand),
@@ -45,6 +46,7 @@ EntityMetaId :: enum u8 {
 	None,
 	Player,
 	Spider,
+	Corpse,
 }
 
 EntityFlags :: enum {
@@ -63,15 +65,20 @@ entity_meta: [EntityMetaId]EntityMeta = {
 	.Player = EntityMeta {
 		spritesheet_coord = SPRITE_COORD_PLAYER,
 		team = .Players,
-		max_hp = 20,
+		max_hp = 50,
 		flags = {.IsPlayerControlled, .IsObstacle, .CanMove, .CanSwapPlaces},
 	},
 	.Spider = EntityMeta {
 		spritesheet_coord = SPRITE_COORD_SPIDER,
 		team = .Darkness,
-		max_hp = 5,
+		max_hp = 7,
 		flags = {.IsObstacle, .CanMove},
 	},
+	.Corpse = EntityMeta{spritesheet_coord = SPRITE_COORD_CORPSE, flags = {}},
+}
+
+entity_despawn :: proc(e: ^Entity) {
+	e.despawning = true
 }
 
 Alignment :: enum {
@@ -88,6 +95,10 @@ entity_system :: proc(dt: f32) {
 		e.spring.target = vec2f(e.pos)
 		// (maybe spring ticking belongs in a separate entity_tick pass)
 		prism.spring_tick(&e.spring, dt)
+
+		if e.despawning {
+			delete_key(&state.client.game.entities, e.id)
+		}
 	}
 }
 
