@@ -1,6 +1,7 @@
 import { FresnelInstance } from "./instance";
 import { FresnelState, Mailbox } from "./types";
 import { I32Pointer, OdinSlicePointer } from "./types";
+import { NET_FAKE_DELAY } from "../index";
 import { getSlice, writeI32 } from "./util";
 
 const getMailbox = (state: FresnelState, clientId: number): Mailbox => {
@@ -13,7 +14,7 @@ const getMailbox = (state: FresnelState, clientId: number): Mailbox => {
 };
 
 // const delayMs = () => 0;
-const delayMs = () => 30;
+const delayMs = () => NET_FAKE_DELAY;
 // const delayMs = () => 150;
 
 export function createNetImports(instance: FresnelInstance) {

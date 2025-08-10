@@ -55,7 +55,9 @@ done,feat,b3,Add turn system again
 done,imp,b3,Make turns delayed and interruptable
 done,imp,b3,Continue showing planned path after setting player cmd
 done,feat,b3,Added follow command
-todo,bug,b3,Make obstacle entities not step on top of each other
+doing,bug,b3,Make obstacle entities not step on top of each other
+todo,feat,b3,Add a DerivedState struct and arena that gets flushed away after each entity movement
+todo,feat,b3,Allow allies to swap positions without AP cost
 todo,refactor,ideas,Consider splitting server and client into separate packages
 todo,feat,b3,Add enemy
 todo,feat,b3,Add melee attacks

@@ -218,4 +218,6 @@ Going to add turn progressing events. Hmm that was easier than I thought it woul
 
 I do need to add command cancellation actually, might do that and test. Pretty easy.
 
-Tomorrow -
+# Sunday 10 Aug 2025
+
+Today the plan is to make sure obstacle entities can't move on top of each other, then finally add some enemies. Excited about finally getting some gameplay going and being able to actually play it.

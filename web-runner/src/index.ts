@@ -1,6 +1,9 @@
 import { FresnelInstance, instantiate } from "./fresnel/instance";
 import { FresnelState, ManifestJson, Pointer } from "./fresnel/types";
 
+export const INSTANCES = 2;
+export const NET_FAKE_DELAY = 100;
+
 const canvas: HTMLCanvasElement = document.getElementById(
   "canvas",
 )! as HTMLCanvasElement;
@@ -213,7 +216,7 @@ async function initWasm(instanceCount: number) {
   }
 }
 // initWasm(2);
-initWasm(2);
+initWasm(INSTANCES);
 
 async function restartWasm() {
   // Flush all mailboxes so new instances don't receive messages from old instances...

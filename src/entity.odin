@@ -11,6 +11,7 @@ Entity :: struct {
 	cmd:           Command,
 	action_points: i32,
 	player_id:     Maybe(PlayerId),
+	spring:        prism.Spring(2),
 
 	// Not serialized
 	_local_cmd:    Maybe(LocalCommand),

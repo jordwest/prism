@@ -9,9 +9,10 @@ import "prism"
 render_system :: proc(dt: f32) {
 	render_move_camera(dt)
 	render_tiles()
-	render_entities()
+	render_entities(dt)
 	render_tile_cursors(dt)
-	if !state.client.cursor_hidden {
+	if !state.client.cursor_hidden &&
+	   game_command_for_tile(state.client.cursor_pos).type == .Move {
 		render_path_to(state.client.cursor_pos)
 	}
 	// render_ui()
@@ -68,11 +69,12 @@ render_debug_overlays :: proc() {
 // TODO: Does this really belong in render? Find a better home
 render_move_camera :: proc(dt: f32) {
 	if e, ok := state.client.game.entities[state.client.controlling_entity_id]; ok {
-		target := vec2f(e.pos.xy)
+		// target := vec2f(e.pos.xy)
+		target := e.spring.pos
 		cmd := entity_get_command(&e)
-		if cmd.type == .Move {
-			target = target + ((vec2f(cmd.pos) - target) / 2)
-		}
+		// if cmd.type == .Move {
+		// 	target = target + ((vec2f(cmd.pos) - target) / 2)
+		// }
 		state.client.camera.target = target
 	}
 	prism.spring_tick(&state.client.camera, dt)
@@ -144,14 +146,21 @@ render_sprite :: proc(sprite_coords: [2]f32, pos: ScreenCoord, alpha: u8 = 255) 
 	)
 }
 
-render_entities :: proc() {
+render_entities :: proc(dt: f32) {
 	i: i32 = 0
 	entities := &state.client.game.entities
+	grid_size := GRID_SIZE * state.client.zoom
 	for id, &e in entities {
 		i += 1
 		meta := entity_meta[e.meta_id]
 
-		coord := screen_coord(e.pos).xy
+		screen_c := screen_coord(TileCoordF(e.spring.pos)).xy
+		canvas_size := vec2f(state.width, state.height)
+		cull :=
+			screen_c.x < -grid_size ||
+			screen_c.y < -grid_size ||
+			screen_c.x > (canvas_size.x + grid_size) ||
+			screen_c.y > (canvas_size.y + grid_size)
 		if id, is_player := e.player_id.?; is_player {
 			awaiting_cmd := e.cmd.type == .None
 			has_ap := e.action_points > 0
@@ -159,15 +168,25 @@ render_entities :: proc() {
 
 			alpha: u8 = has_ap && awaiting_cmd ? 255 : 128
 
+			if e.spring.k == 0 {
+				e.spring = prism.spring_create(2, vec2f(e.pos), 800, 1, 40)
+			}
+			e.spring.target = vec2f(e.pos)
+			prism.spring_tick(&e.spring, dt)
+
+			// Wait to cull until here because spring needs to be ticked
+			// (maybe spring ticking belongs in a separate entity_tick pass)
+			if cull do continue
+
 			switch id {
 			case 3:
-				render_sprite(SPRITE_COORD_PLAYER_A, coord, alpha)
+				render_sprite(SPRITE_COORD_PLAYER_A, screen_c, alpha)
 			case 2:
-				render_sprite(SPRITE_COORD_PLAYER_B, coord, alpha)
+				render_sprite(SPRITE_COORD_PLAYER_B, screen_c, alpha)
 			case 1:
-				render_sprite(SPRITE_COORD_PLAYER_C, coord, alpha)
+				render_sprite(SPRITE_COORD_PLAYER_C, screen_c, alpha)
 			case:
-				render_sprite(meta.spritesheet_coord, coord, alpha)
+				render_sprite(meta.spritesheet_coord, screen_c, alpha)
 			}
 
 			if has_ap && awaiting_cmd {
@@ -188,7 +207,8 @@ render_entities :: proc() {
 				render_path_to(e.cmd.pos, e.id, 128)
 			}
 		} else {
-			render_sprite(meta.spritesheet_coord, coord)
+			if cull do continue
+			render_sprite(meta.spritesheet_coord, screen_c)
 		}
 
 		cmd := entity_get_command(&e, ignore_new = true)
@@ -201,8 +221,8 @@ render_entities :: proc() {
 			fresnel.fill(255, 255, 255, 1)
 			ap := fmt.tprintf("%d AP", e.action_points)
 			cmd_str := fmt.tprintf("%v", e.cmd)
-			fresnel.draw_text(coord.x + 32, coord.y, 16, ap)
-			fresnel.draw_text(coord.x + 32, coord.y + 16, 16, cmd_str)
+			fresnel.draw_text(screen_c.x + 32, screen_c.y, 16, ap)
+			fresnel.draw_text(screen_c.x + 32, screen_c.y + 16, 16, cmd_str)
 		}
 	}
 
@@ -329,8 +349,6 @@ render_path_to :: proc(
 	to_entity: EntityId = state.client.controlling_entity_id,
 	alpha: u8 = 255,
 ) {
-	if game_command_for_tile(state.client.cursor_pos).type == .None do return
-
 	dmap, e := entity_djikstra_map_to(to_entity)
 	if dmap.state == .Empty do return
 
