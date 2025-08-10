@@ -104,17 +104,8 @@ async function buildWebRunner() {
   if (
     await buildCommand({
       cmdKey: "vite-build",
-      cmd: "npx",
-      cwd: "web-runner",
-      args: [
-        "vite",
-        "build",
-        "--minify",
-        "false",
-        ".",
-        "--outDir",
-        "../build/web",
-      ],
+      cmd: "just",
+      args: ["build-web-dev"],
     })
   ) {
     for await (var entry of Deno.readDir("./assets")) {
