@@ -108,14 +108,15 @@ _player_move_towards :: proc(
 	outcome: MoveOutcome,
 	reached_target: bool,
 ) {
-	dist_to_target := linalg.vector_length(vec2f(destination - entity.pos))
+	// dist_to_target := linalg.vector_length(vec2f(destination - entity.pos))
+	dist_to_target := prism.tile_distance(destination - entity.pos)
 
 	if dist_to_target == 0 {
 		entity_clear_cmd(entity)
 		return .AlreadyAtTarget, true
 	}
 
-	if dist_to_target < 2 {
+	if dist_to_target == 1 {
 		outcome = _move_or_swap(entity, destination, allow_swap)
 		if outcome == .Blocked do return .Blocked, false
 		return outcome, true

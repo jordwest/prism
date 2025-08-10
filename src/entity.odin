@@ -31,8 +31,8 @@ EntityMeta :: struct {
 	flags:             bit_set[EntityFlags],
 }
 
-TileCoord :: distinct [2]i32
-TileCoordF :: distinct [2]f32
+TileCoord :: prism.TileCoord
+TileCoordF :: prism.TileCoordF
 ScreenCoord :: distinct [2]f32
 
 Team :: enum {
