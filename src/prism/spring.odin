@@ -37,6 +37,12 @@ spring_reset_to :: proc(spring: ^Spring($N), pos: [N]f32) {
 }
 
 spring_tick :: proc(spring: ^Spring($N), dt: f32) {
+	if spring.k == 0 {
+		// Spring disabled
+		spring.pos = spring.target
+		return
+	}
+
 	x := spring.pos - spring.target
 	f := -spring.k * x - spring.c * spring.vel
 

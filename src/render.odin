@@ -12,7 +12,7 @@ render_system :: proc(dt: f32) {
 	render_entities(dt)
 	render_tile_cursors(dt)
 	if !state.client.cursor_hidden && command_for_tile(state.client.cursor_pos).type == .Move {
-		render_path_to(state.client.cursor_pos)
+		render_path_to(state.client.cursor_pos, alpha = 80)
 	}
 	// render_ui()
 	if state.debug.render_debug_overlays {
@@ -20,12 +20,20 @@ render_system :: proc(dt: f32) {
 	}
 }
 
+_debug_y_offset: f32 = 16
+
+_add_debug_text :: proc(fmt_str: string, args: ..any) {
+	result := fmt.tprintf(fmt_str, ..args)
+	fresnel.draw_text(16, _debug_y_offset, 16, result)
+	_debug_y_offset += 16
+}
+
 render_debug_overlays :: proc() {
 	fresnel.fill(255, 255, 255, 255)
-	fresnel.draw_text(16, 16, 16, "Debug overlays on")
-	fresnel.fill(255, 255, 255, 255)
-	fps_str := fmt.tprintf("%.0f FPS (%.0f max, %.0f min)", debug_get_fps())
-	fresnel.draw_text(16, 32, 16, fps_str)
+	_debug_y_offset = 16
+	_add_debug_text("Debug overlays")
+	_add_debug_text("t=%.2f", state.t)
+	_add_debug_text("%.0f FPS (%.0f max, %.0f min)", debug_get_fps())
 
 	if pcg, ok := state.client.game.pcg.?; ok {
 		if !pcg.done {
@@ -82,9 +90,9 @@ render_move_camera :: proc(dt: f32) {
 		// target := vec2f(e.pos.xy)
 		target := e.spring.pos
 		cmd := entity_get_command(&e)
-		// if cmd.type == .Move {
-		// 	target = target + ((vec2f(cmd.pos) - target) / 2)
-		// }
+		if cmd.type == .Move {
+			target = target + ((vec2f(cmd.pos) - target) / 2)
+		}
 		state.client.camera.target = target
 	}
 	prism.spring_tick(&state.client.camera, dt)
@@ -213,7 +221,7 @@ render_entities :: proc(dt: f32) {
 
 
 			if cmd.type == .Move {
-				render_path_to(cmd.pos, e.id, 128)
+				render_path_to(cmd.pos, e.id, 120)
 			}
 		} else {
 			if cull do continue
@@ -222,6 +230,11 @@ render_entities :: proc(dt: f32) {
 
 		if cmd.type == .Move && entity_alignment_to_player(&e) == .Friendly {
 			render_sprite(SPRITE_COORD_FOOTSTEPS, screen_coord(cmd.pos))
+		}
+		if cmd.type == .Attack {
+
+			target, target_valid := entity(cmd.target_entity).?
+			if target_valid do render_sprite(SPRITE_COORD_CURSOR_ATTACK, screen_coord(target.pos))
 		}
 	}
 
@@ -365,12 +378,13 @@ render_path_to :: proc(
 		fresnel.fill(0, 255, 0, 1.0)
 		fresnel.draw_image(
 			&fresnel.DrawImageArgs {
-				image_id = 1,
-				dest_offset = Vec2f(offset),
-				dest_size = {dims, dims},
+				image_id      = 1,
+				dest_offset   = Vec2f(offset),
+				dest_size     = {dims, dims},
 				source_offset = SPRITE_COORD_DOT,
-				source_size = SPRITE_SIZE,
-				alpha = alpha,
+				// source_offset = SPRITE_COORD_FOOTSTEPS,
+				source_size   = SPRITE_SIZE,
+				alpha         = alpha,
 			},
 		)
 	}

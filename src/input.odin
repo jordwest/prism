@@ -8,10 +8,14 @@ InputActions :: enum i32 {
 	MoveDown                  = 2,
 	MoveLeft                  = 3,
 	MoveRight                 = 4,
-	LeftClick                 = 5,
-	RightClick                = 6,
-	Escape                    = 7,
-	Skip                      = 8,
+	MoveNE                    = 5,
+	MoveSE                    = 6,
+	MoveSW                    = 7,
+	MoveNW                    = 8,
+	LeftClick                 = 20,
+	RightClick                = 21,
+	Escape                    = 22,
+	Skip                      = 23,
 	ZoomIn                    = 101,
 	ZoomOut                   = 102,
 	DebugRenderOverlaysToggle = 9000,
@@ -29,6 +33,11 @@ input_system :: proc(dt: f32) {
 		if is_action_just_pressed(.MoveUp) do delta_pos.y -= 1
 		if is_action_just_pressed(.MoveDown) do delta_pos.y += 1
 
+		if is_action_just_pressed(.MoveNE) do delta_pos += {1, -1}
+		if is_action_just_pressed(.MoveSE) do delta_pos += {1, 1}
+		if is_action_just_pressed(.MoveSW) do delta_pos += {-1, 1}
+		if is_action_just_pressed(.MoveNW) do delta_pos += {-1, -1}
+
 		if delta_pos != {0, 0} {
 			// Hide cursor when keys are pressed
 			state.client.cursor_hidden = true
@@ -39,8 +48,7 @@ input_system :: proc(dt: f32) {
 			}
 
 			new_cmd := command_for_tile(previous_pos + delta_pos)
-
-			command_submit(new_cmd)
+			if new_cmd.type != .None do command_submit(new_cmd)
 		}
 
 		if is_action_just_pressed(.Skip) && player_entity.action_points > 0 {

@@ -1,3 +1,4 @@
+import { createAudioImports } from "./audio";
 import { createInputImports } from "./input";
 import { createNetImports } from "./net";
 import {
@@ -84,6 +85,7 @@ function createImports(instance: FresnelInstance): WebAssembly.Imports {
     debug: createDebugImports(instance),
     env: createEnvImports(),
     core: createCoreImports(instance),
+    audio: createAudioImports(instance),
     input: createInputImports(instance),
     net: createNetImports(instance),
   };
@@ -282,8 +284,8 @@ function createCoreImports(instance: FresnelInstance) {
       const dh = view.getFloat32(32, true);
       const alpha = view.getUint8(36);
 
-      const image = instance.state.images[imageId];
-      if (image == null) {
+      const image = instance.state.assets[imageId];
+      if (image == null || image.type != "image") {
         instance.state.canvasContext.fillRect(
           sx,
           dy + instance.state.canvas.height * instance.region.y,
@@ -307,7 +309,7 @@ function createCoreImports(instance: FresnelInstance) {
       instance.state.canvasContext.globalAlpha = alpha / 255;
 
       instance.state.canvasContext.drawImage(
-        image,
+        image.image,
         sx,
         sy,
         sw,

@@ -92,8 +92,9 @@ entity_system :: proc(dt: f32) {
 		if e.spring.k == 0 {
 			e.spring = prism.spring_create(2, vec2f(e.pos), 1500, 1, 120)
 		}
+
 		e.spring.target = vec2f(e.pos)
-		// (maybe spring ticking belongs in a separate entity_tick pass)
+
 		prism.spring_tick(&e.spring, dt)
 
 		if e.despawning {

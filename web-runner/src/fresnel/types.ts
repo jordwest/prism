@@ -10,11 +10,22 @@ export type FresnelState = {
   storage: Record<string, string>;
   serverMailbox: ServerMailbox;
   mailboxes: Map<number, Mailbox>;
-  images: Record<number, ImageBitmap>;
+  assets: Record<number, Asset>;
+  audioContext: AudioContext;
   input: {
     keyToAction: Map<string, number>;
     mouseButtonToAction: Map<number, number>;
   };
+};
+
+export type Asset = ImageAsset | AudioAsset;
+export type ImageAsset = {
+  type: "image";
+  image: ImageBitmap;
+};
+export type AudioAsset = {
+  type: "audio";
+  audioElement: HTMLAudioElement;
 };
 
 export type ManifestJson = {
@@ -23,9 +34,11 @@ export type ManifestJson = {
     actions: ManifestAction[];
   };
 };
+export type AssetType = "image" | "audio";
 export type ManifestAsset = {
   id: number;
   filename: string;
+  type: AssetType;
 };
 export type ManifestAction = {
   id: number;

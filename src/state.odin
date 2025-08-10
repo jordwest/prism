@@ -24,6 +24,7 @@ ClientState :: struct {
 	game:                  GameState,
 	bytes_sent:            i32,
 	bytes_received:        i32,
+	audio_queue:           AudioQueue,
 
 	// The sequence id of the command last issued by the client
 	// See JOURNAL.md, 5 Aug 2025

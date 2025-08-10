@@ -1,5 +1,10 @@
 import { FresnelInstance, instantiate } from "./fresnel/instance";
-import { FresnelState, ManifestJson, Pointer } from "./fresnel/types";
+import {
+  AssetType,
+  FresnelState,
+  ManifestJson,
+  Pointer,
+} from "./fresnel/types";
 
 export const INSTANCES = 2;
 export const NET_FAKE_DELAY = 30;
@@ -65,25 +70,49 @@ let state: FresnelState = {
   storage: {},
   mailboxes: new Map(),
   serverMailbox: [],
-  images: {},
+  assets: {},
+  audioContext: new AudioContext(),
   input: {
     keyToAction: new Map(),
     mouseButtonToAction: new Map(),
   },
 };
 
-const loadResource = async (resourceId: number, filename: string) => {
-  const response = await fetch(`assets/${filename}`);
-  await addImage(resourceId, await response.blob());
+const loadResource = async (
+  resourceId: number,
+  filename: string,
+  type: AssetType,
+) => {
+  if (type == "image") {
+    const response = await fetch(`assets/${filename}`);
+    await addImage(resourceId, await response.blob());
+  } else if (type == "audio") {
+    addAudio(resourceId, `assets/${filename}`);
+  }
 };
 const addImage = async (resourceId: number, data: Blob) => {
-  state.images[resourceId] = await createImageBitmap(data);
+  state.assets[resourceId] = {
+    type: "image",
+    image: await createImageBitmap(data),
+  };
+};
+const addAudio = (resourceId: number, filename: string) => {
+  const audioElement = document.createElement("audio");
+  audioElement.src = filename;
+
+  const track = state.audioContext.createMediaElementSource(audioElement);
+  track.connect(state.audioContext.destination);
+
+  state.assets[resourceId] = {
+    type: "audio",
+    audioElement,
+  };
 };
 
 fetch("assets/manifest.json").then(async (response) => {
   const manifest: ManifestJson = await response.json();
   for (var asset of manifest.assets) {
-    loadResource(asset.id, asset.filename);
+    loadResource(asset.id, asset.filename, asset.type);
   }
   for (var action of manifest.input.actions) {
     if (action.webKeys != null) {

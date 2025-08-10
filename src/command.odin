@@ -1,6 +1,7 @@
 package main
 
 import "core:math/linalg"
+import "fresnel"
 import "prism"
 
 CommandTypeId :: enum u8 {
@@ -99,9 +100,13 @@ _attack :: proc(e: ^Entity) -> CommandOutcome {
 		entity_consume_ap(e, 100)
 		entity_clear_cmd(e)
 
+		audio_play(.Punch)
+
 		if target.hp <= 0 {
 			entity_despawn(target)
 			game_spawn_entity(.Corpse, Entity{pos = target.pos})
+
+			audio_play(target.meta.team == .Players ? .PlayerDeath : .EnemyDeath)
 		}
 		return .Ok
 	}
@@ -178,6 +183,8 @@ _move_or_swap :: proc(entity: ^Entity, pos: TileCoord, allow_swap: bool = true) 
 
 	cost := game_calculate_move_cost(entity.pos, pos)
 	if cost <= 0 do return .Blocked
+
+	audio_play(.Footstep)
 
 	entity_set_pos(entity, pos)
 	entity_consume_ap(entity, cost)

@@ -13,6 +13,7 @@ client_boot :: proc(width: i32, height: i32) -> Error {
 	state.client.game.entities, e_alloc = make(map[EntityId]Entity, 2048)
 	if e_alloc != nil do return error(e_alloc)
 	derived_init() or_return
+	audio_init()
 
 	state.client.zoom = DEFAULT_ZOOM
 	state.client.camera = prism.spring_create(
@@ -55,6 +56,7 @@ client_tick :: proc(dt: f32) {
 	input_system(dt)
 	entity_system(dt)
 	render_system(dt)
+	audio_system()
 }
 
 @(private)

@@ -34,6 +34,12 @@ foreign input {
 	is_action_just_pressed :: proc(action_id: i32) -> bool ---
 }
 
+foreign import audio "audio"
+@(default_calling_convention = "c")
+foreign audio {
+	play :: proc(audio_id: i32) -> bool ---
+}
+
 foreign import net "net"
 @(default_calling_convention = "c")
 foreign net {

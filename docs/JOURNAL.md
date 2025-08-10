@@ -255,6 +255,8 @@ Had this thought that for avoiding enemies, I could add a gaussian over the djik
  - Trigger attack when moving onto non-allied entity - done
  - Handle entity death - done
 
+Think that's enough for today. Tomorrow:
+
 Then when that's working:
  - Render hitpoints box
  - Spawn many entities scattered around
