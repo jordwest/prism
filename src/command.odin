@@ -57,8 +57,6 @@ command_execute :: proc(entity: ^Entity) -> CommandOutcome {
 		return _move(entity)
 	case .Attack:
 		return _skip(entity) // TODO
-	// case .Follow:
-	// 	return _follow(entity)
 	case .Skip:
 		return _skip(entity)
 	}
@@ -81,32 +79,6 @@ _move :: proc(entity: ^Entity) -> CommandOutcome {
 	}
 	return .Ok
 }
-
-// _follow :: proc(entity: ^Entity) -> CommandOutcome {
-// 	target, ok := state.client.game.entities[entity.cmd.target_entity]
-// 	if !ok {
-// 		entity_clear_cmd(entity)
-// 		return .CommandFailed
-// 	}
-
-// 	switch _player_move_towards(entity, target.pos) {
-// 	case .Moved:
-// 		return .Ok
-// 	case .MovedAndSwappedWithTarget:
-// 		err("Follow should not swap with target")
-// 		return .Ok
-// 	case .MovedAndReachedTarget:
-// 		return .Ok
-// 	case .NoPathToTarget:
-// 		entity_clear_cmd(entity)
-// 		return .CommandFailed
-// 	case .TargetBlocked:
-// 		return _skip(entity) // Skip turns until followed player moves away
-// 	case .AlreadyAtTarget:
-// 		return _skip(entity) // Skip turns until followed player moves away
-// 	}
-// 	return .Ok
-// }
 
 _skip :: proc(entity: ^Entity) -> CommandOutcome {
 	entity.action_points -= 100
