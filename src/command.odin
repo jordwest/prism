@@ -8,7 +8,7 @@ CommandTypeId :: enum u8 {
 	Skip,
 	Move,
 	Attack,
-	Follow,
+	// Follow,
 }
 
 Command :: struct {
@@ -57,8 +57,8 @@ command_execute :: proc(entity: ^Entity) -> CommandOutcome {
 		return _move(entity)
 	case .Attack:
 		return _skip(entity) // TODO
-	case .Follow:
-		return _follow(entity)
+	// case .Follow:
+	// 	return _follow(entity)
 	case .Skip:
 		return _skip(entity)
 	}
@@ -67,69 +67,46 @@ command_execute :: proc(entity: ^Entity) -> CommandOutcome {
 }
 
 _move :: proc(entity: ^Entity) -> CommandOutcome {
-	dist_to_target := linalg.vector_length(vec2f(entity.cmd.pos - entity.pos))
-
-	if dist_to_target == 0 {
-		entity.cmd = Command{}
-		return .Ok
-	}
-
-	if dist_to_target < 2 {
-		entity.pos = entity.cmd.pos
-		entity.action_points -= 100
-		state_clear_djikstra_maps()
-		// Reached destination
-		entity.cmd = Command{}
-		return .Ok
-	}
-
-	dmap, e := entity_djikstra_map_to(entity.id)
-	if e != nil {
-		entity.cmd = Command{}
-		err("No path to target")
-		return .CommandFailed
-	}
-
-	// Find path to player from target
-	path_len := prism.djikstra_path(dmap, tmp_path[:], Vec2i(entity.cmd.pos))
-	if path_len == 0 {
-		entity.cmd = Command{}
-		err("Path len 0")
-		return .CommandFailed
-	}
-
-	next_step := TileCoord(tmp_path[path_len - 1])
-	entity.pos = next_step
-	entity.action_points -= 100
-	state_clear_djikstra_maps()
-
-	if next_step == entity.cmd.pos {
-		// Reached destination
-		entity.cmd = Command{}
-	}
-	return .Ok
-}
-
-_follow :: proc(entity: ^Entity) -> CommandOutcome {
-	target, ok := state.client.game.entities[entity.cmd.target_entity]
-	if !ok {
-		entity.cmd = Command{}
-		return .CommandFailed
-	}
-
-	switch _move_towards(entity, target.pos) {
+	outcome, at_target := _player_move_towards(entity, entity.cmd.pos, allow_swap = true)
+	switch outcome {
 	case .Moved:
+		if at_target do entity_clear_cmd(entity)
 		return .Ok
-	case .MovedAndReachedTarget:
-		return .Ok
-	case .NoPathToTarget:
-		entity.cmd = Command{}
+	case .Blocked:
+		entity_clear_cmd(entity)
 		return .CommandFailed
 	case .AlreadyAtTarget:
-		return _skip(entity) // Skip turns until followed player moves away
+		entity_clear_cmd(entity)
+		return .Ok
 	}
 	return .Ok
 }
+
+// _follow :: proc(entity: ^Entity) -> CommandOutcome {
+// 	target, ok := state.client.game.entities[entity.cmd.target_entity]
+// 	if !ok {
+// 		entity_clear_cmd(entity)
+// 		return .CommandFailed
+// 	}
+
+// 	switch _player_move_towards(entity, target.pos) {
+// 	case .Moved:
+// 		return .Ok
+// 	case .MovedAndSwappedWithTarget:
+// 		err("Follow should not swap with target")
+// 		return .Ok
+// 	case .MovedAndReachedTarget:
+// 		return .Ok
+// 	case .NoPathToTarget:
+// 		entity_clear_cmd(entity)
+// 		return .CommandFailed
+// 	case .TargetBlocked:
+// 		return _skip(entity) // Skip turns until followed player moves away
+// 	case .AlreadyAtTarget:
+// 		return _skip(entity) // Skip turns until followed player moves away
+// 	}
+// 	return .Ok
+// }
 
 _skip :: proc(entity: ^Entity) -> CommandOutcome {
 	entity.action_points -= 100
@@ -140,48 +117,65 @@ _skip :: proc(entity: ^Entity) -> CommandOutcome {
 @(private = "file")
 MoveOutcome :: enum {
 	Moved,
-	MovedAndReachedTarget,
-	NoPathToTarget,
+	Blocked,
 	AlreadyAtTarget,
 }
 
 @(private = "file")
-_move_towards :: proc(entity: ^Entity, destination: TileCoord) -> MoveOutcome {
+_player_move_towards :: proc(
+	entity: ^Entity,
+	destination: TileCoord,
+	allow_swap := false,
+) -> (
+	outcome: MoveOutcome,
+	reached_target: bool,
+) {
 	dist_to_target := linalg.vector_length(vec2f(destination - entity.pos))
 
 	if dist_to_target == 0 {
-		entity.cmd = Command{}
-		return .AlreadyAtTarget
+		entity_clear_cmd(entity)
+		return .AlreadyAtTarget, true
 	}
 
 	if dist_to_target < 2 {
-		entity.pos = destination
-		entity.action_points -= 100
-		state_clear_djikstra_maps()
-		return .MovedAndReachedTarget
+		outcome = _move_or_swap(entity, destination, allow_swap)
+		if outcome == .Blocked do return .Blocked, false
+		return outcome, true
 	}
 
-	dmap, e := entity_djikstra_map_to(entity.id)
+	dmap, e := derived_djikstra_map_to(entity.id)
 	if e != nil {
-		entity.cmd = Command{}
+		entity_clear_cmd(entity)
 		err("No path to target")
-		return .NoPathToTarget
+		return .Blocked, false
 	}
 
 	// Find path to player from target
 	path_len := prism.djikstra_path(dmap, tmp_path[:], Vec2i(destination))
 	if path_len == 0 {
-		entity.cmd = Command{}
+		entity_clear_cmd(entity)
 		err("Path len 0")
-		return .NoPathToTarget
+		return .Blocked, false
 	}
 
 	next_step := TileCoord(tmp_path[path_len - 1])
-	entity.pos = next_step
-	entity.action_points -= 100
-	state_clear_djikstra_maps()
+	return _move_or_swap(entity, next_step, allow_swap), next_step == destination
+}
 
-	return next_step == destination ? .MovedAndReachedTarget : .Moved
+_move_or_swap :: proc(entity: ^Entity, pos: TileCoord, allow_swap: bool = true) -> MoveOutcome {
+	// Check if there's something in the way
+	entities := derived_entities_at(pos)
+	if obstacle, has_obstacle := entities.obstacle.?; has_obstacle {
+		if allow_swap && .CanSwapPlaces in obstacle.flags {
+			entity_swap_pos(entity, obstacle)
+			return .Moved
+		}
+		return .Blocked
+	}
+
+	entity_set_pos(entity, pos)
+	entity_consume_ap(entity, 100)
+	return .Moved
 }
 
 command_serialize :: proc(s: ^prism.Serializer, cmd: ^Command) -> prism.SerializationResult {

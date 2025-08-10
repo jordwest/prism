@@ -9,6 +9,7 @@ Entity :: struct {
 	meta_id:       EntityMetaId,
 	pos:           TileCoord,
 	cmd:           Command,
+	flags:         bit_set[EntityFlags],
 	action_points: i32,
 	player_id:     Maybe(PlayerId),
 	spring:        prism.Spring(2),
@@ -25,7 +26,7 @@ LocalCommand :: struct {
 
 EntityMeta :: struct {
 	spritesheet_coord: [2]f32,
-	flags:             bit_set[EntityMetaFlags],
+	flags:             bit_set[EntityFlags],
 }
 
 TileCoord :: distinct [2]i32
@@ -37,54 +38,50 @@ EntityMetaId :: enum u8 {
 	Player,
 }
 
-EntityMetaFlags :: enum {
+EntityFlags :: enum {
 	IsPlayerControlled,
 	IsAllied,
 	IsObstacle,
+	CanMove,
+	CanSwapPlaces,
 }
 
 entity_meta: [EntityMetaId]EntityMeta = {
 	.None = EntityMeta{spritesheet_coord = {0, 0}},
 	.Player = EntityMeta {
 		spritesheet_coord = SPRITE_COORD_PLAYER,
-		flags = {.IsPlayerControlled, .IsAllied, .IsObstacle},
+		flags = {.IsPlayerControlled, .IsAllied, .IsObstacle, .CanMove, .CanSwapPlaces},
 	},
 }
 
 entity_is_obstacle :: proc(entity: ^Entity) -> bool {
-	return .IsObstacle in entity_meta[entity.meta_id].flags
+	return .IsObstacle in entity.flags
 }
 
-entity_djikstra_map_to :: proc(
-	eid: EntityId,
-) -> (
-	^prism.DjikstraMap(LEVEL_WIDTH, LEVEL_HEIGHT),
-	Error,
-) {
-	existing_map, has_existing_map := &state.client.game.entity_djikstra_maps[eid]
-	if has_existing_map do return existing_map, nil
+entity_set_pos :: proc(entity: ^Entity, pos: TileCoord) {
+	entity.pos = pos
+	derived_clear()
+}
 
-	entity, entity_exists := state.client.game.entities[eid]
-	if !entity_exists do return nil, error(EntityNotFound{entity_id = eid})
+entity_swap_pos :: proc(a: ^Entity, b: ^Entity) {
+	pos_a := b.pos
+	pos_b := a.pos
 
-	trace("Regenerating djikstra map for entity %d", eid)
+	entity_set_pos(a, pos_a)
+	entity_set_pos(b, pos_b)
+}
 
-	e: prism.DjikstraError
+entity_clear_cmd :: proc(entity: ^Entity) {
+	entity.cmd = Command{}
+	entity._local_cmd = nil
+}
 
-	algo := &state.client.djikstra
-	state.client.game.entity_djikstra_maps[eid] = prism.DjikstraMap(LEVEL_WIDTH, LEVEL_HEIGHT){}
-	new_map := &state.client.game.entity_djikstra_maps[eid]
+entity_consume_ap :: proc(entity: ^Entity, ap: i32) {
+	entity.action_points -= ap
+}
 
-	e = prism.djikstra_map_init(new_map, algo)
-	if e != nil do return nil, error(e)
-
-	prism.djikstra_map_add_origin(algo, Vec2i(entity.pos))
-	if e != nil do return nil, error(e)
-
-	prism.djikstra_map_generate(algo, game_calculate_move_cost)
-	if e != nil do return nil, error(e)
-
-	return new_map, nil
+entity_add_ap :: proc(entity: ^Entity, ap: i32 = 100) {
+	entity.action_points += ap
 }
 
 entity_id_serialize :: proc(s: ^prism.Serializer, eid: ^EntityId) -> prism.SerializationResult {

@@ -24,8 +24,6 @@ ClientState :: struct {
 	game:                  GameState,
 	bytes_sent:            i32,
 	bytes_received:        i32,
-	djikstra_temp:         prism.DjikstraMap(LEVEL_WIDTH, LEVEL_HEIGHT),
-	djikstra:              prism.DjikstraAlgo(LEVEL_WIDTH, LEVEL_HEIGHT),
 
 	// The sequence id of the command last issued by the client
 	// See JOURNAL.md, 5 Aug 2025
@@ -34,16 +32,16 @@ ClientState :: struct {
 
 // Game state (generally expected to be deterministic across clients)
 GameState :: struct {
-	spawn_point:          TileCoord,
-	newest_entity_id:     i32,
-	newest_player_id:     i32,
-	turn_complete:        bool, // All players have completed their turn and waiting for turn to advance
-	tiles:                Tiles,
-	players:              map[PlayerId]Player,
-	entities:             map[EntityId]Entity,
-	entity_djikstra_maps: map[EntityId]prism.DjikstraMap(LEVEL_WIDTH, LEVEL_HEIGHT),
-	pcg:                  Maybe(^PcgState),
-	next_log_seq:         LogSeqId,
+	spawn_point:      TileCoord,
+	newest_entity_id: i32,
+	newest_player_id: i32,
+	turn_complete:    bool, // All players have completed their turn and waiting for turn to advance
+	tiles:            Tiles,
+	players:          map[PlayerId]Player,
+	entities:         map[EntityId]Entity,
+	derived:          DerivedState,
+	pcg:              Maybe(^PcgState),
+	next_log_seq:     LogSeqId,
 }
 
 HostState :: struct {
@@ -105,8 +103,4 @@ state_serialize :: proc(s: ^prism.Serializer, state: ^AppState) -> prism.Seriali
 	serialize(s, &state.client.player_id) or_return
 
 	return nil
-}
-
-state_clear_djikstra_maps :: proc() {
-	clear(&state.client.game.entity_djikstra_maps)
 }

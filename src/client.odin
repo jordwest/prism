@@ -12,11 +12,7 @@ client_boot :: proc(width: i32, height: i32) -> Error {
 	if e_alloc != nil do return error(e_alloc)
 	state.client.game.entities, e_alloc = make(map[EntityId]Entity, 2048)
 	if e_alloc != nil do return error(e_alloc)
-	state.client.game.entity_djikstra_maps, e_alloc = make(
-		map[EntityId]prism.DjikstraMap(LEVEL_WIDTH, LEVEL_HEIGHT),
-		MAX_PLAYERS,
-	)
-	if e_alloc != nil do return error(e_alloc)
+	derived_init() or_return
 
 	state.client.zoom = DEFAULT_ZOOM
 	state.client.camera = prism.spring_create(
@@ -25,8 +21,6 @@ client_boot :: proc(width: i32, height: i32) -> Error {
 		k = CAMERA_SPRING_CONSTANT,
 		c = CAMERA_SPRING_DAMPER,
 	)
-	e_alloc = prism.djikstra_init(&state.client.djikstra)
-	if e_alloc != nil do return error(e_alloc)
 
 	pcg := new(PcgState)
 	state.client.game.pcg = pcg

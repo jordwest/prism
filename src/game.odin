@@ -11,6 +11,9 @@ game_spawn_entity :: proc(entity: Entity) -> ^Entity {
 	new_entity := &state.client.game.entities[id]
 
 	new_entity.id = id
+	new_entity.flags = entity_meta[new_entity.meta_id].flags
+
+	derived_clear()
 
 	return new_entity
 }
@@ -18,6 +21,10 @@ game_spawn_entity :: proc(entity: Entity) -> ^Entity {
 game_calculate_move_cost :: proc(_from: [2]i32, to: [2]i32) -> i32 {
 	tile, valid_tile := tile_at(&state.client.game.tiles, TileCoord(to)).?
 	if !valid_tile do return -1
+	entities := derived_entities_at(TileCoord(to))
+	if obstacle, has_obstacle := entities.obstacle.?; has_obstacle {
+		if .CanMove not_in obstacle.flags do return -1
+	}
 	if .Traversable not_in tile_flags[tile.type] do return -1
 	if .Slow in tile_flags[tile.type] do return 2
 	return 1
@@ -32,8 +39,8 @@ game_command_for_tile :: proc(coord: TileCoord) -> Command {
 	obstacle, has_obstacle := game_entity_at(coord, entity_is_obstacle).?
 
 	if has_obstacle {
-		if .IsAllied in entity_meta[obstacle.meta_id].flags {
-			return Command{type = .Follow, target_entity = obstacle.id}
+		if .CanSwapPlaces in obstacle.flags {
+			return Command{type = .Move, pos = coord}
 		} else {
 			return Command{}
 		}

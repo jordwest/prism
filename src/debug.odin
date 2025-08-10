@@ -1,6 +1,7 @@
 package main
 
 import "core:container/queue"
+import "core:math"
 import "fresnel"
 import "prism"
 
@@ -11,7 +12,7 @@ DebugState :: struct {
 }
 
 @(private = "file")
-_frame_time_queue: [10]f32
+_frame_time_queue: [60]f32
 
 debug_init :: proc() {
 	fresnel.draw_rect(1, 2, 3, 4)
@@ -24,11 +25,17 @@ debug_tick :: proc(dt: f32) {
 	queue.push_back(&state.debug.frame_time_queue, dt)
 }
 
-debug_get_fps :: proc() -> f32 {
+debug_get_fps :: proc() -> (avg: f32, max: f32, min: f32) {
 	time: f32 = 0
+
+	min_t: f32 = 999999
+	max_t: f32 = 0
+
 	for t in _frame_time_queue {
 		time += t
+		min_t = math.min(min_t, t)
+		max_t = math.max(max_t, t)
 	}
 
-	return 1 / (time / len(_frame_time_queue))
+	return 1 / (time / len(_frame_time_queue)), (1 / min_t), (1 / max_t)
 }

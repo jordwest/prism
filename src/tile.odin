@@ -36,6 +36,8 @@ tile_flags: [TileType]TileFlags = {
 
 tile_at :: proc(tiles: ^Tiles, tile: TileCoord) -> Maybe(^TileData) {
 	if tile.x < 0 || tile.y < 0 do return nil
+	if tile.x >= LEVEL_WIDTH do return nil
+	if tile.y >= LEVEL_WIDTH do return nil
 
 	idx := tile.x + tile.y * LEVEL_WIDTH
 	if idx >= len(tiles.data) do return nil

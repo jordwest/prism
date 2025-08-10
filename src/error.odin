@@ -23,9 +23,7 @@ InnerError :: union {
 
 None :: struct {}
 
-Error :: union {
-	ErrorContainer,
-}
+Error :: Maybe(ErrorContainer)
 
 ErrorContainer :: struct {
 	source: runtime.Source_Code_Location,

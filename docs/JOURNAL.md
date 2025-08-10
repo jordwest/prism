@@ -221,3 +221,15 @@ I do need to add command cancellation actually, might do that and test. Pretty e
 # Sunday 10 Aug 2025
 
 Today the plan is to make sure obstacle entities can't move on top of each other, then finally add some enemies. Excited about finally getting some gameplay going and being able to actually play it.
+
+So first up I need to check each location before moving an entity into it. I suppose it probably makes sense to do the allied entity swap thing too at the same time. And the derived state thing.
+
+Derived state now lives in its own struct, now need to calculate entities for each tile.
+
+Ok so I've got the calculations, but now I need to check when running the move command whether an entity needs to be swapped. And the follow command complicates things a bit, because it shouldn't swap with the followed entity. I'm actually starting to think that maybe follow should actually just follow the nearest player, not a specific player.
+
+Thinking now though I should copy across the entity's flags instead of always accessing them through the meta info, since they may change over the life of that entity. Worth doing that now before I have to change it in too many places.
+
+All that is now done. Ally position swapping, tile entity lookup, copying across flags. Only thing is I've removed follow for now. I need to think about that some more, likely going to just do a follow-nearest-ally instead.
+
+Next up, finally, is enemies. I think after some basic enemies that might be it for the day though, trying to take it easy over the next couple days.

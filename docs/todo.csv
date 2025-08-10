@@ -55,16 +55,17 @@ done,feat,b3,Add turn system again
 done,imp,b3,Make turns delayed and interruptable
 done,imp,b3,Continue showing planned path after setting player cmd
 done,feat,b3,Added follow command
-doing,bug,b3,Make obstacle entities not step on top of each other
-todo,feat,b3,Add a DerivedState struct and arena that gets flushed away after each entity movement
-todo,feat,b3,Allow allies to swap positions without AP cost
-todo,refactor,ideas,Consider splitting server and client into separate packages
+done,bug,b3,Make obstacle entities not step on top of each other
+done,feat,b3,Allow allies to swap positions without AP cost
+done,feat,b3,Add a DerivedState struct and arena that gets flushed away after each entity movement
 todo,feat,b3,Add enemy
+todo,refactor,ideas,Consider splitting server and client into separate packages
 todo,feat,b3,Add melee attacks
 todo,feat,b3,Add hit/miss chance
 todo,imp,b3,Add hit indicators
 todo,devtool,b3,Add microui for debug tools
-todo,devtool,b3,Hydrate client and server entity state in hot reload
+todo,bug,ideas,Divide calculations across frames to reduce stutter
+todo,devtool,ideas,Hydrate client and server entity state in hot reload
 todo,feat,b3,Make rust websocket server and connect it up
 todo,refactor,b4,Test turn system and iron out weird bugs with a refactor
 todo,feat,b4,Heal ability (potion?)

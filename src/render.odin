@@ -21,17 +21,15 @@ render_system :: proc(dt: f32) {
 	}
 }
 
-
 render_debug_overlays :: proc() {
 	fresnel.fill(255, 255, 255, 255)
 	fresnel.draw_text(16, 16, 16, "Debug overlays on")
 	fresnel.fill(255, 255, 255, 255)
-	fps_str := fmt.tprintf("%.0f FPS", debug_get_fps())
+	fps_str := fmt.tprintf("%.0f FPS (%.0f max, %.0f min)", debug_get_fps())
 	fresnel.draw_text(16, 32, 16, fps_str)
 
 	if pcg, ok := state.client.game.pcg.?; ok {
 		if !pcg.done {
-
 			offset := screen_coord(TileCoord({pcg.cursor.x1, pcg.cursor.y1}))
 			dims := vec2f(prism.aabb_size(pcg.cursor)) * GRID_SIZE * state.client.zoom
 			fresnel.fill(255, 200, 200, 0.5)
@@ -42,16 +40,27 @@ render_debug_overlays :: proc() {
 			fresnel.fill(170, 170, 255, 0.5)
 			fresnel.draw_rect(offset.x, offset.y, dims.x, dims.y)
 		}
-
 	}
 
 	// dmap, e := entity_djikstra_map_to(state.client.controlling_entity_id)
 	// _visualise_djikstra(dmap)
 
+	// Render cursor coords
 	fresnel.fill(255, 255, 255, 255)
 	cursor_text := fmt.tprintf("(%d, %d)", state.client.cursor_pos.x, state.client.cursor_pos.y)
 	cursor_screen := state.client.cursor_screen_pos + ScreenCoord{32, 32}
 	fresnel.draw_text(cursor_screen.x, cursor_screen.y, 16, cursor_text)
+
+	entities_at_cursor := derived_entities_at(state.client.cursor_pos, ignore_out_of_bounds = true)
+	if obstacle, has_obstacle := entities_at_cursor.obstacle.?; has_obstacle {
+		fresnel.fill(255, 255, 255, 1)
+		ap := fmt.tprintf("%d AP", obstacle.action_points)
+		cmd_str := fmt.tprintf("%v", obstacle.cmd)
+		flags_str := fmt.tprintf("%v", obstacle.flags)
+		fresnel.draw_text(cursor_screen.x, cursor_screen.y + 16, 16, ap)
+		fresnel.draw_text(cursor_screen.x, cursor_screen.y + 32, 16, cmd_str)
+		fresnel.draw_text(cursor_screen.x, cursor_screen.y + 48, 16, flags_str)
+	}
 
 	when STUTTER_CHECKER_ENABLED {
 		// Stutter checker
@@ -150,6 +159,9 @@ render_entities :: proc(dt: f32) {
 	i: i32 = 0
 	entities := &state.client.game.entities
 	grid_size := GRID_SIZE * state.client.zoom
+
+	current_player_has_ap := player_has_ap()
+
 	for id, &e in entities {
 		i += 1
 		meta := entity_meta[e.meta_id]
@@ -161,21 +173,24 @@ render_entities :: proc(dt: f32) {
 			screen_c.y < -grid_size ||
 			screen_c.x > (canvas_size.x + grid_size) ||
 			screen_c.y > (canvas_size.y + grid_size)
+
+		cmd := entity_get_command(&e)
+
+		awaiting_cmd := e.cmd.type == .None
+		has_ap := e.action_points > 0
 		if id, is_player := e.player_id.?; is_player {
-			awaiting_cmd := e.cmd.type == .None
-			has_ap := e.action_points > 0
 			is_current_player := e.id == state.client.controlling_entity_id
 
 			alpha: u8 = has_ap && awaiting_cmd ? 255 : 128
 
 			if e.spring.k == 0 {
-				e.spring = prism.spring_create(2, vec2f(e.pos), 800, 1, 40)
+				e.spring = prism.spring_create(2, vec2f(e.pos), 1500, 1, 120)
 			}
 			e.spring.target = vec2f(e.pos)
+			// (maybe spring ticking belongs in a separate entity_tick pass)
 			prism.spring_tick(&e.spring, dt)
 
 			// Wait to cull until here because spring needs to be ticked
-			// (maybe spring ticking belongs in a separate entity_tick pass)
 			if cull do continue
 
 			switch id {
@@ -189,13 +204,14 @@ render_entities :: proc(dt: f32) {
 				render_sprite(meta.spritesheet_coord, screen_c, alpha)
 			}
 
-			if has_ap && awaiting_cmd {
-				if is_current_player {
-					render_sprite(
-						SPRITE_COORD_ACTIVE_CHEVRON,
-						screen_coord(tile_coord_f(e.pos) + TileCoordF({0, -0.5})),
-					)
-				} else {
+			if is_current_player {
+				render_sprite(
+					SPRITE_COORD_ACTIVE_CHEVRON,
+					screen_coord(TileCoordF(e.spring.pos) + TileCoordF({0, -0.5})),
+					has_ap ? 255 : 50,
+				)
+			} else {
+				if has_ap && awaiting_cmd && !current_player_has_ap {
 					render_sprite(
 						SPRITE_COORD_THOUGHT_BUBBLE,
 						screen_coord(tile_coord_f(e.pos) + TileCoordF({0.75, -0.75})),
@@ -203,26 +219,17 @@ render_entities :: proc(dt: f32) {
 				}
 			}
 
-			if e.cmd.type == .Move {
-				render_path_to(e.cmd.pos, e.id, 128)
+
+			if cmd.type == .Move {
+				render_path_to(cmd.pos, e.id, 128)
 			}
 		} else {
 			if cull do continue
 			render_sprite(meta.spritesheet_coord, screen_c)
 		}
 
-		cmd := entity_get_command(&e, ignore_new = true)
 		if cmd.type == .Move && .IsAllied in meta.flags {
-			render_sprite(SPRITE_COORD_PLAYER_OUTLINE, screen_coord(cmd.pos))
-		}
-
-
-		if state.debug.render_debug_overlays {
-			fresnel.fill(255, 255, 255, 1)
-			ap := fmt.tprintf("%d AP", e.action_points)
-			cmd_str := fmt.tprintf("%v", e.cmd)
-			fresnel.draw_text(screen_c.x + 32, screen_c.y, 16, ap)
-			fresnel.draw_text(screen_c.x + 32, screen_c.y + 16, 16, cmd_str)
+			render_sprite(SPRITE_COORD_FOOTSTEPS, screen_coord(cmd.pos))
 		}
 	}
 
@@ -349,7 +356,7 @@ render_path_to :: proc(
 	to_entity: EntityId = state.client.controlling_entity_id,
 	alpha: u8 = 255,
 ) {
-	dmap, e := entity_djikstra_map_to(to_entity)
+	dmap, e := derived_djikstra_map_to(to_entity)
 	if dmap.state == .Empty do return
 
 	path_len := prism.djikstra_path(dmap, tmp_path[:], Vec2i(from_pos))

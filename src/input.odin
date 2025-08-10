@@ -18,7 +18,7 @@ InputActions :: enum i32 {
 }
 
 input_system :: proc(dt: f32) {
-	player_entity, ok := &state.client.game.entities[state.client.controlling_entity_id]
+	player_entity, ok := player_entity().?
 
 	if ok {
 		cmd := entity_get_command(player_entity)
@@ -41,13 +41,14 @@ input_system :: proc(dt: f32) {
 			cmd.target_entity = 0
 			command_submit(cmd)
 		}
+
+		if is_action_just_pressed(.Skip) && player_entity.action_points > 0 {
+			command_submit(Command{type = .Skip})
+		}
 	}
 
 	if is_action_just_pressed(.Escape) {
 		command_submit(Command{})
-	}
-	if is_action_just_pressed(.Skip) {
-		command_submit(Command{type = .Skip})
 	}
 
 	if is_action_just_pressed(.DebugRenderOverlaysToggle) {
