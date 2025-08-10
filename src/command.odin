@@ -57,7 +57,7 @@ command_execute :: proc(entity: ^Entity) -> CommandOutcome {
 	case .Move:
 		return _move(entity)
 	case .Attack:
-		return _skip(entity) // TODO
+		return _attack(entity) // TODO
 	case .Skip:
 		return _skip(entity)
 	}
@@ -85,6 +85,11 @@ _skip :: proc(entity: ^Entity) -> CommandOutcome {
 	entity.action_points -= 100
 	entity.cmd = Command{}
 	return .Ok
+}
+
+_attack :: proc(entity: ^Entity) -> CommandOutcome {
+	// TODO
+	return _skip(entity)
 }
 
 @(private = "file")

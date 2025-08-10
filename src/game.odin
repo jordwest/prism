@@ -133,11 +133,14 @@ game_find_nearest_traversable_space :: proc(
 			y2 = start.y + dist,
 		}
 
+		trace("Checking region %v", aabb)
+
 		for x := aabb.x1; x <= aabb.x2; x += 1 {
 			for y := aabb.y1; y <= aabb.y2; y += 1 {
 				if prism.aabb_is_edge(aabb, [2]i32{x, y}) {
 					// Evaluate tile
 					out_coord = TileCoord{x, y}
+					trace("Evaluating %v", out_coord)
 					tile, valid_tile := tile_at(out_coord).?
 					if !valid_tile do continue
 					entity_tile := derived_entities_at(out_coord)

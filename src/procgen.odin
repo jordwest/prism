@@ -81,6 +81,13 @@ procgen_iterate :: proc(pcg: ^PcgState) {
 
 	if pcg.iteration >= 1000 || len(pcg.rooms) >= 50 {
 		info("Procedural generation done in %d iterations, %dms", pcg.iteration, pcg.total_time)
+
+		enemy_spawn_pos := state.client.game.spawn_point + {6, -3}
+		trace("spawn=%v, enemy_spawn_pos=%v", state.client.game.spawn_point, enemy_spawn_pos)
+		spawn, ok := game_find_nearest_traversable_space(enemy_spawn_pos)
+		trace("actual_spawn=%v", spawn)
+		new_enemy := game_spawn_entity(.Spider, {pos = spawn})
+
 		pcg.done = true
 		return
 	}
@@ -172,10 +179,6 @@ _try_add_room :: proc(
 			prism.rand_splitmix_get_i32_range(&rng, room_aabb.y1, room_aabb.y2),
 		}
 		prism.spring_reset_to(&state.client.camera, vec2f(state.client.game.spawn_point))
-
-		enemy_spawn_pos := state.client.game.spawn_point + {6, 3}
-		spawn, ok := game_find_nearest_traversable_space(enemy_spawn_pos)
-		player_entity := game_spawn_entity(.Spider, {pos = spawn})
 	}
 
 	pcg.newest_room_id += 1
