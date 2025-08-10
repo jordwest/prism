@@ -49,47 +49,11 @@ client_tick :: proc(dt: f32) {
 		t1 := fresnel.now()
 		pcg.total_time += (t1 - t0)
 
-		/*
-		// TODO: This is just a test for visualisation purposes for now
-		prism.djikstra_clear(&pcg.djikstra_map)
-		prism.djikstra_add_origin(&pcg.djikstra_map, Vec2i(game.spawn_point))
-		prism.djikstra_iterate(&pcg.djikstra_map)
-
-		current_cost := pcg.djikstra_map.max_cost
-		path := make([dynamic]([2]i32), 0, int(current_cost), allocator = context.temp_allocator)
-
-		// Path to origin
-		for pos := pcg.djikstra_map.max_cost_coord; pos != Vec2i(game.spawn_point); {
-			append(&path, pos)
-			cheapest_next_pos := pos
-			for offset in prism.NEIGHBOUR_TILES_8D {
-				check_coord := pos + offset
-				tile, ok := prism.djikstra_tile(&pcg.djikstra_map, check_coord).?
-				if ok {
-					if cost, has_cost := tile.cost.?; has_cost {
-						if cost < current_cost {
-							current_cost = cost
-							cheapest_next_pos = check_coord
-						}
-					}
-				}
-			}
-			pos = cheapest_next_pos
-		}
-
-		// Rerun djikstra with path to exit
-		prism.djikstra_clear(&pcg.djikstra_map)
-		for path_pos in path {
-			prism.djikstra_add_origin(&pcg.djikstra_map, path_pos)
-		}
-		// prism.djikstra_add_origin(&pcg.djikstra_map, Vec2i(state.client.cursor_pos))
-		prism.djikstra_iterate(&pcg.djikstra_map)
-		*/
-
 		fresnel.metric_i32("djikstra_iterations", pcg.djikstra_map.iterations)
 	}
 
 	input_system(dt)
+	entity_system(dt)
 	render_system(dt)
 }
 
@@ -110,7 +74,7 @@ client_poll :: proc() -> Error {
 
 		e: Error
 
-		if CLIENT_LOG_MESSAGES do info("[CLIENT]: %w", msg)
+		if LOG_CLIENT_MESSAGES do info("[CLIENT]: %w", msg)
 
 		switch m in msg {
 		case HostMessageWelcome:

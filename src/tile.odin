@@ -34,7 +34,8 @@ tile_flags: [TileType]TileFlags = {
 	.Water      = {.Traversable, .Slow},
 }
 
-tile_at :: proc(tiles: ^Tiles, tile: TileCoord) -> Maybe(^TileData) {
+tile_at :: proc(tile: TileCoord) -> Maybe(^TileData) {
+	tiles := &state.client.game.tiles
 	if tile.x < 0 || tile.y < 0 do return nil
 	if tile.x >= LEVEL_WIDTH do return nil
 	if tile.y >= LEVEL_WIDTH do return nil
@@ -46,14 +47,14 @@ tile_at :: proc(tiles: ^Tiles, tile: TileCoord) -> Maybe(^TileData) {
 }
 
 tile_draw_door :: proc(pos: TileCoord) {
-	tile, ok := tile_at(&state.client.game.tiles, pos).?
+	tile, ok := tile_at(pos).?
 	if ok {
 		tile.type = .Floor
 	}
 }
 
 tile_draw :: proc(pos: TileCoord, type: TileType) {
-	tile, ok := tile_at(&state.client.game.tiles, pos).?
+	tile, ok := tile_at(pos).?
 	if ok {
 		tile.type = type
 	}
@@ -65,7 +66,7 @@ tile_draw_room :: proc(pos: TileCoord, size: Vec2i) {
 			is_boundary := ox == 0 || oy == 0 || ox == size.x - 1 || oy == size.y - 1
 			coord := TileCoord({pos.x + ox, pos.y + oy})
 
-			tile, ok := tile_at(&state.client.game.tiles, coord).?
+			tile, ok := tile_at(coord).?
 			if ok {
 				tile.type = is_boundary ? .BrickWall : .Floor
 				if !is_boundary &&

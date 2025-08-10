@@ -92,6 +92,12 @@ boot :: proc "c" (width: i32, height: i32, flags: i32) {
 		err("Error booting client: %v", boot_err)
 		state.client.crashed = true
 	}
+	info(
+		"Size of Entity: %d (x%d = %d)",
+		size_of(Entity),
+		cap(state.client.game.entities),
+		size_of(Entity) * cap(state.client.game.entities),
+	)
 
 	// Boot clay
 	state.width = width

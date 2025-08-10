@@ -63,7 +63,7 @@ input_system :: proc(dt: f32) {
 	}
 
 	if ok && is_action_just_pressed(.LeftClick) {
-		cmd := game_command_for_tile(state.client.cursor_pos)
+		cmd := command_for_tile(state.client.cursor_pos)
 		if cmd.type == .None do return
 
 		command_submit(cmd)

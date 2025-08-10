@@ -66,7 +66,7 @@ host_poll :: proc() -> Error {
 		if !client_exists do return error(ClientNotFound{client_id = client_id})
 		client_ident, client_identified := client.(IdentifiedClient)
 
-		if HOST_LOG_MESSAGES do info("[HOST] %w", msg)
+		if LOG_HOST_MESSAGES do info("[HOST] %w", msg)
 
 		switch m in msg {
 		case ClientMessageIdentify:

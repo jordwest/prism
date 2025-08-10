@@ -1,52 +1,79 @@
 package main
 
+import "core:math"
 import "prism"
 
+MoveModifier :: enum {
+	Normal, // Normal move
+	Blocked, // Cannot move there
+	Slow, // Slowed by terrain
+}
+
 // Assign a new entity ID and return it (does not yet spawn it, it doesn't live anywhere except on the stack!)
-game_spawn_entity :: proc(entity: Entity) -> ^Entity {
+game_spawn_entity :: proc(meta_id: EntityMetaId, entity: Entity = Entity{}) -> ^Entity {
 	state.client.game.newest_entity_id += 1
 	id := EntityId(state.client.game.newest_entity_id)
 
 	state.client.game.entities[id] = entity
-	new_entity := &state.client.game.entities[id]
 
+	new_entity := &state.client.game.entities[id]
 	new_entity.id = id
-	new_entity.flags = entity_meta[new_entity.meta_id].flags
+	new_entity.meta = entity_meta[meta_id]
+	new_entity.hp = new_entity.meta.max_hp
 
 	derived_clear()
 
 	return new_entity
 }
 
-game_calculate_move_cost :: proc(_from: [2]i32, to: [2]i32) -> i32 {
-	tile, valid_tile := tile_at(&state.client.game.tiles, TileCoord(to)).?
-	if !valid_tile do return -1
+game_get_move_modifier :: proc(
+	from: TileCoord,
+	to: TileCoord,
+) -> (
+	modifier: MoveModifier,
+	avoid: bool,
+) {
+	tile, valid_tile := tile_at(TileCoord(to)).?
+	if !valid_tile do return .Blocked, false
 	entities := derived_entities_at(TileCoord(to))
+	if .Traversable not_in tile_flags[tile.type] do return .Blocked, false
 	if obstacle, has_obstacle := entities.obstacle.?; has_obstacle {
-		if .CanMove not_in obstacle.flags do return -1
+		if .CanSwapPlaces not_in obstacle.meta.flags do return .Blocked, false
+		avoid = true
 	}
-	if .Traversable not_in tile_flags[tile.type] do return -1
-	if .Slow in tile_flags[tile.type] do return 2
-	return 1
+	if .Slow in tile_flags[tile.type] do return .Slow, avoid
+	return .Normal, avoid
 }
 
-// Get the command that will be set if a given tile is clicked on (or walked into)
-game_command_for_tile :: proc(coord: TileCoord) -> Command {
-	tile, valid_tile := tile_at(&state.client.game.tiles, TileCoord(coord)).?
-	if !valid_tile do return Command{}
-	if .Traversable not_in tile_flags[tile.type] do return Command{}
-
-	obstacle, has_obstacle := game_entity_at(coord, entity_is_obstacle).?
-
-	if has_obstacle {
-		if .CanSwapPlaces in obstacle.flags {
-			return Command{type = .Move, pos = coord}
-		} else {
-			return Command{}
-		}
+game_move_modifier_to_cost :: proc(modifier: MoveModifier) -> i32 {
+	switch modifier {
+	case .Blocked:
+		return -1
+	case .Normal:
+		return 100
+	case .Slow:
+		return 200
 	}
+	return 100
+}
 
-	return Command{type = .Move, pos = coord}
+game_calculate_move_cost :: proc(from: TileCoord, to: TileCoord) -> i32 {
+	modifier, _ := game_get_move_modifier(TileCoord(from), TileCoord(to))
+	return game_move_modifier_to_cost(modifier)
+}
+
+game_calculate_move_cost_djikstra :: proc(from: [2]i32, to: [2]i32) -> i32 {
+	modifier, avoid := game_get_move_modifier(TileCoord(from), TileCoord(to))
+	cost := game_move_modifier_to_cost(modifier)
+	if cost < 0 do return cost
+
+	// Add a slight increase to discourage diagonals
+	if math.abs(to.x - from.x) + math.abs(to.y - from.y) > 1 do cost += 10
+
+	// Add cost to avoid this tile
+	if avoid do cost += 100
+
+	return cost
 }
 
 game_entity_at :: proc(
@@ -68,6 +95,9 @@ game_entities_at :: proc(
 ) -> (
 	count: int,
 ) {
+	tile_entities := derived_entities_at(pos, true)
+	if tile_entities.ground == nil && tile_entities.obstacle == nil do return 0
+
 	max_iterations := len(out_entities)
 	count = 0
 
@@ -106,12 +136,12 @@ game_find_nearest_traversable_space :: proc(
 		for x := aabb.x1; x <= aabb.x2; x += 1 {
 			for y := aabb.y1; y <= aabb.y2; y += 1 {
 				if prism.aabb_is_edge(aabb, [2]i32{x, y}) {
-					trace("Checking coord %d, %d", x, y)
 					// Evaluate tile
 					out_coord = TileCoord{x, y}
-					tile, valid_tile := tile_at(&state.client.game.tiles, out_coord).?
+					tile, valid_tile := tile_at(out_coord).?
 					if !valid_tile do continue
-					if game_entities_at(out_coord, temp_entities[:], entity_is_obstacle) > 0 do continue
+					entity_tile := derived_entities_at(out_coord)
+					if entity_tile.obstacle != nil do continue
 					if .Traversable in tile_flags[tile.type] do return out_coord, true
 				}
 			}

@@ -2,7 +2,7 @@ import { FresnelInstance, instantiate } from "./fresnel/instance";
 import { FresnelState, ManifestJson, Pointer } from "./fresnel/types";
 
 export const INSTANCES = 2;
-export const NET_FAKE_DELAY = 100;
+export const NET_FAKE_DELAY = 30;
 
 const canvas: HTMLCanvasElement = document.getElementById(
   "canvas",

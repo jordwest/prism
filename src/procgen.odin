@@ -91,7 +91,7 @@ procgen_iterate :: proc(pcg: ^PcgState) {
 
 @(private = "file")
 _neighbour_cost :: proc(_from: [2]i32, to: [2]i32) -> f32 {
-	tile, valid_tile := tile_at(&state.client.game.tiles, TileCoord(to)).?
+	tile, valid_tile := tile_at(TileCoord(to)).?
 	if !valid_tile do return -1
 	if .Traversable not_in tile_flags[tile.type] do return -1
 	if .Slow in tile_flags[tile.type] do return 2
@@ -172,6 +172,10 @@ _try_add_room :: proc(
 			prism.rand_splitmix_get_i32_range(&rng, room_aabb.y1, room_aabb.y2),
 		}
 		prism.spring_reset_to(&state.client.camera, vec2f(state.client.game.spawn_point))
+
+		enemy_spawn_pos := state.client.game.spawn_point + {6, 3}
+		spawn, ok := game_find_nearest_traversable_space(enemy_spawn_pos)
+		player_entity := game_spawn_entity(.Spider, {pos = spawn})
 	}
 
 	pcg.newest_room_id += 1

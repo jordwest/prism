@@ -58,12 +58,18 @@ done,feat,b3,Added follow command
 done,bug,b3,Make obstacle entities not step on top of each other
 done,feat,b3,Allow allies to swap positions without AP cost
 done,feat,b3,Add a DerivedState struct and arena that gets flushed away after each entity movement
-todo,feat,b3,Add enemy
+done,feat,b3,Consume more AP when walking through water
+done,imp,b3,Route around friendly players to avoid swapping when possible
+doing,feat,b3,Add enemy
+doing,feat,b3,Add melee attacks
 todo,refactor,ideas,Consider splitting server and client into separate packages
-todo,feat,b3,Add melee attacks
 todo,feat,b3,Add hit/miss chance
+todo,imp,b3,Player indicators should appear above all entities (render order)
+todo,imp,b3,Consider setting a delay after actions (like attack) instead of after every turn
 todo,imp,b3,Add hit indicators
-todo,devtool,b3,Add microui for debug tools
+todo,devtool,ideas,Add microui for debug tools
+todo,imp,b3,Add SFX again
+todo,refactor,b4,Add sprite meta instead of just coordinates (like frames for animations)
 todo,perf,ideas,Divide calculations across frames to reduce stutter
 todo,devtool,ideas,Hydrate client and server entity state in hot reload
 todo,feat,b3,Make rust websocket server and connect it up

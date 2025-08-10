@@ -235,3 +235,26 @@ All that is now done. Ally position swapping, tile entity lookup, copying across
 Next up, finally, is enemies. I think after some basic enemies that might be it for the day though, trying to take it easy over the next couple days.
 
 Another though re swapping: Should only one swap per turn be allowed? Otherwise it could allow for some cheesing of attacks.
+
+Ok next up, enemies! Should be fairly easy now actually, as so many of the needed pieces are in place. Need to:
+ - Add sprite - done
+
+Caught up on a bit of a side mission - getting increased move costs through water to work. Got that working.
+
+Thinking also about how to properly delay things... when attacking there needs to be a delay between each enemy attack so they're visible, not just a delay after each turn. The host should be in sync with this delay too so that actions can be cancelled before they happen. I don't think this is too hard, a command can just return .OkDelay when executed, and the turn system can flag that it needs to rerun again after a delay.
+
+Maybe I'll do that after I've added enemies and attacks.
+
+ - Spawn entity - done
+
+Had this thought that for avoiding enemies, I could add a gaussian over the djikstra map around enemies. That way the pathfinding would naturally route around them. I think it could work.
+
+ - Add hitpoints - done
+ - Render hitpoints in debug - done
+ - Handle attack command - next
+ - Trigger attack when moving onto non-allied entity
+ - Handle entity death
+
+Then when that's working:
+ - Spawn many entities scattered around
+ - Render hitpoints box

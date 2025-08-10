@@ -8,7 +8,6 @@ CommandTypeId :: enum u8 {
 	Skip,
 	Move,
 	Attack,
-	// Follow,
 }
 
 Command :: struct {
@@ -47,7 +46,9 @@ command_execute :: proc(entity: ^Entity) -> CommandOutcome {
 	ap := entity.action_points
 	if ap <= 0 do return .NeedsActionPoints
 
-	trace("Execute command %v", cmd)
+	when LOG_COMMANDS {
+		info("Execute command %v", cmd)
+	}
 
 	// Have command and action points, try to move
 	switch cmd.type {
@@ -135,18 +136,26 @@ _player_move_towards :: proc(
 }
 
 _move_or_swap :: proc(entity: ^Entity, pos: TileCoord, allow_swap: bool = true) -> MoveOutcome {
+	// Check if tile is blocked
+	tile, valid_tile := tile_at(pos).?
+	if !valid_tile do return .Blocked
+	if .Obstacle in tile_flags[tile.type] do return .Blocked
+
 	// Check if there's something in the way
 	entities := derived_entities_at(pos)
 	if obstacle, has_obstacle := entities.obstacle.?; has_obstacle {
-		if allow_swap && .CanSwapPlaces in obstacle.flags {
+		if allow_swap && .CanSwapPlaces in obstacle.meta.flags {
 			entity_swap_pos(entity, obstacle)
 			return .Moved
 		}
 		return .Blocked
 	}
 
+	cost := game_calculate_move_cost(entity.pos, pos)
+	if cost <= 0 do return .Blocked
+
 	entity_set_pos(entity, pos)
-	entity_consume_ap(entity, 100)
+	entity_consume_ap(entity, cost)
 	return .Moved
 }
 
@@ -155,6 +164,31 @@ command_serialize :: proc(s: ^prism.Serializer, cmd: ^Command) -> prism.Serializ
 	prism.serialize(s, (^[2]i32)(&cmd.pos)) or_return
 	prism.serialize(s, (^i32)(&cmd.target_entity)) or_return
 	return nil
+}
+
+// Get the command that will be set if a given tile is clicked on (or walked into)
+command_for_tile :: proc(coord: TileCoord) -> Command {
+	player_e, player_has_entity := player_entity().?
+	if !player_has_entity do return Command{}
+
+	if coord == player_e.pos do return Command{type = .Skip}
+
+	tile, valid_tile := tile_at(TileCoord(coord)).?
+	if !valid_tile do return Command{}
+	if .Traversable not_in tile_flags[tile.type] do return Command{}
+
+	obstacle, has_obstacle := game_entity_at(coord, entity_is_obstacle).?
+	if has_obstacle {
+		alignment := entity_alignment_to_player(obstacle)
+		if alignment == .Enemy {
+			return Command{type = .Attack, target_entity = obstacle.id}
+		} else if .CanSwapPlaces in obstacle.meta.flags {
+			return Command{type = .Move, pos = coord}
+		}
+		return Command{}
+	}
+
+	return Command{type = .Move, pos = coord}
 }
 
 // Client-side command submission

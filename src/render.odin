@@ -11,8 +11,7 @@ render_system :: proc(dt: f32) {
 	render_tiles()
 	render_entities(dt)
 	render_tile_cursors(dt)
-	if !state.client.cursor_hidden &&
-	   game_command_for_tile(state.client.cursor_pos).type == .Move {
+	if !state.client.cursor_hidden && command_for_tile(state.client.cursor_pos).type == .Move {
 		render_path_to(state.client.cursor_pos)
 	}
 	// render_ui()
@@ -42,8 +41,8 @@ render_debug_overlays :: proc() {
 		}
 	}
 
-	// dmap, e := entity_djikstra_map_to(state.client.controlling_entity_id)
-	// _visualise_djikstra(dmap)
+	dmap, e := derived_djikstra_map_to(state.client.controlling_entity_id)
+	_visualise_djikstra(dmap)
 
 	// Render cursor coords
 	fresnel.fill(255, 255, 255, 255)
@@ -56,10 +55,12 @@ render_debug_overlays :: proc() {
 		fresnel.fill(255, 255, 255, 1)
 		ap := fmt.tprintf("%d AP", obstacle.action_points)
 		cmd_str := fmt.tprintf("%v", obstacle.cmd)
-		flags_str := fmt.tprintf("%v", obstacle.flags)
+		hp_str := fmt.tprintf("HP %d/%d", obstacle.hp, obstacle.meta.max_hp)
+		flags_str := fmt.tprintf("%v", obstacle.meta.flags)
 		fresnel.draw_text(cursor_screen.x, cursor_screen.y + 16, 16, ap)
 		fresnel.draw_text(cursor_screen.x, cursor_screen.y + 32, 16, cmd_str)
 		fresnel.draw_text(cursor_screen.x, cursor_screen.y + 48, 16, flags_str)
+		fresnel.draw_text(cursor_screen.x, cursor_screen.y + 64, 16, hp_str)
 	}
 
 	when STUTTER_CHECKER_ENABLED {
@@ -113,8 +114,8 @@ render_tiles :: proc() {
 			prism.rand_splitmix_add(&tile_randomiser, x)
 			prism.rand_splitmix_add(&tile_randomiser, y)
 
-			tile_below, has_tile_below := tile_at(tiles, tile_c + {0, 1}).?
-			tile, ok := tile_at(tiles, tile_c).?
+			tile_below, has_tile_below := tile_at(tile_c + {0, 1}).?
+			tile, ok := tile_at(tile_c).?
 			if ok {
 				use_alternative_tile := prism.rand_splitmix_get_bool(&tile_randomiser, 50)
 				switch tile.type {
@@ -164,7 +165,6 @@ render_entities :: proc(dt: f32) {
 
 	for id, &e in entities {
 		i += 1
-		meta := entity_meta[e.meta_id]
 
 		screen_c := screen_coord(TileCoordF(e.spring.pos)).xy
 		canvas_size := vec2f(state.width, state.height)
@@ -183,14 +183,6 @@ render_entities :: proc(dt: f32) {
 
 			alpha: u8 = has_ap && awaiting_cmd ? 255 : 128
 
-			if e.spring.k == 0 {
-				e.spring = prism.spring_create(2, vec2f(e.pos), 1500, 1, 120)
-			}
-			e.spring.target = vec2f(e.pos)
-			// (maybe spring ticking belongs in a separate entity_tick pass)
-			prism.spring_tick(&e.spring, dt)
-
-			// Wait to cull until here because spring needs to be ticked
 			if cull do continue
 
 			switch id {
@@ -201,7 +193,7 @@ render_entities :: proc(dt: f32) {
 			case 1:
 				render_sprite(SPRITE_COORD_PLAYER_C, screen_c, alpha)
 			case:
-				render_sprite(meta.spritesheet_coord, screen_c, alpha)
+				render_sprite(e.meta.spritesheet_coord, screen_c, alpha)
 			}
 
 			if is_current_player {
@@ -225,10 +217,10 @@ render_entities :: proc(dt: f32) {
 			}
 		} else {
 			if cull do continue
-			render_sprite(meta.spritesheet_coord, screen_c)
+			render_sprite(e.meta.spritesheet_coord, screen_c)
 		}
 
-		if cmd.type == .Move && .IsAllied in meta.flags {
+		if cmd.type == .Move && entity_alignment_to_player(&e) == .Friendly {
 			render_sprite(SPRITE_COORD_FOOTSTEPS, screen_coord(cmd.pos))
 		}
 	}
@@ -240,9 +232,15 @@ render_tile_cursors :: proc(dt: f32) {
 
 	if !state.client.cursor_hidden {
 		// Draw this player's cursor
-		if game_command_for_tile(state.client.cursor_pos).type == .Move {
+		if command_for_tile(state.client.cursor_pos).type == .Move {
 			render_sprite(SPRITE_COORD_RECT, screen_coord(state.client.cursor_pos))
 			render_sprite(SPRITE_COORD_FOOTSTEPS, screen_coord(state.client.cursor_pos))
+		}
+		if command_for_tile(state.client.cursor_pos).type == .Attack {
+			render_sprite(SPRITE_COORD_RECT, screen_coord(state.client.cursor_pos))
+		}
+		if command_for_tile(state.client.cursor_pos).type == .Skip {
+			render_sprite(SPRITE_COORD_RECT, screen_coord(state.client.cursor_pos))
 		}
 	}
 

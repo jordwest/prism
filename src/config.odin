@@ -34,16 +34,17 @@ TESTS_ENABLED :: true
  ***********/
 LOG_LEVEL :: LogLevel.Trace
 // Whether to record messages received by host
-HOST_LOG_MESSAGES :: false
+LOG_HOST_MESSAGES :: false
 // Whether to record messages received by client
-CLIENT_LOG_MESSAGES :: false
+LOG_CLIENT_MESSAGES :: false
+LOG_COMMANDS :: false
 
 /***********
  * DERIVED *
  ***********/
 
 // Whether to send cursor coords to the server. It's a nice feature but makes the messaging logs noisy
-CURSOR_REPORTING_ENABLED :: HOST_LOG_MESSAGES == false && CLIENT_LOG_MESSAGES == false
+CURSOR_REPORTING_ENABLED :: LOG_HOST_MESSAGES == false && LOG_CLIENT_MESSAGES == false
 
 /**********************
  * SPRITE COORDINATES *
@@ -59,6 +60,8 @@ SPRITE_COORD_FLOOR_STONE_2 :: [2]f32{3 * 16, 3 * 16}
 SPRITE_COORD_BRICK_WALL_FACE :: [2]f32{0 * 16, 3 * 16}
 SPRITE_COORD_BRICK_WALL_FACE_2 :: [2]f32{4 * 16, 3 * 16}
 SPRITE_COORD_BRICK_WALL_BEHIND :: [2]f32{1 * 16, 3 * 16}
+SPRITE_COORD_SPIDER :: [2]f32{0 * 16, 2 * 16}
+SPRITE_COORD_CORPSE :: [2]f32{1 * 16, 2 * 16}
 SPRITE_COORD_WATER :: [2]f32{6 * 16, 2 * 16}
 SPRITE_COORD_OTHER_PLAYER_CURSOR :: [2]f32{16 * 2, 16 * 5}
 SPRITE_COORD_ACTIVE_CHEVRON :: [2]f32{16, 64}

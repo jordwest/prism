@@ -49,9 +49,7 @@ _on_player_joined :: proc(entry: LogEntryPlayerJoined) -> Error {
 
 	// Create an entity
 	spawn, ok := game_find_nearest_traversable_space(state.client.game.spawn_point)
-	player_entity := game_spawn_entity(
-		{meta_id = .Player, player_id = entry.player_id, pos = spawn},
-	)
+	player_entity := game_spawn_entity(.Player, {player_id = entry.player_id, pos = spawn})
 	if !ok do return error(NoSpaceForEntity{entity_id = player_entity.id, pos = state.client.game.spawn_point})
 
 	if state.client.player_id == entry.player_id {

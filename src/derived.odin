@@ -87,7 +87,7 @@ derived_djikstra_map_to :: proc(
 	prism.djikstra_map_add_origin(algo, Vec2i(entity.pos))
 	if e != nil do return nil, error(e)
 
-	prism.djikstra_map_generate(algo, game_calculate_move_cost)
+	prism.djikstra_map_generate(algo, game_calculate_move_cost_djikstra)
 	if e != nil do return nil, error(e)
 
 	return new_map, nil
@@ -99,7 +99,7 @@ _derive_tile_entities :: proc() {
 	mem.zero_slice(derived.tile_entities[:])
 
 	for _, &e in state.client.game.entities {
-		if .IsObstacle in e.flags {
+		if .IsObstacle in e.meta.flags {
 			derived.tile_entities[e.pos.x][e.pos.y].obstacle = &e
 		} else {
 			derived.tile_entities[e.pos.x][e.pos.y].ground = &e

@@ -6,11 +6,11 @@ EntityId :: distinct i32
 
 Entity :: struct {
 	id:            EntityId,
-	meta_id:       EntityMetaId,
+	meta:          EntityMeta,
 	pos:           TileCoord,
 	cmd:           Command,
-	flags:         bit_set[EntityFlags],
 	action_points: i32,
+	hp:            i32,
 	player_id:     Maybe(PlayerId),
 	spring:        prism.Spring(2),
 
@@ -26,6 +26,8 @@ LocalCommand :: struct {
 
 EntityMeta :: struct {
 	spritesheet_coord: [2]f32,
+	max_hp:            i32,
+	team:              Team,
 	flags:             bit_set[EntityFlags],
 }
 
@@ -33,14 +35,20 @@ TileCoord :: distinct [2]i32
 TileCoordF :: distinct [2]f32
 ScreenCoord :: distinct [2]f32
 
+Team :: enum {
+	Neutral,
+	Players,
+	Darkness,
+}
+
 EntityMetaId :: enum u8 {
 	None,
 	Player,
+	Spider,
 }
 
 EntityFlags :: enum {
 	IsPlayerControlled,
-	IsAllied,
 	IsObstacle,
 	CanMove,
 	CanSwapPlaces,
@@ -50,17 +58,57 @@ entity_meta: [EntityMetaId]EntityMeta = {
 	.None = EntityMeta{spritesheet_coord = {0, 0}},
 	.Player = EntityMeta {
 		spritesheet_coord = SPRITE_COORD_PLAYER,
-		flags = {.IsPlayerControlled, .IsAllied, .IsObstacle, .CanMove, .CanSwapPlaces},
+		team = .Players,
+		max_hp = 20,
+		flags = {.IsPlayerControlled, .IsObstacle, .CanMove, .CanSwapPlaces},
+	},
+	.Spider = EntityMeta {
+		spritesheet_coord = SPRITE_COORD_SPIDER,
+		team = .Darkness,
+		max_hp = 5,
+		flags = {.IsObstacle, .CanMove},
 	},
 }
 
+Alignment :: enum {
+	Neutral,
+	Enemy,
+	Friendly,
+}
+
+entity_system :: proc(dt: f32) {
+	for _, &e in &state.client.game.entities {
+		if e.spring.k == 0 {
+			e.spring = prism.spring_create(2, vec2f(e.pos), 1500, 1, 120)
+		}
+		e.spring.target = vec2f(e.pos)
+		// (maybe spring ticking belongs in a separate entity_tick pass)
+		prism.spring_tick(&e.spring, dt)
+	}
+}
+
 entity_is_obstacle :: proc(entity: ^Entity) -> bool {
-	return .IsObstacle in entity.flags
+	return .IsObstacle in entity.meta.flags
 }
 
 entity_set_pos :: proc(entity: ^Entity, pos: TileCoord) {
 	entity.pos = pos
 	derived_clear()
+}
+
+entity_alignment :: proc(this: ^Entity, other: ^Entity) -> Alignment {
+	if this.meta.team == .Neutral || other.meta.team == .Neutral do return .Neutral
+
+	return this.meta.team == other.meta.team ? .Friendly : .Enemy
+}
+
+entity_alignment_to_player :: proc(other: ^Entity) -> Alignment {
+	player, has_player := player_entity().?
+	if !has_player do return .Neutral
+
+	if player.meta.team == .Neutral || other.meta.team == .Neutral do return .Neutral
+
+	return player.meta.team == other.meta.team ? .Friendly : .Enemy
 }
 
 entity_swap_pos :: proc(a: ^Entity, b: ^Entity) {
@@ -88,14 +136,14 @@ entity_id_serialize :: proc(s: ^prism.Serializer, eid: ^EntityId) -> prism.Seria
 	return prism.serialize_i32(s, (^i32)(eid))
 }
 
-entity_serialize :: proc(s: ^prism.Serializer, e: ^Entity) -> prism.SerializationResult {
-	serialize(s, (^i32)(&e.id)) or_return
-	serialize(s, (^u8)(&e.meta_id)) or_return
-	serialize(s, (^[2]i32)(&e.pos)) or_return
-	serialize(s, (^i32)(&e.player_id)) or_return
-	serialize(s, &e.cmd) or_return
-	return nil
-}
+// entity_serialize :: proc(s: ^prism.Serializer, e: ^Entity) -> prism.SerializationResult {
+// 	serialize(s, (^i32)(&e.id)) or_return
+// 	serialize(s, (^u8)(&e.meta_id)) or_return
+// 	serialize(s, (^[2]i32)(&e.pos)) or_return
+// 	serialize(s, (^i32)(&e.player_id)) or_return
+// 	serialize(s, &e.cmd) or_return
+// 	return nil
+// }
 
 entity_get_command :: proc(e: ^Entity, ignore_new := false) -> Command {
 	if local_cmd, has_local := e._local_cmd.?; has_local {
