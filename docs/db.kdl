@@ -10,6 +10,7 @@ schema {
             option "feat" label="❇️ Feature"
             option "imp" label="✨ Improvement"
             option "bug" label="🔧 Bugfix"
+            option "balance" label="⚖️ Balance"
             option "devtool" label="🧰 DevTool"
             option "refactor" label="⚙️ Refactoring"
             option "perf" label="📊 Performance"

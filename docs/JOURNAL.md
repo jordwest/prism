@@ -233,3 +233,5 @@ Thinking now though I should copy across the entity's flags instead of always ac
 All that is now done. Ally position swapping, tile entity lookup, copying across flags. Only thing is I've removed follow for now. I need to think about that some more, likely going to just do a follow-nearest-ally instead.
 
 Next up, finally, is enemies. I think after some basic enemies that might be it for the day though, trying to take it easy over the next couple days.
+
+Another though re swapping: Should only one swap per turn be allowed? Otherwise it could allow for some cheesing of attacks.
