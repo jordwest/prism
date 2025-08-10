@@ -41,8 +41,8 @@ render_debug_overlays :: proc() {
 		}
 	}
 
-	dmap, e := derived_djikstra_map_to(state.client.controlling_entity_id)
-	_visualise_djikstra(dmap)
+	// dmap, e := derived_djikstra_map_to(state.client.controlling_entity_id)
+	// _visualise_djikstra(dmap)
 
 	// Render cursor coords
 	fresnel.fill(255, 255, 255, 255)

@@ -87,9 +87,25 @@ _skip :: proc(entity: ^Entity) -> CommandOutcome {
 	return .Ok
 }
 
-_attack :: proc(entity: ^Entity) -> CommandOutcome {
-	// TODO
-	return _skip(entity)
+_attack :: proc(e: ^Entity) -> CommandOutcome {
+	target, target_ok := entity(e.cmd.target_entity).?
+	if !target_ok do return .CommandFailed
+
+	dist_to_target := prism.tile_distance(target.pos - e.pos)
+
+	if dist_to_target == 1 {
+		// Melee
+		trace("ATTACK")
+		target.hp -= 5
+		entity_consume_ap(e, 100)
+		entity_clear_cmd(e)
+		return .Ok
+	}
+
+	outcome, reached := _player_move_towards(e, target.pos, true)
+	if outcome != .Moved do return .CommandFailed
+
+	return .Ok
 }
 
 @(private = "file")
@@ -108,7 +124,6 @@ _player_move_towards :: proc(
 	outcome: MoveOutcome,
 	reached_target: bool,
 ) {
-	// dist_to_target := linalg.vector_length(vec2f(destination - entity.pos))
 	dist_to_target := prism.tile_distance(destination - entity.pos)
 
 	if dist_to_target == 0 {

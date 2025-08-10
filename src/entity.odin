@@ -54,6 +54,10 @@ EntityFlags :: enum {
 	CanSwapPlaces,
 }
 
+entity :: proc(id: EntityId) -> Maybe(^Entity) {
+	return &state.client.game.entities[id]
+}
+
 entity_meta: [EntityMetaId]EntityMeta = {
 	.None = EntityMeta{spritesheet_coord = {0, 0}},
 	.Player = EntityMeta {

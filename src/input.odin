@@ -33,13 +33,14 @@ input_system :: proc(dt: f32) {
 			// Hide cursor when keys are pressed
 			state.client.cursor_hidden = true
 
-			if cmd.type != .Move {
-				cmd.pos = player_entity.pos
+			previous_pos := player_entity.pos
+			if cmd.type == .Move {
+				previous_pos = cmd.pos
 			}
-			cmd.pos += delta_pos
-			cmd.type = .Move
-			cmd.target_entity = 0
-			command_submit(cmd)
+
+			new_cmd := command_for_tile(previous_pos + delta_pos)
+
+			command_submit(new_cmd)
 		}
 
 		if is_action_just_pressed(.Skip) && player_entity.action_points > 0 {
