@@ -1,19 +1,15 @@
-total 80
-drwxr-xr-x  18 jordan  staff   576 build/web/assets .
-drwxrwxrwx  52 jordan  staff  1664 build/web/assets ..
--rw-r--r--@  1 jordan  staff  8196 build/web/assets .DS_Store
--rw-r--r--   1 jordan  staff   738 build/web/assets .dev.asset-sizes
-drwxr-xr-x  14 jordan  staff   448 build/web/assets .git
--rw-r--r--   1 jordan  staff    29 build/web/assets .gitignore
--rw-r--r--   1 jordan  staff     0 build/web/assets .release.asset-sizes
-drwxr-xr-x   3 jordan  staff    96 build/web/assets .vite
--rw-r--r--   1 jordan  staff   687 build/web/assets Justfile
-drwxr-xr-x  11 jordan  staff   352 build/web/assets assets
-drwxr-xr-x   3 jordan  staff    96 build/web/assets build
--rw-r--r--   1 jordan  staff  4571 build/web/assets devserver.js
-drwxr-xr-x  10 jordan  staff   320 build/web/assets docs
--rw-r--r--   1 jordan  staff   162 build/web/assets mprocs.yaml
-drwxr-xr-x   8 jordan  staff   256 build/web/assets native-runner
--rw-r--r--   1 jordan  staff   183 build/web/assets ols.json
-drwxr-xr-x  32 jordan  staff  1024 build/web/assets src
-drwxr-xr-x  10 jordan  staff   320 build/web/assets web-runner
+total 25312
+drwxr-xr-x  14 jordan  staff      448  .
+drwxr-xr-x   4 jordan  staff      128  ..
+-rw-rw-r--   1 jordan  staff    28600  CompaqThin.ttf
+-rw-r--r--@  1 jordan  staff  9204012  Daudir.mp3
+-rw-rw-r--   1 jordan  staff    70640  PxPlus_IBM_VGA_8x16.ttf
+-rw-r--r--   1 jordan  staff  3083520  ambience.mp3
+-rwxr-xr-x   1 jordan  staff   306833  app.wasm
+-rw-r--r--   1 jordan  staff      449  index-BNqKUXoe.css
+-rw-r--r--   1 jordan  staff    12267  index-DI0PLcKR.js
+-rw-r--r--   1 jordan  staff     1159  manifest.json
+-rw-r--r--   1 jordan  staff    22401  miss.ogg
+-rw-r--r--   1 jordan  staff   153850  player-death.mp3
+-rw-r--r--   1 jordan  staff    51278  punch.wav
+-rw-r--r--   1 jordan  staff     4026  spritesheet.png

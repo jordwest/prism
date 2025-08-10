@@ -9,3 +9,6 @@ procs:
   todo:
     cwd: "docs"
     shell: "flatlite-cli"
+  build-release:
+    shell: "just build-release"
+    autostart: false
