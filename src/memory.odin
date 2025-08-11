@@ -45,11 +45,6 @@ memory_init :: proc() {
 	}
 	frame_arena_alloc = mem.arena_allocator(&frame_arena)
 
-	turn_evaluate_arena = mem.Arena {
-		data = turn_evaluate_memory[:],
-	}
-	turn_evaluate_arena_alloc = mem.arena_allocator(&turn_evaluate_arena)
-
 	_memory_init_done = true
 }
 
