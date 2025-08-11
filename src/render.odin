@@ -90,9 +90,10 @@ render_move_camera :: proc(dt: f32) {
 		// target := vec2f(e.pos.xy)
 		target := e.spring.pos
 		cmd := entity_get_command(&e)
-		if cmd.type == .Move && SPRINGS_ENABLED {
-			target = target + ((vec2f(cmd.pos) - target) / 2)
-		}
+		// Move camera to midpoint between player and target... not sure I like it
+		// if cmd.type == .Move && SPRINGS_ENABLED {
+		// 	target = target + ((vec2f(cmd.pos) - target) / 2)
+		// }
 		state.client.camera.target = target
 	}
 	prism.spring_tick(&state.client.camera, dt, !SPRINGS_ENABLED)
@@ -219,13 +220,20 @@ render_entities :: proc(dt: f32) {
 				}
 			}
 
-
 			if cmd.type == .Move {
 				render_path_to(cmd.pos, e.id, 120)
+			}
+			if cmd.type == .Attack {
+				tgt, ok := entity(cmd.target_entity).?
+				if ok do render_path_to(tgt.pos, e.id, 120)
 			}
 		} else {
 			if cull do continue
 			render_sprite(e.meta.spritesheet_coord, screen_c)
+		}
+
+		if e.hp < e.meta.max_hp {
+			_render_hitpoints(e.hp, e.meta.max_hp, screen_c, {1, f32(1) / f32(8)} * grid_size)
 		}
 
 		if cmd.type == .Move && entity_alignment_to_player(&e) == .Friendly {
@@ -239,6 +247,15 @@ render_entities :: proc(dt: f32) {
 	}
 
 	fresnel.metric_i32("entities rendered", i)
+}
+
+@(private = "file")
+_render_hitpoints :: proc(hp: i32, max_hp: i32, screen_coord: ScreenCoord, size: Vec2f) {
+	pct := f32(hp) / f32(max_hp)
+	fresnel.fill(0, 0, 0, 255)
+	fresnel.draw_rect(screen_coord.x, screen_coord.y, size.x, size.y)
+	fresnel.fill(255, 0, 0, 255)
+	fresnel.draw_rect(screen_coord.x, screen_coord.y, size.x * pct, size.y)
 }
 
 render_tile_cursors :: proc(dt: f32) {

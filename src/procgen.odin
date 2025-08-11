@@ -82,11 +82,7 @@ procgen_iterate :: proc(pcg: ^PcgState) {
 	if pcg.iteration >= 1000 || len(pcg.rooms) >= 50 {
 		info("Procedural generation done in %d iterations, %dms", pcg.iteration, pcg.total_time)
 
-		enemy_spawn_pos := state.client.game.spawn_point + {6, -3}
-		trace("spawn=%v, enemy_spawn_pos=%v", state.client.game.spawn_point, enemy_spawn_pos)
-		spawn, ok := game_find_nearest_traversable_space(enemy_spawn_pos)
-		trace("actual_spawn=%v", spawn)
-		new_enemy := game_spawn_entity(.Spider, {pos = spawn})
+		_spawn_enemies()
 
 		pcg.done = true
 		return
@@ -210,4 +206,28 @@ _try_add_room :: proc(
 	}
 
 	return true
+}
+
+@(private = "file")
+_spawn_enemies :: proc() {
+	rng := prism.rand_splitmix_create(GAME_SEED, RNG_ROOM_PLACEMENT)
+
+	spawn_max := 10
+	spawned := 0
+	for i := 0; i < 100 && spawned < spawn_max; i += 1 {
+		x := prism.rand_splitmix_get_i32_range(&rng, 0, LEVEL_WIDTH)
+		y := prism.rand_splitmix_get_i32_range(&rng, 0, LEVEL_HEIGHT)
+		coord := TileCoord({x, y})
+
+		tile, valid := tile_at(coord).?
+		if !valid do continue
+
+		if .Traversable not_in tile_flags[tile.type] do continue
+
+		if prism.tile_distance(coord - state.client.game.spawn_point) < 10 do continue
+
+		new_enemy := game_spawn_entity(.Spider, {pos = coord})
+
+		spawned += 1
+	}
 }

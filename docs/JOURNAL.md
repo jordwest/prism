@@ -263,6 +263,6 @@ Think that's enough for today. Tomorrow:
 
 # Monday 11 Aug 2025
 
- - Render hitpoints box
- - Spawn many entities scattered around
- - Enemy AI
+ - Render hitpoints box - done
+ - Spawn many entities scattered around - done
+ - Enemy AI - next
