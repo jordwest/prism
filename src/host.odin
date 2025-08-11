@@ -111,7 +111,6 @@ host_handle_client_message :: proc(from_client_id: ClientId, msg: ClientMessage)
 
 host_send_message :: proc(client_id: ClientId, msg: HostMessage) {
 	m: HostMessage = msg
-	mem.arena_free_all(&local_arena)
 	s := prism.create_serializer(_serialization_buffer[:])
 	host_message_union_serialize(&s, &m)
 	state.host.bytes_sent += i32(len(s.stream))
@@ -121,7 +120,6 @@ host_send_message :: proc(client_id: ClientId, msg: HostMessage) {
 
 host_broadcast_message :: proc(msg: HostMessage) {
 	m: HostMessage = msg
-	mem.arena_free_all(&local_arena)
 	s := prism.create_serializer(_serialization_buffer[:])
 	host_message_union_serialize(&s, &m)
 	state.host.bytes_sent += i32(len(s.stream) * len(state.host.clients))

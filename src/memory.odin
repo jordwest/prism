@@ -20,13 +20,6 @@ host_arena_alloc: mem.Allocator
 
 pad1: [104960]u8
 
-// For storing an arena used only for the life of a short function
-@(private)
-local_arena_memory: [104960]u8
-// frame_memory: [102400]u8
-@(private)
-local_arena: mem.Arena
-local_arena_alloc: mem.Allocator
 
 pad2: [104960]u8
 
@@ -48,11 +41,6 @@ memory_init :: proc() {
 		data = persistent_memory[:],
 	}
 	persistent_arena_alloc = mem.arena_allocator(&persistent_arena)
-
-	local_arena = mem.Arena {
-		data = local_arena_memory[:],
-	}
-	local_arena_alloc = mem.arena_allocator(&local_arena)
 
 	_memory_init_done = true
 }
