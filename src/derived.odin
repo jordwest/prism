@@ -15,6 +15,7 @@ DerivedState :: struct {
 	tile_entities:        [LEVEL_WIDTH][LEVEL_HEIGHT]TileEntities,
 	s_tile_entities:      DerivedDataState,
 	entity_djikstra_maps: map[EntityId]prism.DjikstraMap(LEVEL_WIDTH, LEVEL_HEIGHT),
+	allies_djikstra_map:  Maybe(prism.DjikstraMap(LEVEL_WIDTH, LEVEL_HEIGHT)),
 
 	// Not flushed
 	djikstra_algo:        prism.DjikstraAlgo(LEVEL_WIDTH, LEVEL_HEIGHT),
@@ -32,6 +33,7 @@ derived_init :: proc() -> Error {
 	state.client.game.derived.entity_djikstra_maps, e_alloc = make(
 		map[EntityId]prism.DjikstraMap(LEVEL_WIDTH, LEVEL_HEIGHT),
 		MAX_PLAYERS,
+		allocator = persistent_arena_alloc,
 	)
 	if e_alloc != nil do return error(e_alloc)
 
@@ -41,9 +43,9 @@ derived_init :: proc() -> Error {
 	return nil
 }
 
-derived_clear :: proc() {
-	trace("Clearing derived data")
-	clear(&state.client.game.derived.entity_djikstra_maps)
+derived_handle_entity_changed :: proc(entity: ^Entity) {
+	if entity.meta.team == .Players do state.client.game.derived.allies_djikstra_map = nil
+	delete_key(&state.client.game.derived.entity_djikstra_maps, entity.id)
 	state.client.game.derived.s_tile_entities = .Empty
 }
 
@@ -59,6 +61,35 @@ derived_entities_at :: proc(coord: TileCoord, ignore_out_of_bounds := false) -> 
 	return derived.tile_entities[coord.x][coord.y]
 }
 
+derived_allies_djikstra_map :: proc() -> (^prism.DjikstraMap(LEVEL_WIDTH, LEVEL_HEIGHT), Error) {
+	dmap, has_existing_map := &state.client.game.derived.allies_djikstra_map.?
+	if has_existing_map do return dmap, nil
+
+	state.client.game.derived.allies_djikstra_map = prism.DjikstraMap(LEVEL_WIDTH, LEVEL_HEIGHT){}
+	dmap = &state.client.game.derived.allies_djikstra_map.?
+
+	trace("Regenerating djikstra map for allies")
+
+	e: prism.DjikstraError
+
+	algo := &state.client.game.derived.djikstra_algo
+
+	e = prism.djikstra_map_init(dmap, algo)
+	if e != nil do return nil, error(e)
+
+	for _, entity in state.client.game.entities {
+		if entity.meta.team != .Players do continue
+
+		e = prism.djikstra_map_add_origin(algo, Vec2i(entity.pos))
+		if e != nil do return nil, error(e)
+	}
+
+	e = prism.djikstra_map_generate(algo, game_calculate_move_cost_djikstra)
+	if e != nil do return nil, error(e)
+
+	return dmap, nil
+}
+
 derived_djikstra_map_to :: proc(
 	eid: EntityId,
 ) -> (
@@ -72,11 +103,9 @@ derived_djikstra_map_to :: proc(
 	entity, entity_exists := state.client.game.entities[eid]
 	if !entity_exists do return nil, error(EntityNotFound{entity_id = eid})
 
-	trace("Regenerating djikstra map for entity %d", eid)
 
 	e: prism.DjikstraError
 
-	trace("Djikstra maps len=%d, cap=%d", len(maps), cap(maps))
 	algo := &state.client.game.derived.djikstra_algo
 	if len(maps) == cap(maps) {
 		return nil, error(.Out_Of_Memory)

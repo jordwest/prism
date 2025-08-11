@@ -44,7 +44,7 @@ clay_error_handler :: proc "c" (errorData: clay.ErrorData) {
 }
 
 hot_reload_hydrate_state :: proc() -> bool {
-	hot_reload_data := make([dynamic]u8, 10000, 10000, context.temp_allocator)
+	hot_reload_data := make([dynamic]u8, 10000, 10000, frame_arena_alloc)
 	bytes_read := fresnel.storage_get("dev_state", hot_reload_data[:])
 	if bytes_read <= 0 {
 		warn("Dev state not loaded. Storage returned %d", bytes_read)
@@ -61,6 +61,14 @@ hot_reload_hydrate_state :: proc() -> bool {
 	}
 
 	return true
+}
+
+app_context :: proc() -> runtime.Context {
+	context = runtime.default_context()
+	context.assertion_failure_proc = on_panic
+	context.allocator = mem.panic_allocator()
+	context.temp_allocator = mem.panic_allocator()
+	return context
 }
 
 serialize :: proc {

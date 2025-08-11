@@ -33,6 +33,11 @@ STUTTER_CHECKER_ENABLED :: true
 PCG_ITERATION_DELAY :: 0
 TESTS_ENABLED :: true
 
+/**************
+ * ASSERTIONS *
+ *************/
+MEMORY_VALIDATE_PADDING :: true
+
 /***********
  * LOGGING *
  ***********/

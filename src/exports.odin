@@ -8,8 +8,8 @@ import "prism"
 
 @(export)
 on_resize :: proc "c" (w: i32, h: i32) {
-	context = runtime.default_context()
-	context.temp_allocator = frame_arena_alloc
+	context = app_context()
+
 	state.width = w
 	state.height = h
 	clay.SetLayoutDimensions({f32(w), f32(h)})
@@ -18,7 +18,8 @@ on_resize :: proc "c" (w: i32, h: i32) {
 last_cursor_tile_pos: TileCoord
 @(export)
 on_mouse_move :: proc "c" (pos_x: f32, pos_y: f32, button_down: bool) {
-	context = runtime.default_context()
+	context = app_context()
+
 	mouse_moved = true
 	clay.SetPointerState({pos_x, pos_y}, button_down)
 	screen_pos: ScreenCoord = {pos_x, pos_y}
@@ -37,16 +38,15 @@ on_mouse_move :: proc "c" (pos_x: f32, pos_y: f32, button_down: bool) {
 
 @(export)
 on_mouse_button :: proc "c" (pos_x: f32, pos_y: f32, button_down: bool, button: i32) {
-	context = runtime.default_context()
+	context = app_context()
+
 	mouse_moved = true
 	clay.SetPointerState({pos_x, pos_y}, button_down)
 }
 
 @(export)
 on_client_connected :: proc "c" (clientId: i32) {
-	context = runtime.default_context()
-	context.allocator = host_arena_alloc
-	context.temp_allocator = frame_arena_alloc
+	context = app_context()
 
 	trace("Client connected id %d", clientId)
 
@@ -57,10 +57,8 @@ on_client_connected :: proc "c" (clientId: i32) {
 boot :: proc "c" (width: i32, height: i32, flags: i32) {
 	context = runtime.default_context()
 	memory_init()
+	context = app_context()
 
-	context.assertion_failure_proc = on_panic
-	context.allocator = persistent_arena_alloc
-	context.temp_allocator = frame_arena_alloc
 
 	info("Boot width=%d height=%d flags=%d", width, height, flags)
 	info("Size of AppState: %d", size_of(AppState))
@@ -132,10 +130,7 @@ boot :: proc "c" (width: i32, height: i32, flags: i32) {
 
 @(export)
 tick :: proc "c" (dt: f32) {
-	context = runtime.default_context()
-	context.assertion_failure_proc = on_panic
-	context.allocator = persistent_arena_alloc
-	context.temp_allocator = frame_arena_alloc
+	context = app_context()
 
 	mem.arena_free_all(&frame_arena)
 
@@ -164,7 +159,8 @@ tick :: proc "c" (dt: f32) {
 
 @(export)
 on_dev_hot_unload :: proc "c" () {
-	context = runtime.default_context()
+	context = app_context()
+
 	szr := prism.create_serializer(frame_arena_alloc)
 	result := serialize(&szr, &state)
 	if result != nil {
@@ -181,7 +177,7 @@ when TESTS_ENABLED {
 		memory_init()
 
 		context.assertion_failure_proc = on_panic
-		context.allocator = persistent_arena_alloc
+		context.allocator = mem.panic_allocator()
 		context.temp_allocator = frame_arena_alloc
 
 		tests_run_all()

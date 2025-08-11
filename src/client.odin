@@ -8,12 +8,21 @@ import "prism"
 client_boot :: proc(width: i32, height: i32) -> Error {
 	e_alloc: mem.Allocator_Error
 
-	state.client.game.players, e_alloc = make(map[PlayerId]Player, 8)
+	state.client.game.players, e_alloc = make(
+		map[PlayerId]Player,
+		8,
+		allocator = persistent_arena_alloc,
+	)
 	if e_alloc != nil do return error(e_alloc)
-	state.client.game.entities, e_alloc = make(map[EntityId]Entity, 2048)
+	state.client.game.entities, e_alloc = make(
+		map[EntityId]Entity,
+		2048,
+		allocator = persistent_arena_alloc,
+	)
 	if e_alloc != nil do return error(e_alloc)
 	derived_init() or_return
 	audio_init()
+
 
 	if MUSIC_ENABLED {
 		audio_play(.Daudir)
@@ -27,7 +36,9 @@ client_boot :: proc(width: i32, height: i32) -> Error {
 		c = CAMERA_SPRING_DAMPER,
 	)
 
-	pcg := new(PcgState)
+	pcg, e_alloc2 := new(PcgState, allocator = persistent_arena_alloc)
+	if e_alloc2 != nil do return error(e_alloc)
+
 	state.client.game.pcg = pcg
 	procgen_init(pcg)
 

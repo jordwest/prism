@@ -16,9 +16,6 @@ turn_evaluate_all :: proc() -> Error {
 }
 
 turn_evaluate :: proc() -> (outcome: TurnOutcome, e: Error) {
-	mem.arena_free_all(&turn_evaluate_arena)
-	context.temp_allocator = turn_evaluate_arena_alloc
-
 	awaiting_input := false
 	// Execute any pending player commands first
 	for _, &entity in state.client.game.entities {

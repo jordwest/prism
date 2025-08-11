@@ -70,6 +70,7 @@ todo,imp,b3,Add hit indicators
 todo,bug,b3,"Weirdness when delay=0, out of order messages or something"
 todo,imp,b3,Add SFX again
 todo,feat,b3,Make rust websocket server and connect it up
+todo,feat,b3,Make use of client token to relogin a user (and store it in localstorage)
 todo,perf,ideas,Divide calculations across frames to reduce stutter
 todo,devtool,ideas,Add microui for debug tools
 todo,devtool,ideas,Hydrate client and server entity state in hot reload
@@ -106,7 +107,6 @@ todo,feat,ideas,Gem of parry (increased speed after dodging an attack)
 todo,feat,ideas,Character upgrades when drinking from a well (drinking twice shocks player instead)
 todo,feat,ideas,"The god Thoth is watching over the player, pleased and displeased with actions"
 todo,feat,ideas,Net traps
-todo,feat,b3,Make use of client token to relogin a user (and store it in localstorage)
 todo,feat,ideas,Play as ghost when dead but teammates still alive (see journal for more)
 todo,perf,ideas,Networkless play (using a dummy server instead of the server connecting to itself)
 todo,feat,ideas,"Randomly generate a list of ""mercenaries"" that the player can choose from to contract. Gate progress through price of hiring them"

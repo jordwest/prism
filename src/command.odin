@@ -9,6 +9,7 @@ CommandTypeId :: enum u8 {
 	Skip,
 	Move,
 	Attack,
+	MoveTowardsAllies,
 }
 
 Command :: struct {
@@ -72,6 +73,8 @@ command_execute :: proc(entity: ^Entity) -> CommandOutcome {
 		return _move(entity)
 	case .Attack:
 		return _attack(entity) // TODO
+	case .MoveTowardsAllies:
+		return _skip(entity)
 	case .Skip:
 		return _skip(entity)
 	}
@@ -162,7 +165,6 @@ _player_move_towards :: proc(
 	dmap, e := derived_djikstra_map_to(entity.id)
 	if e != nil {
 		entity_clear_cmd(entity)
-		line()
 		err("Djikstra map failed: %v", e)
 		return .Blocked, false
 	}

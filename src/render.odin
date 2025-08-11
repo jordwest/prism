@@ -6,6 +6,9 @@ import "core:math"
 import "fresnel"
 import "prism"
 
+@(private = "file")
+_tempstr_buf: [16384]u8
+
 render_system :: proc(dt: f32) {
 	render_move_camera(dt)
 	render_tiles()
@@ -20,11 +23,12 @@ render_system :: proc(dt: f32) {
 	}
 }
 
+@(private = "file")
 _debug_y_offset: f32 = 16
 
+@(private = "file")
 _add_debug_text :: proc(fmt_str: string, args: ..any) {
-	result := fmt.tprintf(fmt_str, ..args)
-	fresnel.draw_text(16, _debug_y_offset, 16, result)
+	fresnel.draw_text_fmt(16, _debug_y_offset, 16, fmt_str, ..args)
 	_debug_y_offset += 16
 }
 
@@ -49,28 +53,47 @@ render_debug_overlays :: proc() {
 		}
 	}
 
-	if state.debug.render_debug_overlays && state.debug.view == .CurrentPlayerDjikstra {
+	switch state.debug.view {
+	case .None:
+	case .CurrentPlayerDjikstra:
 		dmap, e := derived_djikstra_map_to(state.client.controlling_entity_id)
+		_visualise_djikstra(dmap)
+	case .AllPlayersDjikstra:
+		dmap, e := derived_allies_djikstra_map()
 		_visualise_djikstra(dmap)
 	}
 
 	// Render cursor coords
 	fresnel.fill(255, 255, 255, 255)
-	cursor_text := fmt.tprintf("(%d, %d)", state.client.cursor_pos.x, state.client.cursor_pos.y)
+	cursor_text := fmt.bprintf(
+		_tempstr_buf[:],
+		"(%d, %d)",
+		state.client.cursor_pos.x,
+		state.client.cursor_pos.y,
+	)
 	cursor_screen := state.client.cursor_screen_pos + ScreenCoord{32, 32}
 	fresnel.draw_text(cursor_screen.x, cursor_screen.y, 16, cursor_text)
 
 	entities_at_cursor := derived_entities_at(state.client.cursor_pos, ignore_out_of_bounds = true)
 	if obstacle, has_obstacle := entities_at_cursor.obstacle.?; has_obstacle {
 		fresnel.fill(255, 255, 255, 1)
-		ap := fmt.tprintf("%d AP", obstacle.action_points)
-		cmd_str := fmt.tprintf("%v", obstacle.cmd)
-		hp_str := fmt.tprintf("HP %d/%d", obstacle.hp, obstacle.meta.max_hp)
-		flags_str := fmt.tprintf("%v", obstacle.meta.flags)
-		fresnel.draw_text(cursor_screen.x, cursor_screen.y + 16, 16, ap)
-		fresnel.draw_text(cursor_screen.x, cursor_screen.y + 32, 16, cmd_str)
-		fresnel.draw_text(cursor_screen.x, cursor_screen.y + 48, 16, flags_str)
-		fresnel.draw_text(cursor_screen.x, cursor_screen.y + 64, 16, hp_str)
+		fresnel.draw_text_fmt(
+			cursor_screen.x,
+			cursor_screen.y + 16,
+			16,
+			"%d AP",
+			obstacle.action_points,
+		)
+		fresnel.draw_text_fmt(cursor_screen.x, cursor_screen.y + 32, 16, "%v", obstacle.cmd)
+		fresnel.draw_text_fmt(cursor_screen.x, cursor_screen.y + 48, 16, "%v", obstacle.meta.flags)
+		fresnel.draw_text_fmt(
+			cursor_screen.x,
+			cursor_screen.y + 64,
+			16,
+			"HP %d/%d",
+			obstacle.hp,
+			obstacle.meta.max_hp,
+		)
 	}
 
 	when STUTTER_CHECKER_ENABLED {
@@ -369,7 +392,7 @@ _visualise_djikstra :: proc(dmap: ^prism.DjikstraMap($Width, $Height), offset: [
 					}
 					fresnel.draw_rect(offset.x, offset.y, dims, dims)
 
-					cost_str := fmt.tprintf("%d", cost)
+					cost_str := fmt.bprintf(_tempstr_buf[:], "%d", cost)
 					fresnel.fill(255, 255, 255, 0.5)
 					fresnel.draw_text(offset.x, offset.y, 16, cost_str)
 				} else if dtile.visited {

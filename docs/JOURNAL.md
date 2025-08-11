@@ -277,4 +277,16 @@ The other option could be to allow enemies to also swap places with each other..
 
 So I think this is all going to need a bit of a refactor of the way I calculate djikstra maps. I've had an idea floating around for a bit where I have a struct that defines the input parameters for the map, then just pass that struct in wherever a map is needed and the system checks whether its been constructed yet or not, and if not, constructs it and returns it.
 
-Also going to need to implement a key to switch between debug views of the different maps, that should help a lot with diagnosing issues here. Think I'll do that first.
+Also going to need to implement a key to switch between debug views of the different maps, that should help a lot with diagnosing issues here. Think I'll do that first. Ok that's done. Now to refactor these maps.
+
+Just need to try with a few more instances now. So I'm getting that crash when attempting to print a trace again. I'm starting to wonder if its a bug in odin, but more likely it is a bug in my code somewhere. I suspect I'm ignoring an allocation failure somewhere, although it's hard to image what would be allocating that shouldn't...
+
+Actually maybe a good idea would be to put in a catch-all allocator as default that always panics, so that only temporary allocations succeed.
+
+Oooohhh k that was a massive tangent. So I think some memory was overflowing the arena... it seems I was likely writing to the frame arena when it was already full... and then that was writing into the trace area. Adding some 1kb padding around the trace seems to have protected it from stray game state breakages, and I've added some code to validate
+
+Ugh I think this might actually be a bug in the odin stdlib. I might need to work around it by calling a non string-building error/warning function for non-trace messages. Like just pass an int with the error id and any associated data in a struct.
+
+Ok using `bprintf` seems to have fixed it for now... it seems like there's something weird going on with tprintf. Might pop up again but maybe I'll just call this solved for now and leave the memory validation code in for now.
+
+Going to need to go through the code and find all the instance of tprintf and replace them.

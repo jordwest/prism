@@ -77,6 +77,8 @@ export async function instantiate(
     flags,
   );
 
+  console.info("Instance exported memory is ", memoryObj.buffer.byteLength);
+
   return instance;
 }
 
@@ -164,6 +166,10 @@ function createDebugImports(
 
     metric_i32(name: OdinStringPointer, num: number) {
       instance.metrics[readOdinString(instance.memory, name)!] = num;
+    },
+
+    log_i32(name: OdinStringPointer, val: number) {
+      console.log(readOdinString(instance.memory, name), val);
     },
 
     log_slice(name: OdinStringPointer, ptr: OdinSlicePointer) {

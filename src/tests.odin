@@ -2,6 +2,7 @@ package main
 
 import "base:runtime"
 import "core:fmt"
+import "core:mem"
 import "fresnel"
 import "prism"
 

@@ -117,7 +117,7 @@ entity_is_obstacle :: proc(entity: ^Entity) -> bool {
 
 entity_set_pos :: proc(entity: ^Entity, pos: TileCoord) {
 	entity.pos = pos
-	derived_clear()
+	derived_handle_entity_changed(entity)
 }
 
 entity_alignment :: proc(this: ^Entity, other: ^Entity) -> Alignment {

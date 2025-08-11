@@ -21,7 +21,7 @@ game_spawn_entity :: proc(meta_id: EntityMetaId, entity: Entity = Entity{}) -> ^
 	new_entity.meta = entity_meta[meta_id]
 	new_entity.hp = new_entity.meta.max_hp
 
-	derived_clear()
+	derived_handle_entity_changed(new_entity)
 
 	return new_entity
 }
@@ -38,7 +38,7 @@ game_get_move_modifier :: proc(
 	entities := derived_entities_at(TileCoord(to))
 	if .Traversable not_in tile_flags[tile.type] do return .Blocked, false
 	if obstacle, has_obstacle := entities.obstacle.?; has_obstacle {
-		if .CanSwapPlaces not_in obstacle.meta.flags do return .Blocked, false
+		if .CanMove not_in obstacle.meta.flags do return .Blocked, false
 		avoid = true
 	}
 	if .Slow in tile_flags[tile.type] do return .Slow, avoid

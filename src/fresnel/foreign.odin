@@ -68,6 +68,7 @@ foreign debug {
 	test_report :: proc() -> i32 ---
 	log_panic :: proc(prefix: string, message: string, file: string, line: i32) ---
 	log_slice :: proc(name: string, ptr: []u8) ---
+	log_i32 :: proc(name: string, val: i32) ---
 	metric_i32 :: proc(name: string, val: i32) ---
 	metric_str :: proc(name: string, val: string) ---
 }
