@@ -18,11 +18,6 @@ host_memory: [5242880]u8
 host_arena: mem.Arena
 host_arena_alloc: mem.Allocator
 
-pad1: [104960]u8
-
-
-pad2: [104960]u8
-
 _serialization_buffer: [16384]u8
 _tmp_16k: [16384]u8
 
@@ -33,9 +28,6 @@ _memory_init_done: bool
 
 memory_init :: proc() {
 	if _memory_init_done do return
-
-	pad1[0] = 1
-	pad2[0] = 1
 
 	persistent_arena = mem.Arena {
 		data = persistent_memory[:],

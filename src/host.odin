@@ -10,8 +10,6 @@ HostError :: union {
 
 host_boot :: proc() -> HostError {
 	memory_init_host()
-	context.allocator = host_arena_alloc
-
 	alloc_error: mem.Allocator_Error
 
 	game := state.client.game
@@ -26,7 +24,7 @@ host_boot :: proc() -> HostError {
 	) or_return
 	state.host.clients = make(map[ClientId]Client, 128, allocator = host_arena_alloc) or_return
 	game.players = make(map[PlayerId]Player, 8, allocator = host_arena_alloc) or_return
-	game.entities = make(map[EntityId]Entity, MAX_ENTITIES) or_return
+	game.entities = make(map[EntityId]Entity, MAX_ENTITIES, allocator = host_arena_alloc) or_return
 
 	return nil
 }
