@@ -90,12 +90,18 @@ Alignment :: enum {
 entity_system :: proc(dt: f32) {
 	for _, &e in &state.client.game.entities {
 		if e.spring.k == 0 {
-			e.spring = prism.spring_create(2, vec2f(e.pos), 1500, 1, 120)
+			e.spring = prism.spring_create(
+				2,
+				vec2f(e.pos),
+				ENTITY_SPRING_CONSTANT,
+				1,
+				ENTITY_SPRING_DAMPER,
+			)
 		}
 
 		e.spring.target = vec2f(e.pos)
 
-		prism.spring_tick(&e.spring, dt)
+		prism.spring_tick(&e.spring, dt, !SPRINGS_ENABLED)
 
 		if e.despawning {
 			delete_key(&state.client.game.entities, e.id)

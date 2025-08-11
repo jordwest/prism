@@ -1,5 +1,7 @@
 package prism
 
+import "core:math"
+
 // Simple spring-mass-damper for smooth and responsive animations
 Spring :: struct($N: int) {
 	// Spring constant
@@ -36,8 +38,12 @@ spring_reset_to :: proc(spring: ^Spring($N), pos: [N]f32) {
 	spring.target = pos
 }
 
-spring_tick :: proc(spring: ^Spring($N), dt: f32) {
-	if spring.k == 0 {
+import "../fresnel"
+import "core:fmt"
+
+spring_tick :: proc(spring: ^Spring($N), _dt: f32, reset := false) {
+	dt := f32(0.04)
+	if spring.k == 0 || reset {
 		// Spring disabled
 		spring.pos = spring.target
 		return
@@ -47,5 +53,11 @@ spring_tick :: proc(spring: ^Spring($N), dt: f32) {
 	f := -spring.k * x - spring.c * spring.vel
 
 	spring.vel += (f / spring.m) * dt
+	if math.abs(spring.vel.x) > f32(1000) || math.abs(spring.vel.y) > f32(1000) {
+		s := fmt.tprintf("Spring velocity broke %v on dt=%.4f", spring, dt)
+		fresnel.print(s)
+		spring.vel = {0, 0}
+		spring.pos = spring.target
+	}
 	spring.pos += spring.vel * dt
 }

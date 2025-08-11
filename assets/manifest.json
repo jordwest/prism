@@ -13,7 +13,8 @@
     { "id": 11, "filename": "footstep-008.ogg", "type": "audio" },
     { "id": 12, "filename": "footstep-009.ogg", "type": "audio" },
     { "id": 13, "filename": "footstep-010.ogg", "type": "audio" },
-    { "id": 14, "filename": "player-death.mp3", "type": "audio" }
+    { "id": 14, "filename": "player-death.mp3", "type": "audio" },
+    { "id": 100, "filename": "Daudir.mp3", "type": "audio" }
   ],
   "input": {
     "actions": [
@@ -80,7 +81,7 @@
       {
         "name": "debug_render_toggle",
         "id": 9000,
-        "webKeys": ["1"]
+        "webKeys": ["`"]
       },
       {
         "name": "zoom_in",

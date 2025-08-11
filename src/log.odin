@@ -63,6 +63,7 @@ _on_advance_turn :: proc(entry: LogEntryAdvanceTurn) -> Error {
 	for _, &entity in state.client.game.entities {
 		entity.action_points += 100
 	}
+	state.client.game.current_turn += 1
 
 	return nil
 }

@@ -15,6 +15,10 @@ client_boot :: proc(width: i32, height: i32) -> Error {
 	derived_init() or_return
 	audio_init()
 
+	if MUSIC_ENABLED {
+		audio_play(.Daudir)
+	}
+
 	state.client.zoom = DEFAULT_ZOOM
 	state.client.camera = prism.spring_create(
 		2,

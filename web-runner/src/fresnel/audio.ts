@@ -13,7 +13,15 @@ export function createAudioImports(instance: FresnelInstance) {
       if (!el.paused) {
         el.currentTime = 0;
       }
-      el.play();
+      safePlay(el);
     },
   };
 }
+
+const safePlay = async (el: HTMLAudioElement) => {
+  try {
+    await el.play();
+  } catch (e) {
+    console.error("Failed to play audio", e);
+  }
+};

@@ -257,7 +257,12 @@ Had this thought that for avoiding enemies, I could add a gaussian over the djik
 
 Think that's enough for today. Tomorrow:
 
-Then when that's working:
+ - Render hitpoints box
+ - Spawn many entities scattered around
+ - Enemy AI
+
+# Monday 11 Aug 2025
+
  - Render hitpoints box
  - Spawn many entities scattered around
  - Enemy AI

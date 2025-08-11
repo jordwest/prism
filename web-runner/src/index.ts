@@ -6,7 +6,7 @@ import {
   Pointer,
 } from "./fresnel/types";
 
-export const INSTANCES = 2;
+export const INSTANCES = 1;
 export const NET_FAKE_DELAY = 30;
 
 const canvas: HTMLCanvasElement = document.getElementById(
@@ -352,11 +352,11 @@ function audioTest() {
   audioElement3.loop = true;
   const track = audioContext.createMediaElementSource(audioElement);
   track.connect(audioContext.destination);
-  const track2 = audioContext.createMediaElementSource(audioElement);
+  const track2 = audioContext.createMediaElementSource(errorSound);
   track2.connect(audioContext.destination);
-  const track3 = audioContext.createMediaElementSource(audioElement);
+  const track3 = audioContext.createMediaElementSource(audioElement3);
   track3.connect(audioContext.destination);
-  const track4 = audioContext.createMediaElementSource(audioElement);
+  const track4 = audioContext.createMediaElementSource(hotReloadSound);
   track4.connect(audioContext.destination);
 }
 audioTest();

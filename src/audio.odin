@@ -10,6 +10,7 @@ SoundEffect :: enum {
 	Miss,
 	EnemyDeath,
 	PlayerDeath,
+	Daudir, // TODO: Add a music enum
 }
 
 @(private = "file")
@@ -43,6 +44,8 @@ audio_system :: proc() {
 		// TODO
 		case .PlayerDeath:
 			fresnel.play(14)
+		case .Daudir:
+			fresnel.play(100)
 		}
 	}
 }

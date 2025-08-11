@@ -32,7 +32,7 @@ render_debug_overlays :: proc() {
 	fresnel.fill(255, 255, 255, 255)
 	_debug_y_offset = 16
 	_add_debug_text("Debug overlays")
-	_add_debug_text("t=%.2f", state.t)
+	_add_debug_text("Turn %d, t=%.2f", state.client.game.current_turn, state.t)
 	_add_debug_text("%.0f FPS (%.0f max, %.0f min)", debug_get_fps())
 
 	if pcg, ok := state.client.game.pcg.?; ok {
@@ -90,12 +90,12 @@ render_move_camera :: proc(dt: f32) {
 		// target := vec2f(e.pos.xy)
 		target := e.spring.pos
 		cmd := entity_get_command(&e)
-		if cmd.type == .Move {
+		if cmd.type == .Move && SPRINGS_ENABLED {
 			target = target + ((vec2f(cmd.pos) - target) / 2)
 		}
 		state.client.camera.target = target
 	}
-	prism.spring_tick(&state.client.camera, dt)
+	prism.spring_tick(&state.client.camera, dt, !SPRINGS_ENABLED)
 }
 
 render_tiles :: proc() {

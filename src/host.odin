@@ -62,46 +62,50 @@ host_poll :: proc() -> Error {
 		e := client_message_union_serialize(&s, &msg)
 		if e != nil do return error(DeserializationError{result = e, offset = s.offset, data = msg_in[:bytes_read]})
 
-		client, client_exists := &state.host.clients[client_id]
-		if !client_exists do return error(ClientNotFound{client_id = client_id})
-		client_ident, client_identified := client.(IdentifiedClient)
-
 		if LOG_HOST_MESSAGES do info("[HOST] %w", msg)
+		host_handle_client_message(client_id, msg) or_return
+	}
+	return nil
+}
 
-		switch m in msg {
-		case ClientMessageIdentify:
-			state.client.game.newest_player_id += 1
-			new_player_id := PlayerId(state.client.game.newest_player_id)
+host_handle_client_message :: proc(from_client_id: ClientId, msg: ClientMessage) -> Error {
+	client, client_exists := &state.host.clients[from_client_id]
+	if !client_exists do return error(ClientNotFound{client_id = from_client_id})
+	client_ident, client_identified := client.(IdentifiedClient)
 
-			client^ = IdentifiedClient {
-				player_id   = new_player_id,
-				token       = m.token,
-				next_seq_id = m.next_log_seq,
-			}
+	switch m in msg {
+	case ClientMessageIdentify:
+		state.client.game.newest_player_id += 1
+		new_player_id := PlayerId(state.client.game.newest_player_id)
 
-			host_send_message(client_id, HostMessageIdentifyResponse{player_id = new_player_id})
-
-			if int(m.next_log_seq) < len(state.host.game_log) {
-				host_catch_up_client(client_id, m.next_log_seq)
-			}
-
-			host_log_entry(LogEntryPlayerJoined{player_id = new_player_id})
-		case ClientMessageCursorPosUpdate:
-			if !client_identified do break
-			host_broadcast_message(
-				HostMessageCursorPos{player_id = client_ident.player_id, pos = m.pos},
-			)
-		case ClientMessageSubmitCommand:
-			if !client_identified do break
-			host_log_entry(
-				LogEntryCommand {
-					player_id = client_ident.player_id,
-					entity_id = m.entity_id,
-					cmd = m.cmd,
-				},
-			)
-			host_send_message(client_id, HostMessageCommandAck{cmd_seq = m.cmd_seq})
+		client^ = IdentifiedClient {
+			player_id   = new_player_id,
+			token       = m.token,
+			next_seq_id = m.next_log_seq,
 		}
+
+		host_send_message(from_client_id, HostMessageIdentifyResponse{player_id = new_player_id})
+
+		if int(m.next_log_seq) < len(state.host.game_log) {
+			host_catch_up_client(from_client_id, m.next_log_seq)
+		}
+
+		host_log_entry(LogEntryPlayerJoined{player_id = new_player_id})
+	case ClientMessageCursorPosUpdate:
+		if !client_identified do break
+		host_broadcast_message(
+			HostMessageCursorPos{player_id = client_ident.player_id, pos = m.pos},
+		)
+	case ClientMessageSubmitCommand:
+		if !client_identified do break
+		host_log_entry(
+			LogEntryCommand {
+				player_id = client_ident.player_id,
+				entity_id = m.entity_id,
+				cmd = m.cmd,
+			},
+		)
+		host_send_message(from_client_id, HostMessageCommandAck{cmd_seq = m.cmd_seq})
 	}
 	return nil
 }
