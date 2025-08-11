@@ -53,6 +53,6 @@ audio_system :: proc() {
 audio_play :: proc(sound: SoundEffect) {
 	ok, e := queue.push_back(&state.client.audio_queue, sound)
 	if !ok || e != nil {
-		err("Failed to queue sound %s: %v", sound, err)
+		err("Failed to queue sound %s: %v", sound, e)
 	}
 }

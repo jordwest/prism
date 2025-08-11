@@ -42,6 +42,19 @@ command_execute_all :: proc(entity: ^Entity) -> CommandOutcome {
 	return outcome
 }
 
+command_execute_all_ai :: proc(entity: ^Entity) -> CommandOutcome {
+	outcome: CommandOutcome = .Ok
+
+	// AI continues executing commands until it runs out of action points
+	for {
+		ai_evaluate(entity)
+		outcome = command_execute(entity)
+		if outcome == .NeedsActionPoints do return .NeedsActionPoints
+	}
+
+	return outcome
+}
+
 command_execute :: proc(entity: ^Entity) -> CommandOutcome {
 	cmd := entity.cmd
 	ap := entity.action_points
@@ -54,7 +67,7 @@ command_execute :: proc(entity: ^Entity) -> CommandOutcome {
 	// Have command and action points, try to move
 	switch cmd.type {
 	case .None:
-		return .NeedsInput
+		return .IsPlayerControlled in entity.meta.flags ? .NeedsInput : .Ok
 	case .Move:
 		return _move(entity)
 	case .Attack:
@@ -149,7 +162,8 @@ _player_move_towards :: proc(
 	dmap, e := derived_djikstra_map_to(entity.id)
 	if e != nil {
 		entity_clear_cmd(entity)
-		err("No path to target")
+		line()
+		err("Djikstra map failed: %v", e)
 		return .Blocked, false
 	}
 
@@ -184,7 +198,7 @@ _move_or_swap :: proc(entity: ^Entity, pos: TileCoord, allow_swap: bool = true) 
 	cost := game_calculate_move_cost(entity.pos, pos)
 	if cost <= 0 do return .Blocked
 
-	audio_play(.Footstep)
+	if entity.player_id == state.client.player_id do audio_play(.Footstep)
 
 	entity_set_pos(entity, pos)
 	entity_consume_ap(entity, cost)

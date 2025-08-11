@@ -8,7 +8,14 @@ import "prism"
 DebugState :: struct {
 	// Should we render the host state instead of client state?
 	render_debug_overlays: bool,
+	view:                  DebugView,
 	frame_time_queue:      queue.Queue(f32),
+}
+
+DebugView :: enum {
+	None,
+	CurrentPlayerDjikstra,
+	AllPlayersDjikstra,
 }
 
 @(private = "file")
@@ -23,6 +30,11 @@ debug_init :: proc() {
 debug_tick :: proc(dt: f32) {
 	queue.pop_front(&state.debug.frame_time_queue)
 	queue.push_back(&state.debug.frame_time_queue, dt)
+}
+
+debug_next_view :: proc() {
+	state.debug.render_debug_overlays = true
+	state.debug.view = DebugView((int(state.debug.view) + 1) % len(DebugView))
 }
 
 debug_get_fps :: proc() -> (avg: f32, max: f32, min: f32) {

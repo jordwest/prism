@@ -84,6 +84,11 @@
         "webKeys": ["`"]
       },
       {
+        "name": "debug_render_next",
+        "id": 9001,
+        "webKeys": ["1"]
+      },
+      {
         "name": "zoom_in",
         "id": 101,
         "webKeys": ["="]

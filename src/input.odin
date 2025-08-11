@@ -19,6 +19,7 @@ InputActions :: enum i32 {
 	ZoomIn                    = 101,
 	ZoomOut                   = 102,
 	DebugRenderOverlaysToggle = 9000,
+	DebugNextView             = 9001,
 }
 
 input_system :: proc(dt: f32) {
@@ -63,6 +64,7 @@ input_system :: proc(dt: f32) {
 	if is_action_just_pressed(.DebugRenderOverlaysToggle) {
 		state.debug.render_debug_overlays = !state.debug.render_debug_overlays
 	}
+	if is_action_just_pressed(.DebugNextView) do debug_next_view()
 
 	if is_action_just_pressed(.ZoomIn) {
 		state.client.zoom = math.min(8, state.client.zoom + 1)

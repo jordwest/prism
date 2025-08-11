@@ -23,6 +23,18 @@ frame_memory: [1049600]u8
 frame_arena: mem.Arena
 frame_arena_alloc: mem.Allocator
 
+// For data that persists for the life of the app
+@(private = "file")
+trace_memory: [16384]u8
+trace_arena: mem.Arena
+trace_arena_alloc: mem.Allocator
+
+// Temp allocator for the life of a turn evaluation
+@(private = "file")
+turn_evaluate_memory: [1048576]u8
+turn_evaluate_arena: mem.Arena
+turn_evaluate_arena_alloc: mem.Allocator
+
 // Clay layout arena
 clay_memory: [5116736]u8
 
@@ -34,11 +46,22 @@ memory_init :: proc() {
 	persistent_arena = mem.Arena {
 		data = persistent_memory[:],
 	}
+	persistent_arena_alloc = mem.arena_allocator(&persistent_arena)
+
 	frame_arena = mem.Arena {
 		data = frame_memory[:],
 	}
-	persistent_arena_alloc = mem.arena_allocator(&persistent_arena)
 	frame_arena_alloc = mem.arena_allocator(&frame_arena)
+
+	trace_arena = mem.Arena {
+		data = trace_memory[:],
+	}
+	trace_arena_alloc = mem.arena_allocator(&trace_arena)
+
+	turn_evaluate_arena = mem.Arena {
+		data = turn_evaluate_memory[:],
+	}
+	turn_evaluate_arena_alloc = mem.arena_allocator(&turn_evaluate_arena)
 
 	_memory_init_done = true
 }

@@ -48,6 +48,13 @@ rand_splitmix_get_i32_range :: proc(
 	return min + i32(state.z % u64(max - min))
 }
 
+rand_splitmix_get_tilecoord_in_aabb :: proc(state: ^SplitMixState, aabb: Aabb(i32)) -> TileCoord {
+	x := rand_splitmix_get_i32_range(state, aabb.x1, aabb.x2)
+	y := rand_splitmix_get_i32_range(state, aabb.y1, aabb.y2)
+
+	return TileCoord({x, y})
+}
+
 rand_splitmix_get_u64 :: proc(state: ^SplitMixState, advance := true) -> u64 {
 	if advance do defer rand_splitmix_next(state)
 	return state.z

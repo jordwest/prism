@@ -13,6 +13,7 @@ AppState :: struct {
 
 ClientState :: struct {
 	crashed:               bool,
+	frame_iter_count:      i32, // Used to crash out early instead of getting into infinite loops
 	cursor_pos:            TileCoord,
 	cursor_screen_pos:     ScreenCoord,
 	cursor_hidden:         bool,
@@ -105,4 +106,13 @@ state_serialize :: proc(s: ^prism.Serializer, state: ^AppState) -> prism.Seriali
 	serialize(s, &state.client.player_id) or_return
 
 	return nil
+}
+
+state_check_for_infinite_loops :: proc() {
+	state.client.frame_iter_count += 1
+	if state.client.frame_iter_count > 100000 {
+		state.client.crashed = true
+		err("Iteration limit hit this frame, crashing")
+		unreachable()
+	}
 }

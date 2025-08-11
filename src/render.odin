@@ -31,7 +31,7 @@ _add_debug_text :: proc(fmt_str: string, args: ..any) {
 render_debug_overlays :: proc() {
 	fresnel.fill(255, 255, 255, 255)
 	_debug_y_offset = 16
-	_add_debug_text("Debug overlays")
+	_add_debug_text("Debug overlays: %v", state.debug.view)
 	_add_debug_text("Turn %d, t=%.2f", state.client.game.current_turn, state.t)
 	_add_debug_text("%.0f FPS (%.0f max, %.0f min)", debug_get_fps())
 
@@ -49,8 +49,10 @@ render_debug_overlays :: proc() {
 		}
 	}
 
-	// dmap, e := derived_djikstra_map_to(state.client.controlling_entity_id)
-	// _visualise_djikstra(dmap)
+	if state.debug.render_debug_overlays && state.debug.view == .CurrentPlayerDjikstra {
+		dmap, e := derived_djikstra_map_to(state.client.controlling_entity_id)
+		_visualise_djikstra(dmap)
+	}
 
 	// Render cursor coords
 	fresnel.fill(255, 255, 255, 255)

@@ -139,6 +139,8 @@ tick :: proc "c" (dt: f32) {
 
 	mem.arena_free_all(&frame_arena)
 
+	state.client.frame_iter_count = 0
+
 	state.t += dt
 
 	if state.host.is_host && !state.host.crashed {

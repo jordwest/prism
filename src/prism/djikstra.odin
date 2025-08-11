@@ -9,6 +9,7 @@ DjikstraError :: enum u8 {
 	DjikstraAlgoInUse,
 	NotInitialized,
 	InvalidTile,
+	OutOfMemory,
 }
 
 DjikstraMapState :: enum {
@@ -26,9 +27,10 @@ DjikstraMap :: struct($Width: i32, $Height: i32) {
 }
 
 DjikstraAlgo :: struct($Width: i32, $Height: i32) {
-	_current_map: Maybe(^DjikstraMap(Width, Height)),
-	_queue:       queue.Queue([2]i32),
-	_move_cost:   proc(from: [2]i32, to: [2]i32) -> i32,
+	_current_map:     Maybe(^DjikstraMap(Width, Height)),
+	_queue:           queue.Queue([2]i32),
+	_queue_container: [Width * Height][2]i32,
+	_move_cost:       proc(from: [2]i32, to: [2]i32) -> i32,
 }
 
 DjikstraTile :: struct {
@@ -41,7 +43,8 @@ djikstra_init :: proc(
 	allocator: mem.Allocator = context.allocator,
 ) -> mem.Allocator_Error {
 	// Assume frontier is unlikely to be larger than covering every edge of the map
-	queue.init(&djikstra_algo._queue, int(Width * 2 + Height * 2)) or_return
+	// queue.init(&djikstra_algo._queue, int(Width * 2 + Height * 2)) or_return
+	queue.init_from_slice(&djikstra_algo._queue, djikstra_algo._queue_container[:])
 	djikstra_algo._move_cost = proc(from: [2]i32, to: [2]i32) -> i32 {return 1}
 	return nil
 }
@@ -74,7 +77,10 @@ djikstra_map_add_origin :: proc(
 	dmap, initialized := algo._current_map.(^DjikstraMap(Width, Height))
 	if !initialized do return .NotInitialized
 
-	queue.push_back(&algo._queue, coord)
+	ok, e := queue.push_back(&algo._queue, coord)
+	if e != nil {
+		return .OutOfMemory
+	}
 	tile, valid_tile := djikstra_tile(dmap, coord).?
 	if !valid_tile do return .InvalidTile
 	tile.visited = true
@@ -95,7 +101,8 @@ djikstra_map_generate :: proc(
 
 	dmap.state = .PartiallyComplete
 	for i := 0; i < max_iterations && dmap.state != .Complete; i += 1 {
-		_iterate(algo, dmap)
+		e := _iterate(algo, dmap)
+		if e != nil do return e
 	}
 
 	algo._current_map = nil
@@ -175,18 +182,21 @@ _idx :: proc(width: i32, coord: [2]i32) -> i32 {
 }
 
 @(private = "file")
-_iterate :: proc(algo: ^DjikstraAlgo($Width, $Height), dmap: ^DjikstraMap(Width, Height)) {
+_iterate :: proc(
+	algo: ^DjikstraAlgo($Width, $Height),
+	dmap: ^DjikstraMap(Width, Height),
+) -> DjikstraError {
 	current_coord, ok := queue.pop_front_safe(&algo._queue)
 	if !ok {
 		// No more tiles to check, we're done
 		dmap.state = .Complete
 		algo._current_map = nil
-		return
+		return .Ok
 	}
 
 	this_tile, valid_tile := djikstra_tile(dmap, current_coord).?
 	if !valid_tile {
-		return
+		return .Ok
 	}
 	this_tile_cost := this_tile.cost.? or_else 0
 
@@ -219,7 +229,12 @@ _iterate :: proc(algo: ^DjikstraAlgo($Width, $Height), dmap: ^DjikstraMap(Width,
 				dmap.max_cost = new_cost
 				dmap.max_cost_coord = new_coord
 			}
-			queue.push_back(&algo._queue, new_coord)
+			_, e := queue.push_back(&algo._queue, new_coord)
+			if e != nil {
+				return .OutOfMemory
+			}
 		}
 	}
+
+	return .Ok
 }

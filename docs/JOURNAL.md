@@ -266,3 +266,15 @@ Think that's enough for today. Tomorrow:
  - Render hitpoints box - done
  - Spawn many entities scattered around - done
  - Enemy AI - next
+
+So I've been thinking about how to decrease djikstra generation, because the way things are right now it gets regenerated every time an enemy moves which is causing huge frame drops with only a handful of enemies.
+
+What I realised is that ideally, the djikstra map shouldn't take into account any objects that move, because the object is likely to have moved by the time we get to it anyway. The issue is in when the object is in the space we want to move in _immediately_. But I think that can be solved fairly easily. Just look around for other spaces where the move cost decreases.
+
+There's another special case where a row of entities that are keeping their distance from the player could block access to enemies behind that are advancing toward the player. I think this could probably just be solved by making the enemy wander if it has no path, but this can be solved if I ever get to it.
+
+The other option could be to allow enemies to also swap places with each other... But this could really change the balance of the game a lot and be difficult to see what's going on.
+
+So I think this is all going to need a bit of a refactor of the way I calculate djikstra maps. I've had an idea floating around for a bit where I have a struct that defines the input parameters for the map, then just pass that struct in wherever a map is needed and the system checks whether its been constructed yet or not, and if not, constructs it and returns it.
+
+Also going to need to implement a key to switch between debug views of the different maps, that should help a lot with diagnosing issues here. Think I'll do that first.

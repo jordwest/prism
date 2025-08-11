@@ -14,6 +14,7 @@ Entity :: struct {
 	player_id:     Maybe(PlayerId),
 	spring:        prism.Spring(2),
 	despawning:    bool,
+	ai:            AiBrain,
 
 	// Not serialized
 	_local_cmd:    Maybe(LocalCommand),
@@ -51,6 +52,7 @@ EntityMetaId :: enum u8 {
 
 EntityFlags :: enum {
 	IsPlayerControlled,
+	IsAiControlled,
 	IsObstacle,
 	CanMove,
 	CanSwapPlaces,
@@ -72,7 +74,7 @@ entity_meta: [EntityMetaId]EntityMeta = {
 		spritesheet_coord = SPRITE_COORD_SPIDER,
 		team = .Darkness,
 		max_hp = 7,
-		flags = {.IsObstacle, .CanMove},
+		flags = {.IsAiControlled, .IsObstacle, .CanMove},
 	},
 	.Corpse = EntityMeta{spritesheet_coord = SPRITE_COORD_CORPSE, flags = {}},
 }
