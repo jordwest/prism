@@ -412,7 +412,7 @@ render_path_to :: proc(
 	dmap, e := derived_djikstra_map_to(to_entity)
 	if dmap.state == .Empty do return
 
-	path_len := prism.djikstra_path(dmap, tmp_path[:], Vec2i(from_pos))
+	path_len := prism.djikstra_path(dmap, tmp_path[:], Vec2i(from_pos), game_is_coord_free)
 
 	for p in tmp_path[:path_len] {
 		offset := screen_coord(TileCoord(p))

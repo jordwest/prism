@@ -68,10 +68,10 @@ game_calculate_move_cost_djikstra :: proc(from: [2]i32, to: [2]i32) -> i32 {
 	if cost < 0 do return cost
 
 	// Add a slight increase to discourage diagonals
-	if math.abs(to.x - from.x) + math.abs(to.y - from.y) > 1 do cost += 10
+	// if math.abs(to.x - from.x) + math.abs(to.y - from.y) > 1 do cost += 10
 
 	// Add cost to avoid this tile
-	if avoid do cost += 100
+	// if avoid do cost += 100
 
 	return cost
 }
@@ -110,6 +110,11 @@ game_entities_at :: proc(
 	}
 
 	return count
+}
+
+game_is_coord_free :: proc(coord: [2]i32) -> bool {
+	_, has_entities := derived_entities_at(TileCoord(coord)).obstacle.?
+	return !has_entities
 }
 
 @(private = "file")

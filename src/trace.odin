@@ -27,7 +27,7 @@ when LOG_LEVEL <= LogLevel.Trace {
 	// }
 	trace :: proc(s: string, args: ..any) {
 		// result := fmt.bprintf(_tracebuffer[:], s, ..args)
-		result := fmt.bprintf(_tracebuffer[:], s)
+		result := fmt.bprintf(_tracebuffer[:], s, ..args)
 		fresnel.print(result, i32(LogLevel.Trace))
 	}
 } else {

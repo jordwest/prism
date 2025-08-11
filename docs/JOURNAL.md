@@ -290,3 +290,13 @@ Ugh I think this might actually be a bug in the odin stdlib. I might need to wor
 Ok using `bprintf` seems to have fixed it for now... it seems like there's something weird going on with tprintf. Might pop up again but maybe I'll just call this solved for now and leave the memory validation code in for now.
 
 Going to need to go through the code and find all the instance of tprintf and replace them.
+
+All done, annnd it's 2am and I'm playing with pathfinding again. It's all a bit weird when dealing with obstacles, but I think I'm close to having something workable. Good news is I haven't seen any more crashes since locking down all the memory. Think that's enough for tonight...
+
+# Tuesday 12 Aug 2025
+
+Today:
+ - Enemy attacks
+ - Hit/miss chance
+ - Hit damage indicators
+ - Add fire or items or something interesting to gameplay

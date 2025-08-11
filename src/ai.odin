@@ -26,11 +26,11 @@ ai_evaluate :: proc(e: ^Entity) {
 
 	if e.cmd.type == .None {
 		e.cmd = Command {
-			type = .Move,
-			pos  = prism.rand_splitmix_get_tilecoord_in_aabb(
-				&rng,
-				prism.Aabb(i32){x1 = 0, y1 = 0, x2 = LEVEL_WIDTH, y2 = LEVEL_HEIGHT},
-			),
+			type = .MoveTowardsAllies,
+			// pos  = prism.rand_splitmix_get_tilecoord_in_aabb(
+			// 	&rng,
+			// 	prism.Aabb(i32){x1 = 0, y1 = 0, x2 = LEVEL_WIDTH, y2 = LEVEL_HEIGHT},
+			// ),
 		}
 	}
 }

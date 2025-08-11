@@ -74,7 +74,7 @@ command_execute :: proc(entity: ^Entity) -> CommandOutcome {
 	case .Attack:
 		return _attack(entity) // TODO
 	case .MoveTowardsAllies:
-		return _skip(entity)
+		return _move_towards_allies(entity)
 	case .Skip:
 		return _skip(entity)
 	}
@@ -170,7 +170,7 @@ _player_move_towards :: proc(
 	}
 
 	// Find path to player from target
-	path_len := prism.djikstra_path(dmap, tmp_path[:], Vec2i(destination))
+	path_len := prism.djikstra_path(dmap, tmp_path[:], Vec2i(destination), game_is_coord_free)
 	if path_len == 0 {
 		entity_clear_cmd(entity)
 		err("Path len 0")
@@ -205,6 +205,25 @@ _move_or_swap :: proc(entity: ^Entity, pos: TileCoord, allow_swap: bool = true) 
 	entity_set_pos(entity, pos)
 	entity_consume_ap(entity, cost)
 	return .Moved
+}
+
+_move_towards_allies :: proc(entity: ^Entity) -> CommandOutcome {
+	dmap, e := derived_allies_djikstra_map()
+	if e != nil do return .CommandFailed
+
+	coord_out, _, ok := prism.djikstra_next(dmap, Vec2i(entity.pos), game_is_coord_free)
+	if !ok do return .CommandFailed
+
+	switch _move_or_swap(entity, TileCoord(coord_out), false) {
+	case .Moved:
+		return .Ok
+	case .Blocked:
+		return .CommandFailed
+	case .AlreadyAtTarget:
+		return .CommandFailed
+	}
+
+	return .Ok
 }
 
 command_serialize :: proc(s: ^prism.Serializer, cmd: ^Command) -> prism.SerializationResult {

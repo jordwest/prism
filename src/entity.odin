@@ -81,6 +81,7 @@ entity_meta: [EntityMetaId]EntityMeta = {
 
 entity_despawn :: proc(e: ^Entity) {
 	e.despawning = true
+	delete_key(&state.client.game.entities, e.id)
 }
 
 Alignment :: enum {
@@ -104,10 +105,6 @@ entity_system :: proc(dt: f32) {
 		e.spring.target = vec2f(e.pos)
 
 		prism.spring_tick(&e.spring, dt, !SPRINGS_ENABLED)
-
-		if e.despawning {
-			delete_key(&state.client.game.entities, e.id)
-		}
 	}
 }
 

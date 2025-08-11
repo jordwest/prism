@@ -127,25 +127,27 @@ djikstra_path :: proc(
 	dmap: ^DjikstraMap($Width, $Height),
 	path_out: [][2]i32,
 	start_at: [2]i32,
+	is_coord_free: proc(_: [2]i32) -> bool,
 ) -> (
 	steps: i32,
 ) {
 	coord := start_at
 	max_iterations := i32(len(path_out))
 	for steps = 0; steps < max_iterations; steps += 1 {
-		next_coord, cost, ok := djikstra_next(dmap, coord)
-		if !ok do break // No valid next tile
-		if cost == 0 do break // Finished pathing to origin
+		next_coord, cost, ok := djikstra_next(dmap, coord, is_coord_free)
+		if !ok do return 0 // No valid next tile
+		if cost == 0 do return steps // Finished pathing to origin
 		coord = next_coord
 		path_out[steps] = coord
 	}
 
-	return steps
+	return 0
 }
 
 djikstra_next :: proc(
 	dmap: ^DjikstraMap($Width, $Height),
 	coord_in: [2]i32,
+	is_coord_free: proc(_: [2]i32) -> bool,
 ) -> (
 	coord_out: [2]i32,
 	lowest_cost: i32,
@@ -162,15 +164,15 @@ djikstra_next :: proc(
 	for offset in NEIGHBOUR_TILES_8D {
 		check_coord := coord_in + offset
 		tile, valid_tile := djikstra_tile(dmap, check_coord).?
-		if valid_tile {
-			if cost, has_cost := tile.cost.?; has_cost {
-				if cost < lowest_cost {
-					lowest_cost = cost
-					coord_out = check_coord
-					ok = true
-				}
-			}
-		}
+		if !valid_tile do continue
+		cost, has_cost := tile.cost.?
+		if !has_cost do continue
+		if cost > lowest_cost do continue
+		if cost != 0 && !is_coord_free(check_coord) do continue
+
+		lowest_cost = cost
+		coord_out = check_coord
+		ok = true
 	}
 
 	return coord_out, lowest_cost, ok
@@ -200,7 +202,18 @@ _iterate :: proc(
 	}
 	this_tile_cost := this_tile.cost.? or_else 0
 
-	neighbours: []([2]i32) = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}, {1, 1}, {-1, -1}, {1, -1}, {-1, 1}}
+	neighbours: []([2]i32) = {
+		// Diagonals
+		{1, 1},
+		{-1, -1},
+		{1, -1},
+		{-1, 1},
+		// Cardinal
+		{1, 0},
+		{0, 1},
+		{-1, 0},
+		{0, -1},
+	}
 	// neighbours: []([2]i32) = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}}
 
 	for neighbour_offset in neighbours {
