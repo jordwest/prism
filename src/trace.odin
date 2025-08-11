@@ -14,7 +14,7 @@ LogLevel :: enum {
 }
 
 @(private = "file")
-_tracebuffer: [16384]u8
+_tracebuffer: [163840]u8
 
 when LOG_LEVEL <= LogLevel.Trace {
 	// trace :: proc(s: string, args: ..any, loc: runtime.Source_Code_Location = #caller_location) {
@@ -26,7 +26,8 @@ when LOG_LEVEL <= LogLevel.Trace {
 	// 	fresnel.print(str, i32(LogLevel.Trace))
 	// }
 	trace :: proc(s: string, args: ..any) {
-		result := fmt.bprintf(_tracebuffer[:], s, ..args)
+		// result := fmt.bprintf(_tracebuffer[:], s, ..args)
+		result := fmt.bprintf(_tracebuffer[:], s)
 		fresnel.print(result, i32(LogLevel.Trace))
 	}
 } else {

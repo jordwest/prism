@@ -49,18 +49,17 @@ host_on_client_connected :: proc(clientId: ClientId) {
 
 @(private)
 host_poll :: proc() -> Error {
-	msg_in := make([dynamic]u8, 1000, 1000, frame_arena_alloc)
 	client_id: ClientId
 	bytes_read := 0
 	for {
-		bytes_read := fresnel.server_poll_message((^i32)(&client_id), msg_in[:])
+		bytes_read := fresnel.server_poll_message((^i32)(&client_id), _serialization_buffer[:])
 		if bytes_read <= 0 do break // No new messages
 		state.host.bytes_received += bytes_read
 
-		s := prism.create_deserializer(msg_in)
+		s := prism.create_deserializer(_serialization_buffer[:bytes_read])
 		msg: ClientMessage
 		e := client_message_union_serialize(&s, &msg)
-		if e != nil do return error(DeserializationError{result = e, offset = s.offset, data = msg_in[:bytes_read]})
+		if e != nil do return error(DeserializationError{result = e, offset = s.offset, data = _serialization_buffer[:bytes_read]})
 
 		if LOG_HOST_MESSAGES do info("[HOST] %w", msg)
 		host_handle_client_message(client_id, msg) or_return
@@ -112,18 +111,21 @@ host_handle_client_message :: proc(from_client_id: ClientId, msg: ClientMessage)
 
 host_send_message :: proc(client_id: ClientId, msg: HostMessage) {
 	m: HostMessage = msg
-	s := prism.create_serializer(frame_arena_alloc)
+	mem.arena_free_all(&local_arena)
+	s := prism.create_serializer(_serialization_buffer[:])
 	host_message_union_serialize(&s, &m)
 	state.host.bytes_sent += i32(len(s.stream))
-	fresnel.server_send_message(i32(client_id), s.stream[:])
+	fresnel.log_slice("host send", s.stream[:s.offset])
+	fresnel.server_send_message(i32(client_id), s.stream[:s.offset])
 }
 
 host_broadcast_message :: proc(msg: HostMessage) {
 	m: HostMessage = msg
-	s := prism.create_serializer(frame_arena_alloc)
+	mem.arena_free_all(&local_arena)
+	s := prism.create_serializer(_serialization_buffer[:])
 	host_message_union_serialize(&s, &m)
 	state.host.bytes_sent += i32(len(s.stream) * len(state.host.clients))
-	fresnel.server_broadcast_message(s.stream[:])
+	fresnel.server_broadcast_message(s.stream[:s.offset])
 }
 
 host_log_entry :: proc(entry: LogEntry) {

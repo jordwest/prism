@@ -132,8 +132,6 @@ boot :: proc "c" (width: i32, height: i32, flags: i32) {
 tick :: proc "c" (dt: f32) {
 	context = app_context()
 
-	mem.arena_free_all(&frame_arena)
-
 	state.client.frame_iter_count = 0
 
 	state.t += dt
@@ -161,13 +159,13 @@ tick :: proc "c" (dt: f32) {
 on_dev_hot_unload :: proc "c" () {
 	context = app_context()
 
-	szr := prism.create_serializer(frame_arena_alloc)
+	szr := prism.create_serializer(_serialization_buffer[:])
 	result := serialize(&szr, &state)
 	if result != nil {
 		err("Serialization failed! %s at %d", result, szr.offset)
 	}
 
-	fresnel.storage_set("dev_state", szr.stream[:])
+	fresnel.storage_set("dev_state", szr.stream[:szr.offset])
 }
 
 when TESTS_ENABLED {
@@ -178,7 +176,7 @@ when TESTS_ENABLED {
 
 		context.assertion_failure_proc = on_panic
 		context.allocator = mem.panic_allocator()
-		context.temp_allocator = frame_arena_alloc
+		context.temp_allocator = mem.panic_allocator()
 
 		tests_run_all()
 	}

@@ -74,20 +74,21 @@ client_tick :: proc(dt: f32) {
 	audio_system()
 }
 
+_msg_in_buf: [1000]u8
+
 @(private)
 client_poll :: proc() -> Error {
-	msg_in := make([dynamic]u8, 1000, 1000, frame_arena_alloc)
 	client_id: i32
 	bytes_read := 0
 	for {
-		bytes_read := fresnel.client_poll_message(msg_in[:])
+		bytes_read := fresnel.client_poll_message(_serialization_buffer[:])
 		if bytes_read <= 0 do break // No new messages
 		state.client.bytes_received += bytes_read
 
-		s := prism.create_deserializer(msg_in)
+		s := prism.create_deserializer(_serialization_buffer[:bytes_read])
 		msg: HostMessage
 		e_serialization := host_message_union_serialize(&s, &msg)
-		if e_serialization != nil do return error(DeserializationError{result = e_serialization, offset = s.offset, data = msg_in[:bytes_read]})
+		if e_serialization != nil do return error(DeserializationError{result = e_serialization, offset = s.offset, data = _serialization_buffer[:bytes_read]})
 
 		e: Error
 
@@ -147,8 +148,8 @@ client_get_entity :: proc(entity_id: EntityId) -> ^Entity {
 
 client_send_message :: proc(msg: ClientMessage) {
 	m: ClientMessage = msg
-	s := prism.create_serializer(frame_arena_alloc)
+	s := prism.create_serializer(_serialization_buffer[:])
 	client_message_union_serialize(&s, &m)
 	state.client.bytes_sent += i32(len(s.stream))
-	fresnel.client_send_message(s.stream[:])
+	fresnel.client_send_message(s.stream[:s.offset])
 }

@@ -43,9 +43,9 @@ MEMORY_VALIDATE_PADDING :: true
  ***********/
 LOG_LEVEL :: LogLevel.Trace
 // Whether to record messages received by host
-LOG_HOST_MESSAGES :: false
+LOG_HOST_MESSAGES :: true
 // Whether to record messages received by client
-LOG_CLIENT_MESSAGES :: false
+LOG_CLIENT_MESSAGES :: true
 LOG_COMMANDS :: false
 
 /***********

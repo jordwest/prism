@@ -18,14 +18,20 @@ host_memory: [5242880]u8
 host_arena: mem.Arena
 host_arena_alloc: mem.Allocator
 
-// For storing the arena that gets cleared each frame
-@(private)
-// frame_memory: [104960]u8
-frame_memory: [102400]u8
-@(private)
-frame_arena: mem.Arena
-frame_arena_alloc: mem.Allocator
+pad1: [104960]u8
 
+// For storing an arena used only for the life of a short function
+@(private)
+local_arena_memory: [104960]u8
+// frame_memory: [102400]u8
+@(private)
+local_arena: mem.Arena
+local_arena_alloc: mem.Allocator
+
+pad2: [104960]u8
+
+_serialization_buffer: [16384]u8
+_tmp_16k: [16384]u8
 
 // Clay layout arena
 clay_memory: [5116736]u8
@@ -35,15 +41,18 @@ _memory_init_done: bool
 memory_init :: proc() {
 	if _memory_init_done do return
 
+	pad1[0] = 1
+	pad2[0] = 1
+
 	persistent_arena = mem.Arena {
 		data = persistent_memory[:],
 	}
 	persistent_arena_alloc = mem.arena_allocator(&persistent_arena)
 
-	frame_arena = mem.Arena {
-		data = frame_memory[:],
+	local_arena = mem.Arena {
+		data = local_arena_memory[:],
 	}
-	frame_arena_alloc = mem.arena_allocator(&frame_arena)
+	local_arena_alloc = mem.arena_allocator(&local_arena)
 
 	_memory_init_done = true
 }
@@ -62,7 +71,4 @@ memory_log_metrics :: proc() {
 	}
 	fresnel.metric_i32("persistent mem", i32(persistent_arena.offset))
 	fresnel.metric_i32("persistent mem peak", i32(persistent_arena.peak_used))
-	fresnel.metric_i32("temp mem", i32(frame_arena.offset))
-	fresnel.metric_i32("temp mem peak", i32(frame_arena.peak_used))
-	fresnel.metric_i32("temp mem count", i32(frame_arena.temp_count))
 }

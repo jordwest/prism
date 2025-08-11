@@ -38,7 +38,8 @@ assert_eq :: proc(actual: $T, expected: T, loc: runtime.Source_Code_Location = #
 		return
 	}
 
-	name := fmt.tprintf(
+	name := fmt.bprintf(
+	    _tmp_16k[:],
 		"%s:%s:%d\nGot %v, expected %v",
 		loc.file_path,
 		loc.procedure,
@@ -53,12 +54,12 @@ assert :: proc(
 	msg: string = "",
 	loc: runtime.Source_Code_Location = #caller_location,
 ) {
-	name := fmt.tprintf("%s %s:%s:%d", msg, loc.file_path, loc.procedure, loc.line)
+	name := fmt.bprintf(_tmp_16k[:], "%s %s:%s:%d", msg, loc.file_path, loc.procedure, loc.line)
 	fresnel.test_assert(name, pass)
 }
 
 test_case :: proc(name: string, loc := #caller_location) {
-	test_name := fmt.tprintf("%s:%s", loc.procedure, name)
+	test_name := fmt.bprintf(_tmp_16k[:], "%s:%s", loc.procedure, name)
 	fresnel.test_case(test_name)
 }
 

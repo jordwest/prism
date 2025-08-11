@@ -26,9 +26,7 @@ clay_measure_text :: proc "c" (
 	config: ^clay.TextElementConfig,
 	userData: rawptr,
 ) -> clay.Dimensions {
-	context = runtime.default_context()
-	context.allocator = frame_arena_alloc
-	context.temp_allocator = frame_arena_alloc
+	context = app_context()
 	// clay.TextElementConfig contains members such as fontId, fontSize, letterSpacing, etc..
 	// Note: clay.String->chars is not guaranteed to be null terminated
 	odin_string := string_from_clay_slice(text)
@@ -37,23 +35,20 @@ clay_measure_text :: proc "c" (
 }
 
 clay_error_handler :: proc "c" (errorData: clay.ErrorData) {
-	context = runtime.default_context()
-	context.allocator = persistent_arena_alloc
-	context.temp_allocator = frame_arena_alloc
+	context = app_context()
 	err("CLAY ERROR %s", errorData.errorType)
 }
 
 hot_reload_hydrate_state :: proc() -> bool {
-	hot_reload_data := make([dynamic]u8, 10000, 10000, frame_arena_alloc)
-	bytes_read := fresnel.storage_get("dev_state", hot_reload_data[:])
+	bytes_read := fresnel.storage_get("dev_state", _serialization_buffer[:])
 	if bytes_read <= 0 {
 		warn("Dev state not loaded. Storage returned %d", bytes_read)
 		return false
 	}
 
-	resize(&hot_reload_data, int(bytes_read))
+	buf := _serialization_buffer[:bytes_read]
 
-	ds := prism.create_deserializer(hot_reload_data)
+	ds := prism.create_deserializer(buf[:])
 	result := serialize(&ds, &state)
 	if result != nil {
 		err("hot reload deserialization failed! %s at %d", result, ds.offset)

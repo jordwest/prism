@@ -11,25 +11,25 @@ SerializationResult :: enum byte {
 }
 
 Serializer :: struct {
-	stream:  [dynamic]u8,
+	stream:  []u8,
 	offset:  i32,
 	writing: bool,
 	counter: u8,
 }
 
-create_serializer :: proc(alloc: mem.Allocator = context.allocator) -> Serializer {
-	stream := make([dynamic]u8, 0, 20, alloc)
-	return Serializer{stream = stream, offset = 0, writing = true}
+create_serializer :: proc(buf: []u8) -> Serializer {
+	return Serializer{stream = buf, offset = 0, writing = true}
 }
 
-create_deserializer :: proc(stream: [dynamic]u8) -> Serializer {
+create_deserializer :: proc(stream: []u8) -> Serializer {
 	return Serializer{stream = stream, offset = 0, writing = false}
 }
 
 serialize_counter :: proc(s: ^Serializer) -> SerializationResult {
 	s.counter += 1
 	if (s.writing) {
-		append(&s.stream, s.counter)
+		s.stream[s.offset] = s.counter
+		// append(&s.stream, s.counter)
 	} else {
 		counter := s.stream[s.offset]
 		if (counter != s.counter) {
@@ -42,7 +42,8 @@ serialize_counter :: proc(s: ^Serializer) -> SerializationResult {
 
 serialize_u8 :: proc(s: ^Serializer, state: ^u8) -> SerializationResult {
 	if (s.writing) {
-		append(&s.stream, state^)
+		s.stream[s.offset] = state^
+		// append(&s.stream, state^)
 	} else {
 		state^ = s.stream[s.offset]
 	}
@@ -53,7 +54,8 @@ serialize_u8 :: proc(s: ^Serializer, state: ^u8) -> SerializationResult {
 serialize_token :: proc(s: ^Serializer, token: string) -> SerializationResult {
 	if (s.writing) {
 		str_bytes := transmute([]u8)(token)
-		append(&s.stream, ..str_bytes[:])
+		mem.copy(&s.stream[s.offset], &str_bytes[0], len(str_bytes))
+		// append(&s.stream, ..str_bytes[:])
 	} else {
 		str_slice := s.stream[s.offset:][:len(token)]
 		if (string(str_slice) != token) {
@@ -66,7 +68,7 @@ serialize_token :: proc(s: ^Serializer, token: string) -> SerializationResult {
 
 serialize_array :: proc(s: ^Serializer, arr: ^[$N]u8) -> SerializationResult {
 	if (s.writing) {
-		append(&s.stream, ..arr[:])
+		mem.copy(&s.stream[s.offset], &arr[0], len(arr))
 	} else {
 		str_slice := s.stream[s.offset:][:N]
 		copy(arr[:], str_slice)
@@ -82,7 +84,7 @@ serialize_string :: proc(s: ^Serializer, state: ^string) -> SerializationResult 
 		serialize_i32(s, &str_len)
 
 		str_bytes := transmute([]u8)(state^)
-		append(&s.stream, ..str_bytes[:])
+		mem.copy(&s.stream[s.offset], &str_bytes[0], len(str_bytes))
 	} else {
 		str_len: i32
 		serialize_i32(s, &str_len)
@@ -94,24 +96,6 @@ serialize_string :: proc(s: ^Serializer, state: ^string) -> SerializationResult 
 	return nil
 }
 
-serialize_slice :: proc(
-	s: ^Serializer,
-	slice: []$T,
-	serialize_t: proc(_: ^Serializer, _: ^T) -> SerializationResult,
-) -> SerializationResult {
-	if s.writing {
-		length := u32(len(slice))
-		serialize_u32(s, &length) or_return
-		reserve(&s.stream, len(s.stream) + size_of(T) * int(length))
-		for i: u32 = 0; i < length; i += 1 {
-			serialize_t(s, &slice[i]) or_return
-		}
-	} else {
-		// read length
-	}
-	return nil
-}
-
 serialize_vec2i :: proc(s: ^Serializer, state: ^[2]i32) -> SerializationResult {
 	serialize_i32(s, &state[0])
 	serialize_i32(s, &state[1])
@@ -120,7 +104,7 @@ serialize_vec2i :: proc(s: ^Serializer, state: ^[2]i32) -> SerializationResult {
 serialize_i32 :: proc(s: ^Serializer, state: ^i32) -> SerializationResult {
 	if (s.writing) {
 		els := transmute([4]u8)(state^)
-		append(&s.stream, ..els[:])
+		mem.copy(&s.stream[s.offset], &els[0], len(els))
 	} else {
 		state^ = slice.to_type(s.stream[s.offset:][:4], i32)
 	}
@@ -130,7 +114,7 @@ serialize_i32 :: proc(s: ^Serializer, state: ^i32) -> SerializationResult {
 serialize_u32 :: proc(s: ^Serializer, state: ^u32) -> SerializationResult {
 	if (s.writing) {
 		els := transmute([4]u8)(state^)
-		append(&s.stream, ..els[:])
+		mem.copy(&s.stream[s.offset], &els[0], len(els))
 	} else {
 		state^ = slice.to_type(s.stream[s.offset:][:4], u32)
 	}
@@ -141,7 +125,7 @@ serialize_u32 :: proc(s: ^Serializer, state: ^u32) -> SerializationResult {
 serialize_f32 :: proc(s: ^Serializer, state: ^f32) -> SerializationResult {
 	if (s.writing) {
 		els := transmute([4]u8)(state^)
-		append(&s.stream, ..els[:])
+		mem.copy(&s.stream[s.offset], &els[0], len(els))
 	} else {
 		state^ = slice.to_type(s.stream[s.offset:][:4], f32)
 	}
@@ -164,7 +148,7 @@ serialize_union_nil :: proc(tag: u8, state: ^UnionSerializerState($U)) -> bool {
 	}
 	if state.serializer.writing {
 		if state.union_ref^ == nil {
-			append(&state.serializer.stream, tag)
+			state.serializer.stream[state.serializer.offset] = tag
 			state.done = true
 			return true
 		}
@@ -208,7 +192,8 @@ serialize_union_variant :: proc(
 	if state.serializer.writing {
 		variant, ok := state.union_ref.(T)
 		if ok {
-			append(&state.serializer.stream, tag)
+			state.serializer.stream[state.serializer.offset] = tag
+			state.serializer.offset += 1
 			// serialize_empty is not baked into the code due to being polymorphic
 			// so it ends up being a null pointer, which we check for here.
 			// Would be nice to find a better way but this hack works for now
@@ -242,5 +227,4 @@ serialize :: proc {
 	serialize_f32,
 	serialize_u8,
 	serialize_string,
-	serialize_slice,
 }
