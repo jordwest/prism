@@ -317,3 +317,31 @@ Anyway enemy AI is done now, at least basic hit/miss chances.
  - Add fire or items or something interesting to gameplay
 
 I'm wondering if the memory issues may be due to the maps and the way I'm iterating them. Could that be introducing some overflow. OMG I think I found the issue. The entities and players maps were being initialised twice - once by host and once by client. That would definitely cause weirdness if there's some pointer lookup going on. I still don't understand quite how that would cause issues in the printfs, but I guess all kinds of weird things can happen when pointers are invalidated. Also it was usually in the trace function that logged an entity id where the crash happened. Let's see how it goes. This realisation happened when I walked away from the computer... gotta do more of that... It really feels like stepping away lets the universe take care of it... So relevant to my convo with Jo last night.
+
+God nope it's still crashing.......................... fuck
+
+Could it be clay??? There is an out of bounds error there too....
+
+Ok so I think I've tracked it down... There's a _user_formatters pointer that is nil when the app starts up, but then it changes to a different number right before the crash.
+
+So it seems the fmt_arg function is trying to access that, assuming it's a slice, but it's actually just a bad pointer. So something is overwriting that memory, and now I'm looking at the pointer locations and it seem clay might be the culprit since it's near the end of the app memory, and right before the location of the _user_formatters pointer pointer.
+
+So, let's see if disabling clay fixes it...
+
+Ok user formatter point is still changing to 1, but it's not causing a crash... that's weird... Ah I was still creating the clay arena. Just not doing anything with it.
+
+Ok, clay is not the culprit.
+
+Omg. Found this in the clay commits for August... I knew I should have just tried updating lol
+
+```
+		// NOTE(laytan): Put the stack first in the memory,
+		// causing a stack overflow to error immediately instead of corrupting globals.
+		link_flags = gb_string_appendc(link_flags, "--stack-first ");
+		// NOTE(laytan): default stack size is 64KiB, up to a more reasonable 1MiB.
+		link_flags = gb_string_appendc(link_flags, "-z stack-size=1048576 ");
+````
+
+That's almost certainly it. It seems like a stack overflow happens right in a specific place and that's why it always fails with the AI. 64kB is wayyy to small. That's almost certainly it.
+
+God, pretty sure that was it HA. Should have just installed the new version, although it was a fun and interesting exploration of the odin source. Also have a better understanding of the memory layout etc.

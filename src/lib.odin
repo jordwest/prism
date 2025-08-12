@@ -11,8 +11,6 @@ import "core:sync"
 import "fresnel"
 import "prism"
 
-state: AppState
-
 on_panic :: proc(a: string, b: string, loc: runtime.Source_Code_Location) -> ! {
 	fresnel.log_panic(a, b, loc.file_path, loc.line)
 	unreachable()

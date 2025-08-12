@@ -169,7 +169,13 @@ function createDebugImports(
     },
 
     log_i32(name: OdinStringPointer, val: number) {
-      console.log(readOdinString(instance.memory, name), val);
+      const str = readOdinString(instance.memory, name)
+      if (str.includes("ptr") || str.includes("pointer")) {
+        const bytes = new Uint8Array(instance.memory, val - 10, 20)
+        console.log(name, bytes)
+      } else {
+        console.log(str, val);
+      }
     },
 
     log_slice(name: OdinStringPointer, ptr: OdinSlicePointer) {

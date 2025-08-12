@@ -67,7 +67,7 @@ done,feat,b3,Add hit/miss chance
 todo,imp,b3,Player indicators should appear above all entities (render order)
 todo,imp,b3,Consider setting a delay after actions (like attack) instead of after every turn
 todo,bug,b3,Don't advance turn when all players are dead
-todo,imp,b3,Add hit indicators
+doing,imp,b3,Add hit indicators
 todo,bug,b3,"Weirdness when delay=0, out of order messages or something"
 todo,imp,b3,Add SFX again
 todo,feat,b3,Make rust websocket server and connect it up
