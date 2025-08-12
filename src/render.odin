@@ -158,21 +158,25 @@ render_tiles :: proc() {
 			}
 			if !ok do continue
 
-			use_alternative_tile := prism.rand_splitmix_get_bool(&tile_randomiser, 50)
+			use_alternative_tile_50 := prism.rand_splitmix_get_bool(&tile_randomiser, 50)
+			use_alternative_tile_500 := prism.rand_splitmix_get_bool(&tile_randomiser, 500)
 			switch tile.type {
 			case .Empty:
 				tile_above, has_tile_above := tile_at(tile_c + {0, -1}).?
 				if has_tile_above && tile_above.type == .Floor do render_sprite(SPRITE_COORD_PIT_WALL, screen_c)
 			case .RopeBridge:
-				render_sprite(SPRITE_COORD_ROPE_BRIDGE, screen_c)
+				render_sprite(
+					use_alternative_tile_500 ? SPRITE_COORD_ROPE_BRIDGE_2 : SPRITE_COORD_ROPE_BRIDGE,
+					screen_c,
+				)
 			case .BrickWall:
 				front_facing := has_tile_below && tile_below.type != .BrickWall
 				sprite :=
-					front_facing ? (use_alternative_tile ? SPRITE_COORD_BRICK_WALL_FACE_2 : SPRITE_COORD_BRICK_WALL_FACE) : SPRITE_COORD_BRICK_WALL_BEHIND
+					front_facing ? (use_alternative_tile_50 ? SPRITE_COORD_BRICK_WALL_FACE_2 : SPRITE_COORD_BRICK_WALL_FACE) : SPRITE_COORD_BRICK_WALL_BEHIND
 				render_sprite(sprite, screen_c)
 			case .Floor:
 				sprite :=
-					use_alternative_tile ? SPRITE_COORD_FLOOR_STONE_2 : SPRITE_COORD_FLOOR_STONE
+					use_alternative_tile_50 ? SPRITE_COORD_FLOOR_STONE_2 : SPRITE_COORD_FLOOR_STONE
 				render_sprite(sprite, screen_c)
 			case .Water:
 				render_sprite(SPRITE_COORD_WATER, screen_c)

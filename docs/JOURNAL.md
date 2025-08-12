@@ -371,3 +371,9 @@ Djikstra for player now also only calculates in seen areas.
 
 Ok so my aabb needs complete reworking. It should have a width and height instead of x2 and y2, since that's kinda ambiguous. I'm thinkin what I should do instead is just create a new `Rect` type and deprecate the `Aabb`, then just...
 Ok after chatting with Claude, it suggests keeping x2, y2 but making them _exclusive_ bounds as that's convention, and simplifies checks. So that's a fairly minor change. It does suggest naming it Rect instead of Aabb though.
+
+Got a pit island and rope bridge up, so cool. I think I want to work on fire next, make the world feel a bit more dynamic. Looking forward to making things feeling a bit more.. unpredictable.
+
+Ok damn it's really starting to come together now. Playing with it on iphone and even in Safari it feels very smooth. A proper iOS build might really be feasible...
+
+Tomorrow I think I want to work on getting fire going, and then I can think about adding items, starting with a potion of fire.

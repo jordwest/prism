@@ -19,7 +19,11 @@ TESTS_ENABLED :: true
 MEMORY_VALIDATE_PADDING :: true
 
 /////////// LOGGING \\\\\\\\\\\\\
-LOG_LEVEL :: LogLevel.Trace
+when ODIN_DEBUG {
+    LOG_LEVEL :: LogLevel.Trace
+} else {
+    LOG_LEVEL :: LogLevel.Error
+}
 // Whether to record messages received by host
 LOG_HOST_MESSAGES :: false
 // Whether to record messages received by client
@@ -43,7 +47,7 @@ ENTITY_SPRING_DAMPER :: 10
 
 ///////// FUTURE STATE \\\\\\\\\
 
-GAME_SEED :: 0xdeadbeef6c5
+GAME_SEED :: 0xdeadbeef6c5329
 TURN_DELAY :: 0.1
 MUSIC_ENABLED :: false
 SPRINGS_ENABLED :: true
@@ -71,6 +75,7 @@ SPRITE_COORD_SPIDER :: [2]f32{0 * 16, 2 * 16}
 SPRITE_COORD_CORPSE :: [2]f32{1 * 16, 2 * 16}
 SPRITE_COORD_WATER :: [2]f32{6 * 16, 2 * 16}
 SPRITE_COORD_ROPE_BRIDGE :: [2]f32{6 * 16, 3 * 16}
+SPRITE_COORD_ROPE_BRIDGE_2 :: [2]f32{7 * 16, 3 * 16}
 SPRITE_COORD_CURSOR_ATTACK :: [2]f32{6 * 16, 5 * 16}
 SPRITE_COORD_OTHER_PLAYER_CURSOR :: [2]f32{16 * 2, 16 * 5}
 SPRITE_COORD_ACTIVE_CHEVRON :: [2]f32{16, 64}

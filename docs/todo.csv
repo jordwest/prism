@@ -67,22 +67,26 @@ done,feat,b3,Add hit/miss chance
 done,imp,b3,Add hit indicators
 done,feat,b4,Add fog of war (and add it to the dijkstra map calcs)
 done,content,b4,Room with rope bridge access to a platform
-doing,imp,b4,Enemies should only move towards player within a certain distance
+done,imp,b4,Enemies should only move towards player within a certain distance
 todo,feat,b4,Fire system - flammable objects burn and spread
+todo,content,b4,Fire enemy - when it dies it splats flaming juices in random directions
 todo,bug,b4,Player indicators should appear above all entities (render order)
 todo,refactor,b4,Add a queue for log events coming in from server for more consistency
+todo,imp,b4,Click & drag to move camera around
 todo,imp,b4,Consider setting a delay after actions (like attack) instead of after every turn
 todo,feat,b4,"Add basic lobby for connecting, setting name and starting game"
+todo,imp,b4,Cancel all allies commands when an enemy is spotted for the first time
+todo,devtool,ideas,Rewind back to previous action (by replaying) for dev purposes
 todo,bug,b4,Don't advance turn when all players are dead
 todo,bug,b4,"Weirdness when delay=0, out of order messages or something"
 todo,imp,b4,Add SFX again
 todo,content,b4,Add grass and make it burrrn
-todo,feat,b4,Make rust websocket server and connect it up
 todo,perf,ideas,Divide calculations across frames to reduce stutter
 todo,feat,ideas,Shift-click to keep auto-attacking an enemy
 todo,devtool,ideas,Add microui for debug tools
 todo,devtool,ideas,Hydrate client and server entity state in hot reload
 todo,refactor,ideas,Consider splitting server and client into separate packages
+todo,feat,b4,Make rust websocket server and connect it up
 todo,feat,b4,Make use of client token to relogin a user (and store it in localstorage)
 todo,imp,b4,Darken non currently visible areas
 todo,imp,b4,Add a proper LOS algorithm
@@ -99,7 +103,6 @@ todo,feat,b4,Add multiple dungeon levels
 todo,imp,b4,Show path to cursor when clicking to move
 todo,feat,b4,Potion of revive
 todo,content,b4,Fire traps
-todo,content,b4,Fire enemy - when it dies it splats flaming juices in random directions
 todo,imp,b4,"Add animation queue (movement plays in parallel, attacks in sequence)"
 todo,imp,b4,Handle individual player death
 todo,feat,b4,Shock traps (probs easiest as tile effects like fire or net don't need to be implemented)
