@@ -9,10 +9,6 @@ import "prism"
 test_generate_djikstra_map :: proc() {
 	test_case("generate map")
 
-	for i := 0; i < 1000; i += 1 {
-		trace("Test printf %v", Entity{})
-	}
-
 	algo := prism.DjikstraAlgo(10, 10){}
 	prism.djikstra_init(&algo)
 
