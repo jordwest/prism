@@ -1,6 +1,7 @@
 package prism
 
 import "core:container/queue"
+import "core:mem"
 
 PoolId :: struct #packed {
 	id:  int,
@@ -79,11 +80,17 @@ pool_delete :: proc(arr: ^Pool($T, $Capacity), id: PoolId) -> Maybe(T) {
 	if id.gen == 0 do return nil
 	if arr.generations[id.id] != id.gen do return nil
 
-	queue.push_back(&arr.holes, id)
-
 	item := arr.items[id.id]
 	arr.items[id.id] = {}
 	arr.generations[id.id] = 0
+
+	if id.id == arr.next_id - 1 {
+		arr.next_id -= 1
+		// Can just take the id out of use, no need to create a hole
+		return item
+	}
+
+	queue.push_back(&arr.holes, id)
 
 	return item
 }
