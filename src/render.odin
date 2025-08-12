@@ -161,8 +161,10 @@ render_tiles :: proc() {
 			use_alternative_tile := prism.rand_splitmix_get_bool(&tile_randomiser, 50)
 			switch tile.type {
 			case .Empty:
+				tile_above, has_tile_above := tile_at(tile_c + {0, -1}).?
+				if has_tile_above && tile_above.type == .Floor do render_sprite(SPRITE_COORD_PIT_WALL, screen_c)
 			case .RopeBridge:
-			//TODO
+				render_sprite(SPRITE_COORD_ROPE_BRIDGE, screen_c)
 			case .BrickWall:
 				front_facing := has_tile_below && tile_below.type != .BrickWall
 				sprite :=
@@ -307,6 +309,9 @@ render_tile_cursors :: proc(dt: f32) {
 			render_sprite(SPRITE_COORD_RECT, screen_coord(state.client.cursor_pos))
 		}
 		if command_for_tile(state.client.cursor_pos).type == .Skip {
+			render_sprite(SPRITE_COORD_RECT, screen_coord(state.client.cursor_pos))
+		}
+		if state.debug.render_debug_overlays {
 			render_sprite(SPRITE_COORD_RECT, screen_coord(state.client.cursor_pos))
 		}
 	}

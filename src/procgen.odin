@@ -20,21 +20,26 @@ RoomId :: distinct int
 Room :: struct {
 	aabb: prism.Aabb(i32),
 }
+RoomType :: enum {
+	Normal,
+	Pit,
+}
 PcgState :: struct {
-	iteration:      int,
-	delay:          int,
-	done:           bool,
-	tiles:          [LEVEL_WIDTH * LEVEL_HEIGHT]PcgTile,
-	rooms:          map[RoomId]Room,
-	newest_room_id: RoomId,
-	level_bounds:   prism.Aabb(i32),
-	door_locations: priority_queue.Priority_Queue(PossibleDoorLocation),
-	total_time:     i32,
-	djikstra_map:   prism.DjikstraMap(LEVEL_WIDTH, LEVEL_HEIGHT),
+	iteration:       int,
+	delay:           int,
+	done:            bool,
+	tiles:           [LEVEL_WIDTH * LEVEL_HEIGHT]PcgTile,
+	rooms:           map[RoomId]Room,
+	room_type_count: [RoomType]int,
+	newest_room_id:  RoomId,
+	level_bounds:    prism.Aabb(i32),
+	door_locations:  priority_queue.Priority_Queue(PossibleDoorLocation),
+	total_time:      i32,
+	djikstra_map:    prism.DjikstraMap(LEVEL_WIDTH, LEVEL_HEIGHT),
 
 	// Just for visualisation
-	cursor:         prism.Aabb(i32),
-	cursor2:        prism.Aabb(i32),
+	cursor:          prism.Aabb(i32),
+	cursor2:         prism.Aabb(i32),
 }
 
 @(private = "file")
@@ -82,7 +87,9 @@ procgen_iterate :: proc(pcg: ^PcgState) {
 	if pcg.iteration >= 1000 || len(pcg.rooms) >= 50 {
 		info("Procedural generation done in %d iterations, %dms", pcg.iteration, pcg.total_time)
 
-		_spawn_enemies()
+		when !NO_ENEMIES {
+			_spawn_enemies()
+		}
 
 		pcg.done = true
 		return
@@ -139,21 +146,21 @@ _try_add_room :: proc(
 		}
 	}
 
-	room_walls_aabb := prism.Aabb(i32) {
+	outer_rect := prism.Aabb(i32) {
 		x1 = x,
 		y1 = y,
 		x2 = x + width,
 		y2 = y + height,
 	}
-	room_aabb := prism.aabb_grow(room_walls_aabb, Vec2i{-1, -1})
-	pcg.cursor = room_aabb
+	inner_rect := prism.aabb_grow(outer_rect, Vec2i{-1, -1})
+	pcg.cursor = inner_rect
 
 	valid_room := true
-	if !prism.aabb_fully_contains(pcg.level_bounds, room_walls_aabb) do valid_room = false
+	if !prism.aabb_fully_contains(pcg.level_bounds, outer_rect) do valid_room = false
 
 	// Check for overlaps with existing rooms
 	for _, room in pcg.rooms {
-		if prism.aabb_overlaps(room_aabb, room.aabb) {
+		if prism.aabb_overlaps(inner_rect, room.aabb) {
 			valid_room = false
 		}
 	}
@@ -166,38 +173,68 @@ _try_add_room :: proc(
 		return false
 	}
 
-	tile_draw_room(TileCoord({x, y}), Vec2i({width, height}))
+	is_pit := false
+	if width > 9 &&
+	   height > 9 &&
+	   !first_room &&
+	   trying_door &&
+	   prism.rand_splitmix_get_bool(&rng, 700) &&
+	   pcg.room_type_count[.Pit] < 1 {
+		trace("Drawing pit %v", outer_rect)
+		size := Vec2i{3, 3}
+		pos := prism.aabb_pos(inner_rect) + (prism.aabb_size(inner_rect) / 2)
+
+		island := prism.aabb(pos, size)
+		bridge_start := door.pos + (door.direction == .South ? {0, 1} : {1, 0})
+
+		// Draw pit island room
+		tile_draw_outline(outer_rect)
+		tile_draw_fill(island)
+		tile_connect_region(bridge_start, island)
+
+		is_pit = true
+		pcg.room_type_count[.Pit] += 1
+	} else {
+		// tile_draw_room(TileCoord({x, y}), Vec2i({width, height}))
+		tile_draw_outline(outer_rect)
+		tile_draw_fill(prism.aabb_grow(outer_rect, -1))
+		pcg.room_type_count[.Normal] += 1
+	}
+
 	if trying_door do tile_draw_door(door.pos)
 
 	if first_room {
 		state.client.game.spawn_point = TileCoord {
-			prism.rand_splitmix_get_i32_range(&rng, room_aabb.x1, room_aabb.x2),
-			prism.rand_splitmix_get_i32_range(&rng, room_aabb.y1, room_aabb.y2),
+			prism.rand_splitmix_get_i32_range(&rng, inner_rect.x1, inner_rect.x2),
+			prism.rand_splitmix_get_i32_range(&rng, inner_rect.y1, inner_rect.y2),
 		}
 		prism.spring_reset_to(&state.client.camera, vec2f(state.client.game.spawn_point))
 	}
 
 	pcg.newest_room_id += 1
 	pcg.rooms[pcg.newest_room_id] = Room {
-		aabb = room_aabb,
+		aabb = inner_rect,
 	}
 
-	for xx := room_aabb.x1 + 1; xx < room_aabb.x2; xx += 1 {
+	// Skip doors for pit room
+	if is_pit do return true
+
+	for xx := inner_rect.x1 + 1; xx < inner_rect.x2; xx += 1 {
 		priority_queue.push(
 			&pcg.door_locations,
 			PossibleDoorLocation {
-				pos = TileCoord{xx, room_aabb.y2},
+				pos = TileCoord{xx, inner_rect.y2},
 				direction = .South,
 				tie_breaker = prism.rand_splitmix_get_u64(&rng),
 				attempts = 0,
 			},
 		)
 	}
-	for yy := room_aabb.y1 + 1; yy < room_aabb.y2; yy += 1 {
+	for yy := inner_rect.y1 + 1; yy < inner_rect.y2; yy += 1 {
 		priority_queue.push(
 			&pcg.door_locations,
 			PossibleDoorLocation {
-				pos = TileCoord{room_aabb.x2, yy},
+				pos = TileCoord{inner_rect.x2, yy},
 				direction = .East,
 				tie_breaker = prism.rand_splitmix_get_u64(&rng),
 				attempts = 0,

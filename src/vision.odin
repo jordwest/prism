@@ -10,14 +10,14 @@ vision_update :: proc() {
 
 		// TODO - proper LOS
 
-		iter := prism.AabbIterator(i32) {
-			aabb = prism.Aabb(i32) {
+		iter := prism.aabb_iterator(
+			prism.Aabb(i32) {
 				x1 = entity.pos.x - 4,
 				y1 = entity.pos.y - 4,
 				x2 = entity.pos.x + 4,
 				y2 = entity.pos.y + 4,
 			},
-		}
+		)
 
 
 		for pos in prism.aabb_iterate(&iter) {

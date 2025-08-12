@@ -90,3 +90,46 @@ tile_draw_room :: proc(pos: TileCoord, size: Vec2i) {
 		}
 	}
 }
+
+tile_draw_outline :: proc(aabb: prism.Aabb(i32), type: TileType = .BrickWall) {
+	iter := prism.aabb_iterator(aabb)
+	for pos in prism.aabb_iterate(&iter) {
+		tile, ok := tile_at(TileCoord(pos)).?
+		if !ok do continue
+		if prism.aabb_is_edge(aabb, pos) do tile_set_type(tile, type)
+	}
+}
+
+tile_draw_fill :: proc(aabb: prism.Aabb(i32), type: TileType = .Floor) {
+	iter := prism.aabb_iterator(aabb)
+	for pos in prism.aabb_iterate(&iter) {
+		tile, ok := tile_at(TileCoord(pos)).?
+		if !ok do continue
+		tile_set_type(tile, type)
+	}
+}
+
+tile_connect_region :: proc(start: TileCoord, region: prism.Aabb(i32), type: TileType = .Floor) {
+	current := start
+
+	for {
+		tile_draw(current, .RopeBridge)
+		if current.x >= region.x2 {
+			current.x -= 1
+			continue
+		}
+		if current.x < region.x1 {
+			current.x += 1
+			continue
+		}
+		if current.y >= region.y2 {
+			current.y -= 1
+			continue
+		}
+		if current.y < region.y1 {
+			current.y += 1
+			continue
+		}
+		break
+	}
+}

@@ -21,9 +21,7 @@ q_entities_in_range_of :: proc(pos: TileCoord, filter: EntityFilterProc) -> (^En
 		y2 = pos.y + dist_to_check,
 	}
 
-	iter := prism.AabbIterator(i32) {
-		aabb = bounds,
-	}
+	iter := prism.aabb_iterator(bounds)
 
 	for pos in prism.aabb_iterate(&iter) {
 		if !prism.aabb_is_edge(iter.aabb, pos) do continue

@@ -134,10 +134,10 @@ derived_djikstra_map_to :: proc(
 		modifiers := game_get_move_modifier(TileCoord(from), TileCoord(to))
 		cost := game_move_modifiers_to_cost(modifiers)
 		if cost < 0 do return cost
-		if .Unseen in modifiers do return -1
 
-		// Add a slight increase to discourage diagonals
-		// if math.abs(to.x - from.x) + math.abs(to.y - from.y) > 1 do cost += 10
+		when !FOG_OF_WAR_OFF {
+			if .Unseen in modifiers do return -1
+		}
 
 		// Add cost to avoid this tile
 		if .Avoid in modifiers do cost += 50

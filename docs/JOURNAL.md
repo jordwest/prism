@@ -368,3 +368,6 @@ Ok so I'm working on improving the djikstra maps, but they're not being refreshe
 Ok I think what I've got now is working pretty well. Slight extra cost (50) for moving onto moving obstacles, and blocked completely by non-moving entities. Good enough for now. Oh also need to exclude tiles that haven't been seen from the player generated maps.
 
 Djikstra for player now also only calculates in seen areas.
+
+Ok so my aabb needs complete reworking. It should have a width and height instead of x2 and y2, since that's kinda ambiguous. I'm thinkin what I should do instead is just create a new `Rect` type and deprecate the `Aabb`, then just...
+Ok after chatting with Claude, it suggests keeping x2, y2 but making them _exclusive_ bounds as that's convention, and simplifies checks. So that's a fairly minor change. It does suggest naming it Rect instead of Aabb though.

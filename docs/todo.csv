@@ -66,10 +66,13 @@ done,feat,b3,Add enemy AI
 done,feat,b3,Add hit/miss chance
 done,imp,b3,Add hit indicators
 done,feat,b4,Add fog of war (and add it to the dijkstra map calcs)
-doing,content,b4,Room with rope bridge access to a platform
+done,content,b4,Room with rope bridge access to a platform
+doing,imp,b4,Enemies should only move towards player within a certain distance
 todo,feat,b4,Fire system - flammable objects burn and spread
 todo,bug,b4,Player indicators should appear above all entities (render order)
+todo,refactor,b4,Add a queue for log events coming in from server for more consistency
 todo,imp,b4,Consider setting a delay after actions (like attack) instead of after every turn
+todo,feat,b4,"Add basic lobby for connecting, setting name and starting game"
 todo,bug,b4,Don't advance turn when all players are dead
 todo,bug,b4,"Weirdness when delay=0, out of order messages or something"
 todo,imp,b4,Add SFX again
