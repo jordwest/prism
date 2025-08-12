@@ -181,14 +181,17 @@ _try_add_room :: proc(
 	   prism.rand_splitmix_get_bool(&rng, 700) &&
 	   pcg.room_type_count[.Pit] < 1 {
 		trace("Drawing pit %v", outer_rect)
-		size := Vec2i{3, 3}
+		size := Vec2i {
+			prism.rand_splitmix_get_i32_range(&rng, 3, 5),
+			prism.rand_splitmix_get_i32_range(&rng, 3, 5),
+		}
 		pos := prism.aabb_pos(inner_rect) + (prism.aabb_size(inner_rect) / 2)
 
 		island := prism.aabb(pos, size)
 		bridge_start := door.pos + (door.direction == .South ? {0, 1} : {1, 0})
 
 		// Draw pit island room
-		tile_draw_outline(outer_rect)
+		// tile_draw_outline(outer_rect)
 		tile_draw_fill(island)
 		tile_connect_region(bridge_start, island)
 

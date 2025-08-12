@@ -2,12 +2,12 @@ package main
 
 ////////// CHEATS \\\\\\\\\\\\
 
-FOG_OF_WAR_OFF :: false
+FOG_OF_WAR_OFF :: true
 NO_ENEMIES :: false
 
 ////////// DEBUG OPTIONS \\\\\\\\\\
 
-DEBUG_OVERLAYS_ENABLED :: false
+DEBUG_OVERLAYS_ENABLED :: true
 STUTTER_CHECKER_ENABLED :: true
 // Delay procedural generation iterations by this many frames
 // (to help visualise the generation)
@@ -20,9 +20,9 @@ MEMORY_VALIDATE_PADDING :: true
 
 /////////// LOGGING \\\\\\\\\\\\\
 when ODIN_DEBUG {
-    LOG_LEVEL :: LogLevel.Trace
+	LOG_LEVEL :: LogLevel.Trace
 } else {
-    LOG_LEVEL :: LogLevel.Error
+	LOG_LEVEL :: LogLevel.Error
 }
 // Whether to record messages received by host
 LOG_HOST_MESSAGES :: false
@@ -47,7 +47,7 @@ ENTITY_SPRING_DAMPER :: 10
 
 ///////// FUTURE STATE \\\\\\\\\
 
-GAME_SEED :: 0xdeadbeef6c5329
+GAME_SEED :: 0xdeadbeef653293
 TURN_DELAY :: 0.1
 MUSIC_ENABLED :: false
 SPRINGS_ENABLED :: true
