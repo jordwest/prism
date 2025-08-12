@@ -16,8 +16,8 @@ q_entities_in_range_of :: proc(pos: TileCoord, filter: EntityFilterProc) -> (^En
 
 	bounds := prism.Aabb(i32) {
 		x1 = pos.x - dist_to_check,
+		y1 = pos.y - dist_to_check,
 		x2 = pos.x + dist_to_check + 1,
-		y1 = pos.y - dist_to_check + 1,
 		y2 = pos.y + dist_to_check + 1,
 	}
 
