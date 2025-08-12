@@ -316,4 +316,4 @@ Anyway enemy AI is done now, at least basic hit/miss chances.
  - Hit damage indicators
  - Add fire or items or something interesting to gameplay
 
-I'm wondering if the memory issues may be due to the maps and the way I'm iterating them. Could that be introducing some overflow.
+I'm wondering if the memory issues may be due to the maps and the way I'm iterating them. Could that be introducing some overflow. OMG I think I found the issue. The entities and players maps were being initialised twice - once by host and once by client. That would definitely cause weirdness if there's some pointer lookup going on. I still don't understand quite how that would cause issues in the printfs, but I guess all kinds of weird things can happen when pointers are invalidated. Also it was usually in the trace function that logged an entity id where the crash happened. Let's see how it goes. This realisation happened when I walked away from the computer... gotta do more of that... It really feels like stepping away lets the universe take care of it... So relevant to my convo with Jo last night.
