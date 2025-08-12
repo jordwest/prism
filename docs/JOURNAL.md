@@ -357,8 +357,14 @@ It's funny, it's like there suddenly more of a creative block, a fear in the che
  - Teleportation
  - Poison
  - Room with rope bridge
- - Fog of war
+ - Fog of war - done
 
 Got basic fog of war working, still need to darken areas that have been explored but are no longer in vision range, but this will do the job for now. Next up I'm kinda keen to work on the rope bridge room... could be fun to add fire to that.
 
 And with that... I think I'm going to call the milestone b3 Odin rewrite DONE. And move on to b4, content.
+
+Ok so I'm working on improving the djikstra maps, but they're not being refreshed except when an allied player moves. I need to refresh them all when the turn ends, so routing around stuck enemies works.
+
+Ok I think what I've got now is working pretty well. Slight extra cost (50) for moving onto moving obstacles, and blocked completely by non-moving entities. Good enough for now. Oh also need to exclude tiles that haven't been seen from the player generated maps.
+
+Djikstra for player now also only calculates in seen areas.

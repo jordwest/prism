@@ -53,6 +53,11 @@ derived_handle_entity_changed :: proc(entity: ^Entity) {
 	state.client.game.derived.s_tile_entities = .Empty
 }
 
+derived_clear :: proc() {
+	clear(&state.client.game.derived.entity_djikstra_maps)
+	state.client.game.derived.s_tile_entities = .Empty
+}
+
 derived_entities_at :: proc(coord: TileCoord, ignore_out_of_bounds := false) -> TileEntities {
 	derived := &state.client.game.derived
 	if derived.s_tile_entities == .Empty do _derive_tile_entities()
@@ -107,7 +112,6 @@ derived_djikstra_map_to :: proc(
 	entity, entity_exists := state.client.game.entities[eid]
 	if !entity_exists do return nil, error(EntityNotFound{entity_id = eid})
 
-
 	e: prism.DjikstraError
 
 	algo := &state.client.game.derived.djikstra_algo
@@ -124,7 +128,23 @@ derived_djikstra_map_to :: proc(
 	e = prism.djikstra_map_add_origin(algo, Vec2i(entity.pos))
 	if e != nil do return nil, error(e)
 
-	e = prism.djikstra_map_generate(algo, game_calculate_move_cost_djikstra)
+	e = prism.djikstra_map_generate(
+	algo,
+	proc(from: [2]i32, to: [2]i32) -> i32 {
+		modifiers := game_get_move_modifier(TileCoord(from), TileCoord(to))
+		cost := game_move_modifiers_to_cost(modifiers)
+		if cost < 0 do return cost
+		if .Unseen in modifiers do return -1
+
+		// Add a slight increase to discourage diagonals
+		// if math.abs(to.x - from.x) + math.abs(to.y - from.y) > 1 do cost += 10
+
+		// Add cost to avoid this tile
+		if .Avoid in modifiers do cost += 50
+
+		return cost
+	},
+	)
 	if e != nil do return nil, error(e)
 
 	return new_map, nil

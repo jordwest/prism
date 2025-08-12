@@ -183,7 +183,7 @@ _player_move_towards :: proc(
 	}
 
 	// Find path to player from target
-	path_len := prism.djikstra_path(dmap, tmp_path[:], Vec2i(destination), game_is_coord_free)
+	path_len := prism.djikstra_path(dmap, tmp_path[:], Vec2i(destination))
 	if path_len == 0 {
 		entity_clear_cmd(entity)
 		err("Path len 0")

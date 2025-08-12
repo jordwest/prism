@@ -55,8 +55,9 @@ EntityFlags :: enum {
 	IsPlayerControlled,
 	IsAiControlled,
 	IsObstacle,
-	CanMove,
 	CanSwapPlaces,
+	MovedThisTurn,
+	MovedLastTurn,
 }
 
 EntityFilterProc :: proc(_: ^Entity) -> bool
@@ -71,13 +72,13 @@ entity_meta: [EntityMetaId]EntityMeta = {
 		spritesheet_coord = SPRITE_COORD_PLAYER,
 		team = .Players,
 		max_hp = 50,
-		flags = {.IsPlayerControlled, .IsObstacle, .CanMove, .CanSwapPlaces},
+		flags = {.IsPlayerControlled, .IsObstacle, .CanSwapPlaces},
 	},
 	.Spider = EntityMeta {
 		spritesheet_coord = SPRITE_COORD_SPIDER,
 		team = .Darkness,
 		max_hp = 7,
-		flags = {.IsAiControlled, .IsObstacle, .CanMove},
+		flags = {.IsAiControlled, .IsObstacle},
 	},
 	.Corpse = EntityMeta{spritesheet_coord = SPRITE_COORD_CORPSE, flags = {}},
 }
@@ -114,6 +115,7 @@ entity_system :: proc(dt: f32) {
 
 entity_set_pos :: proc(entity: ^Entity, pos: TileCoord) {
 	entity.pos = pos
+	entity.meta.flags = entity.meta.flags + {.MovedThisTurn}
 	derived_handle_entity_changed(entity)
 }
 

@@ -26,7 +26,7 @@ SPRINGS_ENABLED :: true
  * DEBUG OPTIONS
  *****************/
 
-FOG_OF_WAR_OFF :: false
+FOG_OF_WAR_OFF :: true
 DEBUG_OVERLAYS_ENABLED :: false
 STUTTER_CHECKER_ENABLED :: true
 // Delay procedural generation iterations by this many frames

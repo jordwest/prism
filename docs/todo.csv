@@ -65,8 +65,8 @@ done,feat,b3,Add melee attacks
 done,feat,b3,Add enemy AI
 done,feat,b3,Add hit/miss chance
 done,imp,b3,Add hit indicators
-doing,feat,b4,Add fog of war (and add it to the dijkstra map calcs)
-todo,content,b4,Room with rope bridge access to a platform
+done,feat,b4,Add fog of war (and add it to the dijkstra map calcs)
+doing,content,b4,Room with rope bridge access to a platform
 todo,feat,b4,Fire system - flammable objects burn and spread
 todo,bug,b4,Player indicators should appear above all entities (render order)
 todo,imp,b4,Consider setting a delay after actions (like attack) instead of after every turn
@@ -76,6 +76,7 @@ todo,imp,b4,Add SFX again
 todo,content,b4,Add grass and make it burrrn
 todo,feat,b4,Make rust websocket server and connect it up
 todo,perf,ideas,Divide calculations across frames to reduce stutter
+todo,feat,ideas,Shift-click to keep auto-attacking an enemy
 todo,devtool,ideas,Add microui for debug tools
 todo,devtool,ideas,Hydrate client and server entity state in hot reload
 todo,refactor,ideas,Consider splitting server and client into separate packages

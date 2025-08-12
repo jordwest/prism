@@ -4,9 +4,10 @@ import "core:math"
 import "prism"
 
 MoveModifier :: enum {
-	Normal, // Normal move
 	Blocked, // Cannot move there
 	Slow, // Slowed by terrain
+	Avoid, // Traversable but avoid if possible
+	Unseen, // This tile hasn't been seen by player team yet
 }
 
 // Assign a new entity ID and return it (does not yet spawn it, it doesn't live anywhere except on the stack!)
@@ -30,48 +31,47 @@ game_get_move_modifier :: proc(
 	from: TileCoord,
 	to: TileCoord,
 ) -> (
-	modifier: MoveModifier,
-	avoid: bool,
+	modifiers: bit_set[MoveModifier],
 ) {
 	tile, valid_tile := tile_at(TileCoord(to)).?
-	if !valid_tile do return .Blocked, false
+	if !valid_tile do return {.Blocked}
+	if .Seen not_in tile.flags do modifiers += {.Unseen}
 	entities := derived_entities_at(TileCoord(to))
-	if .Traversable not_in tile.flags do return .Blocked, false
+	if .Traversable not_in tile.flags do return {.Blocked}
 	if obstacle, has_obstacle := entities.obstacle.?; has_obstacle {
-		if .CanMove not_in obstacle.meta.flags do return .Blocked, false
-		avoid = true
+		if .MovedLastTurn not_in obstacle.meta.flags do return {.Blocked}
+		modifiers += {.Avoid}
 	}
-	if .Slow in tile.flags do return .Slow, avoid
-	return .Normal, avoid
+	if .Slow in tile.flags do modifiers += {.Slow}
+	return modifiers
 }
 
-game_move_modifier_to_cost :: proc(modifier: MoveModifier) -> i32 {
-	switch modifier {
-	case .Blocked:
-		return -1
-	case .Normal:
-		return 100
-	case .Slow:
-		return 200
-	}
-	return 100
+game_move_modifiers_to_cost :: proc(modifiers: bit_set[MoveModifier]) -> i32 {
+	cost: i32 = 100
+	if .Blocked in modifiers do return -1
+	if .Slow in modifiers do cost += 100
+	return cost
 }
 
 game_calculate_move_cost :: proc(from: TileCoord, to: TileCoord) -> i32 {
-	modifier, _ := game_get_move_modifier(TileCoord(from), TileCoord(to))
-	return game_move_modifier_to_cost(modifier)
+	modifiers := game_get_move_modifier(TileCoord(from), TileCoord(to))
+	return game_move_modifiers_to_cost(modifiers)
 }
 
+// //
+// game_calculate_move_cost_djikstra_player :: proc(from: [2]i32, to: [2]i32) -> i32 {
+// }
+
 game_calculate_move_cost_djikstra :: proc(from: [2]i32, to: [2]i32) -> i32 {
-	modifier, avoid := game_get_move_modifier(TileCoord(from), TileCoord(to))
-	cost := game_move_modifier_to_cost(modifier)
+	modifiers := game_get_move_modifier(TileCoord(from), TileCoord(to))
+	cost := game_move_modifiers_to_cost(modifiers)
 	if cost < 0 do return cost
 
 	// Add a slight increase to discourage diagonals
 	// if math.abs(to.x - from.x) + math.abs(to.y - from.y) > 1 do cost += 10
 
 	// Add cost to avoid this tile
-	// if avoid do cost += 100
+	if .Avoid in modifiers do cost += 50
 
 	return cost
 }

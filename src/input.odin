@@ -47,6 +47,10 @@ input_system :: proc(dt: f32) {
 			if cmd.type == .Move {
 				previous_pos = cmd.pos
 			}
+			if cmd.type == .Attack {
+				target, ok := entity(cmd.target_entity).?
+				if ok do previous_pos = target.pos
+			}
 
 			new_cmd := command_for_tile(previous_pos + delta_pos)
 			if new_cmd.type != .None do command_submit(new_cmd)

@@ -123,11 +123,15 @@ djikstra_tile :: proc(
 	return &djikstra_map.tiles[idx]
 }
 
+_always_returns_true :: proc(coord: [2]i32) -> bool {
+	return true
+}
+
 djikstra_path :: proc(
 	dmap: ^DjikstraMap($Width, $Height),
 	path_out: [][2]i32,
 	start_at: [2]i32,
-	is_coord_free: proc(_: [2]i32) -> bool,
+	is_coord_free: proc(_: [2]i32) -> bool = _always_returns_true,
 ) -> (
 	steps: i32,
 ) {
@@ -147,7 +151,7 @@ djikstra_path :: proc(
 djikstra_next :: proc(
 	dmap: ^DjikstraMap($Width, $Height),
 	coord_in: [2]i32,
-	is_coord_free: proc(_: [2]i32) -> bool,
+	is_coord_free: proc(_: [2]i32) -> bool = _always_returns_true,
 ) -> (
 	coord_out: [2]i32,
 	lowest_cost: i32,

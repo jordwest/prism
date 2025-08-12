@@ -39,13 +39,6 @@ render_debug_overlays :: proc() {
 	_add_debug_text("Debug overlays: %v", state.debug.view)
 	_add_debug_text("Turn %d, t=%.2f", state.client.game.current_turn, state.t)
 	_add_debug_text("%.0f FPS (%.0f max, %.0f min)", debug_get_fps())
-	_add_debug_text(
-		"NextID: %d, gens: %v",
-		state.client.fx.next_id,
-		state.client.fx.generations[:20],
-	)
-	_add_debug_text("%v", state.client.fx.items[:10])
-	_add_debug_text("%v", state.client.fx._holes_container[:10])
 
 	if pcg, ok := state.client.game.pcg.?; ok {
 		if !pcg.done {
@@ -213,8 +206,10 @@ render_entities :: proc(dt: f32) {
 	for id, &e in entities {
 		i += 1
 
-		tile, valid_tile := tile_at(e.pos).?
-		if valid_tile && .Seen not_in tile.flags do continue
+		when !FOG_OF_WAR_OFF {
+			tile, valid_tile := tile_at(e.pos).?
+			if valid_tile && .Seen not_in tile.flags do continue
+		}
 
 		screen_c := screen_coord(TileCoordF(e.spring.pos)).xy
 		canvas_size := vec2f(state.width, state.height)
@@ -452,7 +447,7 @@ render_path_to :: proc(
 	dmap, e := derived_djikstra_map_to(to_entity)
 	if dmap.state == .Empty do return
 
-	path_len := prism.djikstra_path(dmap, tmp_path[:], Vec2i(from_pos), game_is_coord_free)
+	path_len := prism.djikstra_path(dmap, tmp_path[:], Vec2i(from_pos))
 
 	for p in tmp_path[:path_len] {
 		offset := screen_coord(TileCoord(p))

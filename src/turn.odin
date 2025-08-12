@@ -77,11 +77,18 @@ turn_complete :: proc() {
 
 turn_advance :: proc() {
 	for _, &entity in state.client.game.entities {
+		entity.meta.flags = entity.meta.flags - {.MovedLastTurn}
+		if .MovedThisTurn in entity.meta.flags {
+			entity.meta.flags = entity.meta.flags + {.MovedLastTurn}
+		}
+		entity.meta.flags = entity.meta.flags - {.MovedThisTurn}
+
 		if .IsPlayerControlled in entity.meta.flags || .IsAiControlled in entity.meta.flags {
 			entity_add_ap(&entity, 100)
 		}
 
 		entity.ai.iterations_this_turn = 0
 	}
+	derived_clear()
 	state.client.game.current_turn += 1
 }
