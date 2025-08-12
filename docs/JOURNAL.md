@@ -313,8 +313,6 @@ Could also try to track down the bug in Odin... but I've already looked at that 
 Anyway enemy AI is done now, at least basic hit/miss chances.
 
  - Hit/miss chance - done
- - Hit damage indicators
- - Add fire or items or something interesting to gameplay
 
 I'm wondering if the memory issues may be due to the maps and the way I'm iterating them. Could that be introducing some overflow. OMG I think I found the issue. The entities and players maps were being initialised twice - once by host and once by client. That would definitely cause weirdness if there's some pointer lookup going on. I still don't understand quite how that would cause issues in the printfs, but I guess all kinds of weird things can happen when pointers are invalidated. Also it was usually in the trace function that logged an entity id where the crash happened. Let's see how it goes. This realisation happened when I walked away from the computer... gotta do more of that... It really feels like stepping away lets the universe take care of it... So relevant to my convo with Jo last night.
 
@@ -345,3 +343,18 @@ Omg. Found this in the clay commits for August... I knew I should have just trie
 That's almost certainly it. It seems like a stack overflow happens right in a specific place and that's why it always fails with the AI. 64kB is wayyy to small. That's almost certainly it.
 
 God, pretty sure that was it HA. Should have just installed the new version, although it was a fun and interesting exploration of the odin source. Also have a better understanding of the memory layout etc.
+
+Ok now that that's out of the way I can get back to the good stuff.
+
+ - Hit damage indicators - done
+ - Add fire or items or something interesting to gameplay
+
+Ok I'm pretty much back to the C# version in terms of gameplay now... 2 weeks later. Now finally, adding new features heh.
+
+It's funny, it's like there suddenly more of a creative block, a fear in the chest. The rewrite was easy comparatively, because the task was fully known. This, now, is unknown. It's a complete mystery, and there's a hesitance to take a step because of the sheer, vast array of possibilities. I think that might be why modders do so well - they start from a known base and just add ideas as they come up with them. For me, I guess in a way I'm basing this off brogue, pixel dungeon, as well as zombicide and catacylsm. So there are plenty of ideas there, just gotta start. Maybe I should write down a bunch first:
+
+ - Fire potions
+ - Teleportation
+ - Poison
+ - Room with rope bridge
+ - Fog of war

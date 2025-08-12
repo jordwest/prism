@@ -14,6 +14,7 @@ render_system :: proc(dt: f32) {
 	render_tiles()
 	render_entities(dt)
 	render_tile_cursors(dt)
+	render_fx(dt)
 	if !state.client.cursor_hidden && command_for_tile(state.client.cursor_pos).type == .Move {
 		render_path_to(state.client.cursor_pos, alpha = 80)
 	}
@@ -38,6 +39,13 @@ render_debug_overlays :: proc() {
 	_add_debug_text("Debug overlays: %v", state.debug.view)
 	_add_debug_text("Turn %d, t=%.2f", state.client.game.current_turn, state.t)
 	_add_debug_text("%.0f FPS (%.0f max, %.0f min)", debug_get_fps())
+	_add_debug_text(
+		"NextID: %d, gens: %v",
+		state.client.fx.next_id,
+		state.client.fx.generations[:20],
+	)
+	_add_debug_text("%v", state.client.fx.items[:10])
+	_add_debug_text("%v", state.client.fx._holes_container[:10])
 
 	if pcg, ok := state.client.game.pcg.?; ok {
 		if !pcg.done {
@@ -262,13 +270,14 @@ render_entities :: proc(dt: f32) {
 			_render_hitpoints(e.hp, e.meta.max_hp, screen_c, {1, f32(1) / f32(8)} * grid_size)
 		}
 
-		if cmd.type == .Move && entity_alignment_to_player(&e) == .Friendly {
-			render_sprite(SPRITE_COORD_FOOTSTEPS, screen_coord(cmd.pos))
-		}
-		if cmd.type == .Attack {
-
-			target, target_valid := entity(cmd.target_entity).?
-			if target_valid do render_sprite(SPRITE_COORD_CURSOR_ATTACK, screen_coord(target.pos))
+		if entity_alignment_to_player(&e) == .Friendly {
+			if cmd.type == .Move {
+				render_sprite(SPRITE_COORD_FOOTSTEPS, screen_coord(cmd.pos))
+			}
+			if cmd.type == .Attack {
+				target, target_valid := entity(cmd.target_entity).?
+				if target_valid do render_sprite(SPRITE_COORD_CURSOR_ATTACK, screen_coord(target.pos))
+			}
 		}
 	}
 
@@ -318,6 +327,29 @@ render_tile_cursors :: proc(dt: f32) {
 			render_sprite(SPRITE_COORD_OTHER_PLAYER_CURSOR, cursor_pos)
 			fresnel.fill(255, 255, 255, 1)
 			fresnel.draw_text(text_pos.x, text_pos.y, 16, "Player")
+		}
+	}
+}
+
+render_fx :: proc(dt: f32) {
+	iter := prism.pool_iterator(&state.client.fx)
+	for fx, id in prism.pool_iterate(&iter) {
+		fx_process(id, fx)
+
+		coord := screen_coord(fx.pos)
+
+		offset := (state.t - fx.t0) * Vec2f({0, -50}) + Vec2f{0, -32}
+		coord = coord + ScreenCoord(offset)
+
+		switch fx.type {
+		case .MissIndicator:
+			fresnel.fill(255, 255, 255, 255)
+			fresnel.draw_text(coord.x, coord.y, 16 * i32(state.client.zoom), "MISS")
+
+		case .HitIndicator:
+			fresnel.fill(255, 0, 0, 255)
+			s := fmt.bprintf(_tmp_16k[:], "%d", fx.dmg)
+			fresnel.draw_text(coord.x, coord.y, 16 * i32(state.client.zoom), s)
 		}
 	}
 }

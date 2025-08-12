@@ -17,7 +17,7 @@ ENTITY_SPRING_DAMPER :: 10
  * FUTURE STATE
  ***************/
 
-GAME_SEED :: 0xdeadbeef8
+GAME_SEED :: 0xdeadbeef6
 TURN_DELAY :: 0.1
 MUSIC_ENABLED :: false
 SPRINGS_ENABLED :: true
@@ -43,9 +43,9 @@ MEMORY_VALIDATE_PADDING :: true
  ***********/
 LOG_LEVEL :: LogLevel.Trace
 // Whether to record messages received by host
-LOG_HOST_MESSAGES :: true
+LOG_HOST_MESSAGES :: false
 // Whether to record messages received by client
-LOG_CLIENT_MESSAGES :: true
+LOG_CLIENT_MESSAGES :: false
 LOG_COMMANDS :: false
 
 /***********

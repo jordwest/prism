@@ -120,9 +120,11 @@ _attack :: proc(e: ^Entity) -> CommandOutcome {
 		is_hit := prism.rand_splitmix_get_bool(&rng, 650)
 
 		if is_hit {
+		    fx_spawn_dmg(target.pos, 4)
 			target.hp -= 4
 			audio_play(.Punch)
 		} else {
+            fx_spawn_dmg(target.pos, 0)
 			audio_play(.Miss)
 		}
 

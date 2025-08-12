@@ -28,6 +28,79 @@ test_generate_djikstra_map :: proc() {
 	test_complete()
 }
 
+test_generational_array :: proc() {
+    test_case("generate map")
+
+    arr := prism.Pool(u8, 4) {}
+    prism.pool_init(&arr)
+
+    id1_1, _ := prism.pool_add(&arr, 52)
+    assert_eq(id1_1.id, 1)
+    assert_eq(id1_1.gen, 1)
+
+    id2_1, _ := prism.pool_add(&arr, 48)
+    assert_eq(id2_1.id, 2)
+    assert_eq(id2_1.gen, 1)
+
+    id3_1, _ := prism.pool_add(&arr, 23)
+    assert_eq(id3_1.id, 3)
+    assert_eq(id3_1.gen, 1)
+
+    deleted := prism.pool_delete(&arr, id2_1)
+    assert_eq(deleted, 48)
+
+    id2_2, _ := prism.pool_add(&arr, 23)
+    assert_eq(id2_2.id, 2)
+    assert_eq(id2_2.gen, 2)
+
+    deleted2 := prism.pool_delete(&arr, id2_2)
+    assert_eq(deleted2, 23)
+
+    id2_3, _ := prism.pool_add(&arr, 18)
+    assert_eq(id2_3.id, 2)
+    assert_eq(id2_3.gen, 3)
+
+    id4_1, _ := prism.pool_add(&arr, 100)
+    assert_eq(id4_1.id, 4)
+    assert_eq(id4_1.gen, 1)
+
+    deleted3 := prism.pool_delete(&arr, id1_1)
+    deleted4 := prism.pool_delete(&arr, id2_1)
+    deleted5 := prism.pool_delete(&arr, id3_1)
+    assert_eq(deleted3, 52)
+    assert_eq(deleted4, nil)
+    assert_eq(deleted5, 23)
+
+    id1_2, _ := prism.pool_add(&arr, 100)
+    assert_eq(id1_2.id, 1)
+    assert_eq(id1_2.gen, 2)
+
+    id3_2, _ := prism.pool_add(&arr, 100)
+    assert_eq(id3_2.id, 3)
+    assert_eq(id3_2.gen, 2)
+
+    // Already at capacity
+    id, ok := prism.pool_add(&arr, 100)
+    assert_eq(ok, false)
+    assert_eq(id.id, 0)
+    assert_eq(id.gen, 0)
+
+    assert_eq(arr.generations[0], 0)
+    assert_eq(arr.generations[1], 2)
+    assert_eq(arr.generations[2], 3)
+    assert_eq(arr.generations[3], 2)
+    assert_eq(arr.generations[4], 1)
+
+    iter := prism.pool_iterator(&arr)
+    for item, id in prism.pool_iterate(&iter){
+        trace("Item %v is %v", id, item^)
+    }
+
+    trace("Size %d", size_of(arr))
+
+    test_complete()
+}
+
 //////////// UTILS \\\\\\\\\\\\\
 
 test_complete :: fresnel.test_complete
@@ -65,5 +138,6 @@ test_case :: proc(name: string, loc := #caller_location) {
 
 tests_run_all :: proc() {
 	test_generate_djikstra_map()
+	test_generational_array()
 	fresnel.test_report()
 }

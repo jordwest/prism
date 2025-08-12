@@ -22,7 +22,7 @@ client_boot :: proc(width: i32, height: i32) -> Error {
 	if e_alloc != nil do return error(e_alloc)
 	derived_init() or_return
 	audio_init()
-
+	fx_init()
 
 	if MUSIC_ENABLED {
 		audio_play(.Daudir)
@@ -130,7 +130,6 @@ client_poll :: proc() -> Error {
 			entity, ok := &state.client.game.entities[state.client.controlling_entity_id]
 			if _local_cmd, has_local := entity._local_cmd.?; has_local {
 				if m.cmd_seq >= _local_cmd.cmd_seq {
-					trace("Clearing local cmd %d, %d", m.cmd_seq, _local_cmd.cmd_seq)
 					// Server is now ahead of our local state so we can safely clear it
 					entity._local_cmd = nil
 				} else {

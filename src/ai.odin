@@ -21,7 +21,6 @@ ai_evaluate :: proc(e: ^Entity) {
 
 	target, has_target := q_entities_in_range_of(e.pos, filter_is_player_team)
 	if has_target {
-		trace("Entity %d trying to attack %v", e.id, target.pos)
 		e.cmd = Command {
 			type          = .Attack,
 			target_entity = target.id,
