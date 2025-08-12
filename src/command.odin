@@ -99,7 +99,7 @@ _move :: proc(entity: ^Entity) -> CommandOutcome {
 }
 
 _skip :: proc(entity: ^Entity) -> CommandOutcome {
-	entity.action_points -= 100
+	entity_consume_ap(entity, 100)
 	entity.cmd = Command{}
 	return .Ok
 }
@@ -108,15 +108,26 @@ _attack :: proc(e: ^Entity) -> CommandOutcome {
 	target, target_ok := entity(e.cmd.target_entity).?
 	if !target_ok do return .CommandFailed
 
+	rng := prism.rand_splitmix_create(GAME_SEED, RNG_HIT)
+	prism.rand_splitmix_add_i32(&rng, i32(e.id))
+	prism.rand_splitmix_add_i32(&rng, i32(e.move_seq))
+
 	dist_to_target := prism.tile_distance(target.pos - e.pos)
+
 
 	if dist_to_target == 1 {
 		// Melee
-		target.hp -= 4
+		is_hit := prism.rand_splitmix_get_bool(&rng, 650)
+
+		if is_hit {
+			target.hp -= 4
+			audio_play(.Punch)
+		} else {
+			audio_play(.Miss)
+		}
+
 		entity_consume_ap(e, 100)
 		entity_clear_cmd(e)
-
-		audio_play(.Punch)
 
 		if target.hp <= 0 {
 			entity_despawn(target)

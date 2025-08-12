@@ -17,7 +17,7 @@ ENTITY_SPRING_DAMPER :: 10
  * FUTURE STATE
  ***************/
 
-GAME_SEED :: 0xdeadbeef
+GAME_SEED :: 0xdeadbeef8
 TURN_DELAY :: 0.1
 MUSIC_ENABLED :: false
 SPRINGS_ENABLED :: true
@@ -88,3 +88,4 @@ RNG_TILE_VARIANCE :: u64(0xbc7ad7b8ef)
 RNG_ENEMY_PLACEMENT :: u64(0x87fc86c6bca)
 RNG_AUDIO :: u64(0x8762fa86fa)
 RNG_AI :: u64(0x0897fce5ac67)
+RNG_HIT :: u64(0x81beef6263aa)

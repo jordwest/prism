@@ -15,6 +15,7 @@ Entity :: struct {
 	spring:        prism.Spring(2),
 	despawning:    bool,
 	ai:            AiBrain,
+	move_seq:      i32,
 
 	// Not serialized
 	_local_cmd:    Maybe(LocalCommand),
@@ -58,6 +59,8 @@ EntityFlags :: enum {
 	CanSwapPlaces,
 }
 
+EntityFilterProc :: proc(_: ^Entity) -> bool
+
 entity :: proc(id: EntityId) -> Maybe(^Entity) {
 	return &state.client.game.entities[id]
 }
@@ -81,6 +84,7 @@ entity_meta: [EntityMetaId]EntityMeta = {
 
 entity_despawn :: proc(e: ^Entity) {
 	e.despawning = true
+	derived_handle_entity_changed(e)
 	delete_key(&state.client.game.entities, e.id)
 }
 
@@ -106,10 +110,6 @@ entity_system :: proc(dt: f32) {
 
 		prism.spring_tick(&e.spring, dt, !SPRINGS_ENABLED)
 	}
-}
-
-entity_is_obstacle :: proc(entity: ^Entity) -> bool {
-	return .IsObstacle in entity.meta.flags
 }
 
 entity_set_pos :: proc(entity: ^Entity, pos: TileCoord) {
@@ -147,6 +147,7 @@ entity_clear_cmd :: proc(entity: ^Entity) {
 
 entity_consume_ap :: proc(entity: ^Entity, ap: i32) {
 	entity.action_points -= ap
+	entity.move_seq += 1
 }
 
 entity_add_ap :: proc(entity: ^Entity, ap: i32 = 100) {

@@ -9,6 +9,10 @@ import "prism"
 test_generate_djikstra_map :: proc() {
 	test_case("generate map")
 
+	for i := 0; i < 1000; i += 1 {
+		trace("Test printf %v", Entity{})
+	}
+
 	algo := prism.DjikstraAlgo(10, 10){}
 	prism.djikstra_init(&algo)
 
@@ -39,7 +43,7 @@ assert_eq :: proc(actual: $T, expected: T, loc: runtime.Source_Code_Location = #
 	}
 
 	name := fmt.bprintf(
-	    _tmp_16k[:],
+		_tmp_16k[:],
 		"%s:%s:%d\nGot %v, expected %v",
 		loc.file_path,
 		loc.procedure,

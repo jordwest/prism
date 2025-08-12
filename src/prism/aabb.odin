@@ -7,6 +7,33 @@ Aabb :: struct($T: typeid) {
 	y2: T,
 }
 
+AabbIterator :: struct($T: typeid) {
+	aabb:  Aabb(T),
+	index: int,
+	x:     T,
+	y:     T,
+}
+
+aabb_iterate :: proc(iter: ^AabbIterator($T)) -> (val: [2]T, idx: int, ok: bool) {
+	// Finished iterating
+	if iter.y > iter.aabb.y2 do return 0, 0, false
+
+	x := iter.x
+	y := iter.y
+	index := iter.index
+
+	if iter.x <= iter.aabb.x2 {
+		iter.x += 1
+	} else {
+		// Finished column, next row
+		iter.x = 0
+		iter.y += 1
+	}
+	iter.index += 1
+
+	return {x, y}, index, true
+}
+
 aabb_overlaps :: proc(a: Aabb($T), b: Aabb(T)) -> bool {
 	overlaps_x := (a.x1 <= b.x1 && a.x2 >= b.x1) || b.x1 <= a.x1 && b.x2 >= a.x1
 	overlaps_y := (a.y1 <= b.y1 && a.y2 >= b.y1) || b.y1 <= a.y1 && b.y2 >= a.y1

@@ -293,10 +293,27 @@ Going to need to go through the code and find all the instance of tprintf and re
 
 All done, annnd it's 2am and I'm playing with pathfinding again. It's all a bit weird when dealing with obstacles, but I think I'm close to having something workable. Good news is I haven't seen any more crashes since locking down all the memory. Think that's enough for tonight...
 
+Just came across [this on Roguebasin](https://www.roguebasin.com/index.php/The_Incredible_Power_of_Dijkstra_Maps):
+
+> Treat monsters that haven't moved since last turn as obstacles
+
+Brilliant. This is much better than the CanMove flag, since it should automatically capture monsters (and players!) that aren't doing anything and route around them. If a monster is sitting in one place fighting, it should be treated as an obstacle.
+
 # Tuesday 12 Aug 2025
 
 Today:
- - Enemy attacks
- - Hit/miss chance
+ - Enemy attacks - done
+
+Ugh memory issue is back again... Going to try checking the memory being used by trace. The weird thing is that changing my code causes the issue to go away, it's like some memory alignment issue or something.
+
+I guess ideally I'll just remove all the cases of printf, but that's going to be tough when building the UI. Although perhaps it's mostly the formatting args that are causing issues.
+
+Could also try to track down the bug in Odin... but I've already looked at that code and it's pretty tough to follow.
+
+Anyway enemy AI is done now, at least basic hit/miss chances.
+
+ - Hit/miss chance - done
  - Hit damage indicators
  - Add fire or items or something interesting to gameplay
+
+I'm wondering if the memory issues may be due to the maps and the way I'm iterating them. Could that be introducing some overflow.

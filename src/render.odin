@@ -77,18 +77,19 @@ render_debug_overlays :: proc() {
 	entities_at_cursor := derived_entities_at(state.client.cursor_pos, ignore_out_of_bounds = true)
 	if obstacle, has_obstacle := entities_at_cursor.obstacle.?; has_obstacle {
 		fresnel.fill(255, 255, 255, 1)
+		fresnel.draw_text_fmt(cursor_screen.x, cursor_screen.y + 16, 16, "ID %d", obstacle.id)
 		fresnel.draw_text_fmt(
 			cursor_screen.x,
-			cursor_screen.y + 16,
+			cursor_screen.y + 32,
 			16,
 			"%d AP",
 			obstacle.action_points,
 		)
-		fresnel.draw_text_fmt(cursor_screen.x, cursor_screen.y + 32, 16, "%v", obstacle.cmd)
-		fresnel.draw_text_fmt(cursor_screen.x, cursor_screen.y + 48, 16, "%v", obstacle.meta.flags)
+		fresnel.draw_text_fmt(cursor_screen.x, cursor_screen.y + 48, 16, "%v", obstacle.cmd)
+		fresnel.draw_text_fmt(cursor_screen.x, cursor_screen.y + 64, 16, "%v", obstacle.meta.flags)
 		fresnel.draw_text_fmt(
 			cursor_screen.x,
-			cursor_screen.y + 64,
+			cursor_screen.y + 80,
 			16,
 			"HP %d/%d",
 			obstacle.hp,

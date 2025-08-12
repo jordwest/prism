@@ -62,10 +62,11 @@ done,feat,b3,Consume more AP when walking through water
 done,imp,b3,Route around friendly players to avoid swapping when possible
 done,feat,b3,Add enemy
 done,feat,b3,Add melee attacks
-doing,feat,b3,Add enemy AI
-todo,feat,b3,Add hit/miss chance
+done,feat,b3,Add enemy AI
+done,feat,b3,Add hit/miss chance
 todo,imp,b3,Player indicators should appear above all entities (render order)
 todo,imp,b3,Consider setting a delay after actions (like attack) instead of after every turn
+todo,bug,b3,Don't advance turn when all players are dead
 todo,imp,b3,Add hit indicators
 todo,bug,b3,"Weirdness when delay=0, out of order messages or something"
 todo,imp,b3,Add SFX again
