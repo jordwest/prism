@@ -96,8 +96,8 @@ procgen_iterate :: proc(pcg: ^PcgState) {
 _neighbour_cost :: proc(_from: [2]i32, to: [2]i32) -> f32 {
 	tile, valid_tile := tile_at(TileCoord(to)).?
 	if !valid_tile do return -1
-	if .Traversable not_in tile_flags[tile.type] do return -1
-	if .Slow in tile_flags[tile.type] do return 2
+	if .Traversable not_in tile.flags do return -1
+	if .Slow in tile.flags do return 2
 	return 1
 }
 
@@ -222,7 +222,7 @@ _spawn_enemies :: proc() {
 		tile, valid := tile_at(coord).?
 		if !valid do continue
 
-		if .Traversable not_in tile_flags[tile.type] do continue
+		if .Traversable not_in tile.flags do continue
 
 		if prism.tile_distance(coord - state.client.game.spawn_point) < 10 do continue
 

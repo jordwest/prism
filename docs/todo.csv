@@ -64,14 +64,16 @@ done,feat,b3,Add enemy
 done,feat,b3,Add melee attacks
 done,feat,b3,Add enemy AI
 done,feat,b3,Add hit/miss chance
-todo,imp,b3,Player indicators should appear above all entities (render order)
-todo,imp,b3,Consider setting a delay after actions (like attack) instead of after every turn
-todo,bug,b3,Don't advance turn when all players are dead
-doing,imp,b3,Add hit indicators
-todo,bug,b3,"Weirdness when delay=0, out of order messages or something"
-todo,imp,b3,Add SFX again
-todo,feat,b3,Make rust websocket server and connect it up
-todo,feat,b3,Make use of client token to relogin a user (and store it in localstorage)
+done,imp,b3,Add hit indicators
+todo,imp,b4,Player indicators should appear above all entities (render order)
+todo,imp,b4,Consider setting a delay after actions (like attack) instead of after every turn
+todo,bug,b4,Don't advance turn when all players are dead
+todo,bug,b4,"Weirdness when delay=0, out of order messages or something"
+todo,imp,b4,Add SFX again
+todo,feat,b4,Make rust websocket server and connect it up
+todo,feat,b4,Make use of client token to relogin a user (and store it in localstorage)
+todo,imp,b4,Darken non currently visible areas
+todo,imp,b4,Add a proper LOS algorithm
 todo,perf,ideas,Divide calculations across frames to reduce stutter
 todo,devtool,ideas,Add microui for debug tools
 todo,devtool,ideas,Hydrate client and server entity state in hot reload
@@ -79,7 +81,7 @@ todo,refactor,ideas,Consider splitting server and client into separate packages
 todo,refactor,b4,Add sprite meta instead of just coordinates (like frames for animations)
 todo,refactor,b4,Test turn system and iron out weird bugs with a refactor
 todo,feat,b4,Heal ability (potion?)
-todo,feat,b4,Add fog of war (and add it to the dijkstra map calcs)
+doing,feat,b4,Add fog of war (and add it to the dijkstra map calcs)
 todo,imp,b4,"Handle all players dead, game over"
 todo,balance,b4,Consider limiting ally position swapping to once per turn if unbalanced
 todo,feat,b4,Add win condition again

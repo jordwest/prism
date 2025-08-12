@@ -44,7 +44,11 @@ derived_init :: proc() -> Error {
 }
 
 derived_handle_entity_changed :: proc(entity: ^Entity) {
-	if entity.meta.team == .Players do state.client.game.derived.allies_djikstra_map = nil
+	if entity.meta.team == .Players {
+		vision_update()
+		state.client.game.derived.allies_djikstra_map = nil
+	}
+
 	delete_key(&state.client.game.derived.entity_djikstra_maps, entity.id)
 	state.client.game.derived.s_tile_entities = .Empty
 }

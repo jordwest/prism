@@ -7,7 +7,8 @@ Tiles :: struct {
 }
 
 TileData :: struct {
-	type: TileType,
+	type:  TileType,
+	flags: TileFlags,
 }
 
 TileType :: enum u8 {
@@ -23,15 +24,21 @@ TileFlag :: enum {
 	Obstacle,
 	Flammable,
 	Slow,
+	Seen,
 }
 TileFlags :: bit_set[TileFlag]
 
-tile_flags: [TileType]TileFlags = {
+tile_default_flags: [TileType]TileFlags = {
 	.Empty      = {},
 	.Floor      = {.Traversable},
 	.BrickWall  = {.Obstacle},
 	.RopeBridge = {.Traversable, .Flammable},
 	.Water      = {.Traversable, .Slow},
+}
+
+tile_set_type :: proc(tile: ^TileData, type: TileType) {
+	tile.type = type
+	tile.flags = tile_default_flags[type]
 }
 
 tile_at :: proc(tile: TileCoord) -> Maybe(^TileData) {
@@ -49,14 +56,14 @@ tile_at :: proc(tile: TileCoord) -> Maybe(^TileData) {
 tile_draw_door :: proc(pos: TileCoord) {
 	tile, ok := tile_at(pos).?
 	if ok {
-		tile.type = .Floor
+		tile_set_type(tile, .Floor)
 	}
 }
 
 tile_draw :: proc(pos: TileCoord, type: TileType) {
 	tile, ok := tile_at(pos).?
 	if ok {
-		tile.type = type
+		tile_set_type(tile, type)
 	}
 }
 
@@ -68,16 +75,16 @@ tile_draw_room :: proc(pos: TileCoord, size: Vec2i) {
 
 			tile, ok := tile_at(coord).?
 			if ok {
-				tile.type = is_boundary ? .BrickWall : .Floor
+				tile_set_type(tile, is_boundary ? .BrickWall : .Floor)
 				if !is_boundary &&
 				   coord.y >= 13 &&
 				   coord.y <= 15 &&
 				   coord.x >= 15 &&
 				   coord.x <= 22 {
-					tile.type = .Water
+					tile_set_type(tile, .Water)
 				}
 				if !is_boundary && coord.x == 18 && coord.y == 18 {
-					tile.type = .Water
+					tile_set_type(tile, .Water)
 				}
 			}
 		}

@@ -42,19 +42,23 @@ LogEntryCommand :: struct {
 @(private = "file")
 _on_player_joined :: proc(entry: LogEntryPlayerJoined) -> Error {
 	s := &state.client.game
-	s.players[entry.player_id] = Player {
-		player_id     = entry.player_id,
-		cursor_spring = prism.spring_create(2, [2]f32{0, 0}, k = 40, c = 10),
-	}
 
 	// Create an entity
 	spawn, ok := game_find_nearest_traversable_space(state.client.game.spawn_point)
 	player_entity := game_spawn_entity(.Player, {player_id = entry.player_id, pos = spawn})
 	if !ok do return error(NoSpaceForEntity{entity_id = player_entity.id, pos = state.client.game.spawn_point})
 
+	s.players[entry.player_id] = Player {
+		player_id        = entry.player_id,
+		player_entity_id = player_entity.id,
+		cursor_spring    = prism.spring_create(2, [2]f32{0, 0}, k = 40, c = 10),
+	}
+
 	if state.client.player_id == entry.player_id {
 		state.client.controlling_entity_id = player_entity.id
 	}
+
+	vision_update()
 
 	return nil
 }

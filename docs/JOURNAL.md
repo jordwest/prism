@@ -358,3 +358,5 @@ It's funny, it's like there suddenly more of a creative block, a fear in the che
  - Poison
  - Room with rope bridge
  - Fog of war
+
+Got basic fog of war working, still need to darken areas that have been explored but are no longer in vision range, but this will do the job for now. Next up I'm kinda keen to work on the rope bridge room... could be fun to add fire to that.

@@ -6,7 +6,7 @@ import {
   Pointer,
 } from "./fresnel/types";
 
-export const INSTANCES = 2;
+export const INSTANCES = 1;
 export const NET_FAKE_DELAY = 30;
 
 const canvas: HTMLCanvasElement = document.getElementById(

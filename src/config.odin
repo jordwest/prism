@@ -17,7 +17,7 @@ ENTITY_SPRING_DAMPER :: 10
  * FUTURE STATE
  ***************/
 
-GAME_SEED :: 0xdeadbeef6
+GAME_SEED :: 0xdeadbeef6765
 TURN_DELAY :: 0.1
 MUSIC_ENABLED :: false
 SPRINGS_ENABLED :: true
@@ -26,6 +26,7 @@ SPRINGS_ENABLED :: true
  * DEBUG OPTIONS
  *****************/
 
+FOG_OF_WAR_OFF :: false
 DEBUG_OVERLAYS_ENABLED :: false
 STUTTER_CHECKER_ENABLED :: true
 // Delay procedural generation iterations by this many frames

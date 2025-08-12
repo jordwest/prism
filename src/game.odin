@@ -36,12 +36,12 @@ game_get_move_modifier :: proc(
 	tile, valid_tile := tile_at(TileCoord(to)).?
 	if !valid_tile do return .Blocked, false
 	entities := derived_entities_at(TileCoord(to))
-	if .Traversable not_in tile_flags[tile.type] do return .Blocked, false
+	if .Traversable not_in tile.flags do return .Blocked, false
 	if obstacle, has_obstacle := entities.obstacle.?; has_obstacle {
 		if .CanMove not_in obstacle.meta.flags do return .Blocked, false
 		avoid = true
 	}
-	if .Slow in tile_flags[tile.type] do return .Slow, avoid
+	if .Slow in tile.flags do return .Slow, avoid
 	return .Normal, avoid
 }
 
@@ -147,7 +147,7 @@ game_find_nearest_traversable_space :: proc(
 					if !valid_tile do continue
 					entity_tile := derived_entities_at(out_coord)
 					if entity_tile.obstacle != nil do continue
-					if .Traversable in tile_flags[tile.type] do return out_coord, true
+					if .Traversable in tile.flags do return out_coord, true
 				}
 			}
 		}

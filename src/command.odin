@@ -120,11 +120,11 @@ _attack :: proc(e: ^Entity) -> CommandOutcome {
 		is_hit := prism.rand_splitmix_get_bool(&rng, 650)
 
 		if is_hit {
-		    fx_spawn_dmg(target.pos, 4)
+			fx_spawn_dmg(target.pos, 4)
 			target.hp -= 4
 			audio_play(.Punch)
 		} else {
-            fx_spawn_dmg(target.pos, 0)
+			fx_spawn_dmg(target.pos, 0)
 			audio_play(.Miss)
 		}
 
@@ -198,7 +198,7 @@ _move_or_swap :: proc(entity: ^Entity, pos: TileCoord, allow_swap: bool = true) 
 	// Check if tile is blocked
 	tile, valid_tile := tile_at(pos).?
 	if !valid_tile do return .Blocked
-	if .Obstacle in tile_flags[tile.type] do return .Blocked
+	if .Obstacle in tile.flags do return .Blocked
 
 	// Check if there's something in the way
 	entities := derived_entities_at(pos)
@@ -255,7 +255,7 @@ command_for_tile :: proc(coord: TileCoord) -> Command {
 
 	tile, valid_tile := tile_at(TileCoord(coord)).?
 	if !valid_tile do return Command{}
-	if .Traversable not_in tile_flags[tile.type] do return Command{}
+	if .Traversable not_in tile.flags do return Command{}
 
 	obstacle, has_obstacle := game_entity_at(coord, entity_is_obstacle).?
 	if has_obstacle {

@@ -159,24 +159,28 @@ render_tiles :: proc() {
 
 			tile_below, has_tile_below := tile_at(tile_c + {0, 1}).?
 			tile, ok := tile_at(tile_c).?
-			if ok {
-				use_alternative_tile := prism.rand_splitmix_get_bool(&tile_randomiser, 50)
-				switch tile.type {
-				case .Empty:
-				case .RopeBridge:
-				//TODO
-				case .BrickWall:
-					front_facing := has_tile_below && tile_below.type != .BrickWall
-					sprite :=
-						front_facing ? (use_alternative_tile ? SPRITE_COORD_BRICK_WALL_FACE_2 : SPRITE_COORD_BRICK_WALL_FACE) : SPRITE_COORD_BRICK_WALL_BEHIND
-					render_sprite(sprite, screen_c)
-				case .Floor:
-					sprite :=
-						use_alternative_tile ? SPRITE_COORD_FLOOR_STONE_2 : SPRITE_COORD_FLOOR_STONE
-					render_sprite(sprite, screen_c)
-				case .Water:
-					render_sprite(SPRITE_COORD_WATER, screen_c)
-				}
+
+			when !FOG_OF_WAR_OFF {
+				if .Seen not_in tile.flags do continue
+			}
+			if !ok do continue
+
+			use_alternative_tile := prism.rand_splitmix_get_bool(&tile_randomiser, 50)
+			switch tile.type {
+			case .Empty:
+			case .RopeBridge:
+			//TODO
+			case .BrickWall:
+				front_facing := has_tile_below && tile_below.type != .BrickWall
+				sprite :=
+					front_facing ? (use_alternative_tile ? SPRITE_COORD_BRICK_WALL_FACE_2 : SPRITE_COORD_BRICK_WALL_FACE) : SPRITE_COORD_BRICK_WALL_BEHIND
+				render_sprite(sprite, screen_c)
+			case .Floor:
+				sprite :=
+					use_alternative_tile ? SPRITE_COORD_FLOOR_STONE_2 : SPRITE_COORD_FLOOR_STONE
+				render_sprite(sprite, screen_c)
+			case .Water:
+				render_sprite(SPRITE_COORD_WATER, screen_c)
 			}
 
 		}
@@ -208,6 +212,9 @@ render_entities :: proc(dt: f32) {
 
 	for id, &e in entities {
 		i += 1
+
+		tile, valid_tile := tile_at(e.pos).?
+		if valid_tile && .Seen not_in tile.flags do continue
 
 		screen_c := screen_coord(TileCoordF(e.spring.pos)).xy
 		canvas_size := vec2f(state.width, state.height)
