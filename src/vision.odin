@@ -14,8 +14,8 @@ vision_update :: proc() {
 			prism.Aabb(i32) {
 				x1 = entity.pos.x - 4,
 				y1 = entity.pos.y - 4,
-				x2 = entity.pos.x + 4,
-				y2 = entity.pos.y + 4,
+				x2 = entity.pos.x + 5,
+				y2 = entity.pos.y + 5,
 			},
 		)
 
