@@ -91,4 +91,6 @@ turn_advance :: proc() {
 	}
 	derived_clear()
 	state.client.game.current_turn += 1
+
+	tile_handle_turn()
 }

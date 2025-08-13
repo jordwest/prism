@@ -163,6 +163,10 @@ render_tiles :: proc() {
 				render_sprite(SPRITE_COORD_WATER, screen_c)
 			}
 
+			if tile.fire.fuel > 0 {
+				render_sprite(SPRITE_COORD_FIRE, screen_c)
+			}
+
 		}
 	}
 

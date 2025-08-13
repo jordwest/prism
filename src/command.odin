@@ -132,8 +132,15 @@ _attack :: proc(e: ^Entity) -> CommandOutcome {
 		entity_clear_cmd(e)
 
 		if target.hp <= 0 {
-			entity_despawn(target)
 			game_spawn_entity(.Corpse, Entity{pos = target.pos})
+			if target.meta_id == .Firebug {
+				iter := prism.aabb_iterator(prism.aabb(Vec2i(target.pos) - {1, 1}, Vec2i({3, 3})))
+				for pos in prism.aabb_iterate(&iter) {
+					tile, valid_tile := tile_at(TileCoord(pos)).?
+					if valid_tile do tile_set_fire(tile, 8)
+				}
+			}
+			entity_despawn(target)
 
 			audio_play(target.meta.team == .Players ? .PlayerDeath : .EnemyDeath)
 		}

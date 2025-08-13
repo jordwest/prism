@@ -14,6 +14,7 @@ COLOR_WHITE :: clay.Color{255, 255, 255, 255}
 COLOR_GRAY_200 :: clay.Color{170, 170, 170, 255}
 COLOR_LIGHT_RED :: clay.Color{255, 170, 170, 150}
 COLOR_LIGHT_YELLOW :: clay.Color{255, 255, 170, 150}
+COLOR_LIGHT_GREEN :: clay.Color{170, 255, 170, 150}
 COLOR_PURPLE_800 :: clay.Color{45, 32, 59, 255}
 COLOR_PURPLE_200 :: clay.Color{128, 106, 153, 255}
 
@@ -230,6 +231,12 @@ ui_tooltip_layout :: proc() -> clay.ClayArray(clay.RenderCommand) {
 					clay.Text(
 						"Fast",
 						clay.TextConfig({textColor = COLOR_LIGHT_YELLOW, fontSize = 16}),
+					)
+				}
+				if .IsSlow in hover_entity.meta.flags {
+					clay.Text(
+						"Slow",
+						clay.TextConfig({textColor = COLOR_LIGHT_GREEN, fontSize = 16}),
 					)
 				}
 				if hover_entity.meta.max_hp > 0 do _add_fmt_text("HP: %d/%d", hover_entity.hp, hover_entity.meta.max_hp, color = COLOR_LIGHT_RED)

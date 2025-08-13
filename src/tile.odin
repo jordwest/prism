@@ -9,6 +9,7 @@ Tiles :: struct {
 TileData :: struct {
 	type:  TileType,
 	flags: TileFlags,
+	fire:  TileFire,
 }
 
 TileType :: enum u8 {
@@ -34,6 +35,10 @@ tile_default_flags: [TileType]TileFlags = {
 	.BrickWall  = {.Obstacle},
 	.RopeBridge = {.Traversable, .Flammable},
 	.Water      = {.Traversable, .Slow},
+}
+
+TileFire :: struct {
+	fuel: i32, // How many turns worth of fuel is left in this tile
 }
 
 tile_set_type :: proc(tile: ^TileData, type: TileType) {
@@ -64,6 +69,38 @@ tile_draw :: proc(pos: TileCoord, type: TileType) {
 	tile, ok := tile_at(pos).?
 	if ok {
 		tile_set_type(tile, type)
+	}
+}
+
+tile_set_fire :: proc(tile: ^TileData, fuel: i32) {
+	if tile.type == .Empty do return
+	if .Obstacle in tile.flags do return
+	if .Flammable in tile.flags do tile.fire.fuel += 6
+	tile.fire.fuel += fuel
+}
+
+tile_handle_turn :: proc() {
+	for &tile, i in &state.client.game.tiles.data {
+		pos := TileCoord{i32(i) % LEVEL_WIDTH, i32(i) / LEVEL_WIDTH}
+		if tile.fire.fuel > 0 {
+			tile.fire.fuel -= 1
+
+			// Consumed all fuel
+			if tile.fire.fuel == 0 {
+				if tile.type == .RopeBridge do tile_set_type(&tile, .Empty)
+			}
+
+			// Still burning
+			if tile.fire.fuel > 0 {
+				iter := prism.aabb_iterator(prism.aabb(Vec2i(pos) - {1, 1}, Vec2i({3, 3})))
+				for pos in prism.aabb_iterate(&iter) {
+					tile, valid_tile := tile_at(TileCoord(pos)).?
+					if !prism.aabb_is_edge(iter.aabb, pos) do continue
+					if !valid_tile do continue
+					if .Flammable in tile.flags && tile.fire.fuel == 0 do tile_set_fire(tile, 0)
+				}
+			}
+		}
 	}
 }
 

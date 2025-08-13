@@ -58,6 +58,7 @@ game_calculate_move_cost :: proc(entity: ^Entity, from: TileCoord, to: TileCoord
 	modifiers := game_get_move_modifier(TileCoord(from), TileCoord(to))
 	cost := game_move_modifiers_to_cost(modifiers)
 	if .IsFast in entity.meta.flags do cost = i32(f32(cost) * 0.8)
+	if .IsSlow in entity.meta.flags do cost = i32(f32(cost) * 1.2)
 	return cost
 }
 

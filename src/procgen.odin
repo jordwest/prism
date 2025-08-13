@@ -195,6 +195,8 @@ _try_add_room :: proc(
 		tile_draw_fill(island)
 		tile_connect_region(bridge_start, island)
 
+		game_spawn_entity(.Firebug, {pos = TileCoord(pos)})
+
 		is_pit = true
 		pcg.room_type_count[.Pit] += 1
 	} else {

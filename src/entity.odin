@@ -96,7 +96,7 @@ entity_meta: [EntityMetaId]EntityMeta = {
 		max_hp = 12,
 		vision_distance = 4,
 		flags = {.IsAiControlled, .IsObstacle, .IsSlow},
-		flavor_text = "You might've thought it were a giant cockroach if not for the huge, red glowing pustule this creature seems to be dragging around on its back.",
+		flavor_text = "You might've thought it were a giant cockroach if not for the enormous, glowing red pustule this creature seems to be dragging around on its back. The sack of glowing liquid seems to make it difficult to move.",
 	},
 	.Corpse = EntityMeta{spritesheet_coord = SPRITE_COORD_CORPSE, flags = {}},
 }
