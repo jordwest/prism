@@ -3,10 +3,17 @@
     src: url("./CompaqThin.ttf") format("truetype");
     font-weight: normal;
 }
+
 @font-face {
     font-family: "CompaqThin";
     src: url("./PxPlus_IBM_VGA_8x16.ttf") format("truetype");
     font-weight: bold;
+}
+
+@font-face {
+    font-family: "IBM_VGA";
+    src: url("./PxPlus_IBM_VGA_8x16.ttf") format("truetype");
+    font-weight: normal;
 }
 
 body {
@@ -16,6 +23,7 @@ body {
     padding: 0;
     overflow: hidden;
 }
+
 h1 {
     font-size: 16px;
 }
@@ -23,8 +31,10 @@ h1 {
 canvas {
     font-smooth: never;
     image-rendering: pixelated;
-    image-rendering: -webkit-optimize-contrast; /* webkit */
-    image-rendering: -moz-crisp-edges; /* Firefox */
+    image-rendering: -webkit-optimize-contrast;
+    /* webkit */
+    image-rendering: -moz-crisp-edges;
+    /* Firefox */
 }
 
 body {

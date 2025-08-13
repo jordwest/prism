@@ -7,6 +7,7 @@ export type ServerMailbox = {
 export type FresnelState = {
   canvas: HTMLCanvasElement;
   canvasContext: CanvasRenderingContext2D;
+  font: string;
   storage: Record<string, string>;
   serverMailbox: ServerMailbox;
   mailboxes: Map<number, Mailbox>;
@@ -29,6 +30,7 @@ export type AudioAsset = {
 };
 
 export type ManifestJson = {
+  font: string;
   assets: ManifestAsset[];
   input: {
     actions: ManifestAction[];

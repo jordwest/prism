@@ -11,6 +11,11 @@ COLOR_RED :: clay.Color{168, 66, 28, 150}
 COLOR_ORANGE :: clay.Color{225, 138, 50, 150}
 COLOR_BLACK :: clay.Color{0, 0, 0, 255}
 COLOR_WHITE :: clay.Color{255, 255, 255, 255}
+COLOR_GRAY_200 :: clay.Color{170, 170, 170, 255}
+COLOR_LIGHT_RED :: clay.Color{255, 170, 170, 150}
+COLOR_LIGHT_YELLOW :: clay.Color{255, 255, 170, 150}
+COLOR_PURPLE_800 :: clay.Color{45, 32, 59, 255}
+COLOR_PURPLE_200 :: clay.Color{128, 106, 153, 255}
 
 // Layout config is just a struct that can be declared statically, or inline
 sidebar_item_layout := clay.LayoutConfig {
@@ -176,42 +181,74 @@ ui_tooltip_layout :: proc() -> clay.ClayArray(clay.RenderCommand) {
 
 	if !has_hover_entity do return clay.EndLayout()
 
+	default_text_config := clay.TextConfig({textColor = COLOR_WHITE, fontSize = 16})
+
 	if clay.UI()(
 	{
 		id = clay.ID("TooltipSizer"),
 		layout = {
 			layoutDirection = .TopToBottom,
 			sizing = {width = clay.SizingFit({}), height = clay.SizingFit({})},
-			padding = {8, 8, 8, 8},
+			padding = {2, 2, 2, 2},
 		},
-		backgroundColor = COLOR_LIGHT,
+		backgroundColor = COLOR_PURPLE_200,
 	},
 	) {
 		if clay.UI()(
 		{
-			id = clay.ID("MinWidth"),
-			layout = {sizing = {width = clay.SizingFixed(200)}},
-			backgroundColor = COLOR_RED,
+			id = clay.ID("TooltipPadder"),
+			layout = {layoutDirection = .TopToBottom, padding = {8, 8, 8, 8}, childGap = 4},
+			backgroundColor = COLOR_PURPLE_800,
 		},
 		) {
 
-		}
-		if has_hover_entity {
-			_add_fmt_text("%s", hover_entity.meta_id)
-			_add_fmt_text("HP: %d/%d", hover_entity.hp, hover_entity.meta.max_hp)
+			if clay.UI()(
+			{
+				id = clay.ID("MinWidth"),
+				layout = {sizing = {width = clay.SizingFixed(200)}},
+				backgroundColor = COLOR_RED,
+			},
+			) {
 
-			if state.debug.render_debug_overlays {
-				_add_fmt_text("ID: %d", hover_entity.id)
-				_add_fmt_text("AP: %d", hover_entity.action_points)
-				_add_fmt_text("%v", hover_entity.cmd)
-				_add_fmt_text("%v", hover_entity.meta.flags)
+			}
+			if has_hover_entity {
+				_add_fmt_text("%s", hover_entity.meta_id, size = 16)
+				if .IsFast in hover_entity.meta.flags {
+					clay.Text(
+						"Fast",
+						clay.TextConfig({textColor = COLOR_LIGHT_YELLOW, fontSize = 16}),
+					)
+				}
+				if hover_entity.meta.max_hp > 0 do _add_fmt_text("HP: %d/%d", hover_entity.hp, hover_entity.meta.max_hp, color = COLOR_LIGHT_RED)
+				if len(hover_entity.meta.flavor_text) > 0 {
+					// _vertical_spacer(4)
+					clay.TextDynamic(
+						hover_entity.meta.flavor_text,
+						clay.TextConfig(
+							{textColor = COLOR_GRAY_200, fontSize = default_text_config.fontSize},
+						),
+					)
+				}
+
+				if state.debug.render_debug_overlays {
+					_vertical_spacer(16)
+					_add_fmt_text("ID: %d", hover_entity.id)
+					_add_fmt_text("AP: %d", hover_entity.action_points)
+					_add_fmt_text("%v", hover_entity.cmd)
+					_add_fmt_text("%v", hover_entity.meta.flags)
+				}
 			}
 		}
 	}
 	return clay.EndLayout()
 }
 
-_add_fmt_text :: proc(fmtstr: string, args: ..any) {
+_vertical_spacer :: proc(size: f32 = 8) {
+	if clay.UI()({layout = {sizing = {height = clay.SizingFixed(size)}}}) {}
+
+}
+
+_add_fmt_text :: proc(fmtstr: string, args: ..any, color: [4]f32 = COLOR_WHITE, size: u16 = 16) {
 	text := fmt.tprintf(fmtstr, ..args)
-	clay.TextDynamic(text, clay.TextConfig({textColor = COLOR_WHITE, fontSize = 16}))
+	clay.TextDynamic(text, clay.TextConfig({textColor = color, fontSize = size}))
 }

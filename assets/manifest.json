@@ -1,102 +1,203 @@
 {
+  "font": "IBM_VGA",
   "assets": [
-    { "id": 1, "filename": "spritesheet.png", "type": "image" },
-    { "id": 2, "filename": "punch.wav", "type": "audio" },
-    { "id": 3, "filename": "miss.ogg", "type": "audio" },
-    { "id": 4, "filename": "footstep-001.ogg", "type": "audio" },
-    { "id": 5, "filename": "footstep-002.ogg", "type": "audio" },
-    { "id": 6, "filename": "footstep-003.ogg", "type": "audio" },
-    { "id": 7, "filename": "footstep-004.ogg", "type": "audio" },
-    { "id": 8, "filename": "footstep-005.ogg", "type": "audio" },
-    { "id": 9, "filename": "footstep-006.ogg", "type": "audio" },
-    { "id": 10, "filename": "footstep-007.ogg", "type": "audio" },
-    { "id": 11, "filename": "footstep-008.ogg", "type": "audio" },
-    { "id": 12, "filename": "footstep-009.ogg", "type": "audio" },
-    { "id": 13, "filename": "footstep-010.ogg", "type": "audio" },
-    { "id": 14, "filename": "player-death.mp3", "type": "audio" },
-    { "id": 100, "filename": "Daudir.mp3", "type": "audio" }
+    {
+      "id": 1,
+      "filename": "spritesheet.png",
+      "type": "image"
+    },
+    {
+      "id": 2,
+      "filename": "punch.wav",
+      "type": "audio"
+    },
+    {
+      "id": 3,
+      "filename": "miss.ogg",
+      "type": "audio"
+    },
+    {
+      "id": 4,
+      "filename": "footstep-001.ogg",
+      "type": "audio"
+    },
+    {
+      "id": 5,
+      "filename": "footstep-002.ogg",
+      "type": "audio"
+    },
+    {
+      "id": 6,
+      "filename": "footstep-003.ogg",
+      "type": "audio"
+    },
+    {
+      "id": 7,
+      "filename": "footstep-004.ogg",
+      "type": "audio"
+    },
+    {
+      "id": 8,
+      "filename": "footstep-005.ogg",
+      "type": "audio"
+    },
+    {
+      "id": 9,
+      "filename": "footstep-006.ogg",
+      "type": "audio"
+    },
+    {
+      "id": 10,
+      "filename": "footstep-007.ogg",
+      "type": "audio"
+    },
+    {
+      "id": 11,
+      "filename": "footstep-008.ogg",
+      "type": "audio"
+    },
+    {
+      "id": 12,
+      "filename": "footstep-009.ogg",
+      "type": "audio"
+    },
+    {
+      "id": 13,
+      "filename": "footstep-010.ogg",
+      "type": "audio"
+    },
+    {
+      "id": 14,
+      "filename": "player-death.mp3",
+      "type": "audio"
+    },
+    {
+      "id": 100,
+      "filename": "Daudir.mp3",
+      "type": "audio"
+    }
   ],
   "input": {
     "actions": [
       {
         "name": "move_up",
         "id": 1,
-        "webKeys": ["k", "ArrowUp", "w"]
+        "webKeys": [
+          "k",
+          "ArrowUp",
+          "w"
+        ]
       },
       {
         "name": "move_down",
         "id": 2,
-        "webKeys": ["j", "ArrowDown", "s"]
+        "webKeys": [
+          "j",
+          "ArrowDown",
+          "s"
+        ]
       },
       {
         "name": "move_left",
         "id": 3,
-        "webKeys": ["h", "ArrowLeft", "a"]
+        "webKeys": [
+          "h",
+          "ArrowLeft",
+          "a"
+        ]
       },
       {
         "name": "move_right",
         "id": 4,
-        "webKeys": ["l", "ArrowRight", "d"]
+        "webKeys": [
+          "l",
+          "ArrowRight",
+          "d"
+        ]
       },
       {
         "name": "move_ne",
         "id": 5,
-        "webKeys": ["u"]
+        "webKeys": [
+          "u"
+        ]
       },
       {
         "name": "move_se",
         "id": 6,
-        "webKeys": ["n"]
+        "webKeys": [
+          "n"
+        ]
       },
       {
         "name": "move_sw",
         "id": 7,
-        "webKeys": ["b"]
+        "webKeys": [
+          "b"
+        ]
       },
       {
         "name": "move_nw",
         "id": 8,
-        "webKeys": ["y"]
+        "webKeys": [
+          "y"
+        ]
       },
       {
         "name": "left_click",
         "id": 20,
-        "mouseButtons": [0]
+        "mouseButtons": [
+          0
+        ]
       },
       {
         "name": "right_click",
         "id": 21,
-        "mouseButtons": [2]
+        "mouseButtons": [
+          2
+        ]
       },
       {
         "name": "escape",
         "id": 22,
-        "webKeys": ["Escape"]
+        "webKeys": [
+          "Escape"
+        ]
       },
       {
         "name": "skip",
         "id": 23,
-        "webKeys": [" "]
+        "webKeys": [
+          " "
+        ]
       },
       {
         "name": "debug_render_toggle",
         "id": 9000,
-        "webKeys": ["`"]
+        "webKeys": [
+          "`"
+        ]
       },
       {
         "name": "debug_render_next",
         "id": 9001,
-        "webKeys": ["1"]
+        "webKeys": [
+          "1"
+        ]
       },
       {
         "name": "zoom_in",
         "id": 101,
-        "webKeys": ["="]
+        "webKeys": [
+          "="
+        ]
       },
       {
         "name": "zoom_out",
         "id": 102,
-        "webKeys": ["-"]
+        "webKeys": [
+          "-"
+        ]
       }
     ]
   }

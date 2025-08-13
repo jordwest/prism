@@ -2,7 +2,7 @@ package main
 
 ////////// CHEATS \\\\\\\\\\\\
 
-FOG_OF_WAR_OFF :: true
+FOG_OF_WAR_OFF :: false
 NO_ENEMIES :: false
 
 ////////// DEBUG OPTIONS \\\\\\\\\\
@@ -47,7 +47,7 @@ ENTITY_SPRING_DAMPER :: 10
 
 ///////// FUTURE STATE \\\\\\\\\
 
-GAME_SEED :: 0xdeadbeef653293
+GAME_SEED :: 0xdeadbeef6532932
 TURN_DELAY :: 0.1
 MUSIC_ENABLED :: false
 SPRINGS_ENABLED :: true

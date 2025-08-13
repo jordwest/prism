@@ -128,7 +128,7 @@ _attack :: proc(e: ^Entity) -> CommandOutcome {
 			audio_play(.Miss)
 		}
 
-		entity_consume_ap(e, 100)
+		entity_consume_ap(e, .IsFast in e.meta.flags ? 80 : 100)
 		entity_clear_cmd(e)
 
 		if target.hp <= 0 {
@@ -210,7 +210,7 @@ _move_or_swap :: proc(entity: ^Entity, pos: TileCoord, allow_swap: bool = true) 
 		return .Blocked
 	}
 
-	cost := game_calculate_move_cost(entity.pos, pos)
+	cost := game_calculate_move_cost(entity, entity.pos, pos)
 	if cost <= 0 do return .Blocked
 
 	if entity.player_id == state.client.player_id do audio_play(.Footstep)

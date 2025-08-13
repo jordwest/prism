@@ -268,7 +268,7 @@ function createCoreImports(instance: FresnelInstance) {
     },
     measure_text: (size: number, strPtr: OdinStringPointer) => {
       const text = readOdinString(instance.memory, strPtr);
-      instance.state.canvasContext.font = `${size}px CompaqThin`;
+      instance.state.canvasContext.font = `${size}px ${instance.state.font}`;
       return instance.state.canvasContext.measureText(text).width;
     },
     fill: (r: number, g: number, b: number, a: number) => {
@@ -343,7 +343,7 @@ function createCoreImports(instance: FresnelInstance) {
       strPtr: OdinStringPointer,
     ) => {
       const text = readOdinString(instance.memory, strPtr);
-      instance.state.canvasContext.font = `${size}px CompaqThin`;
+      instance.state.canvasContext.font = `${size}px ${instance.state.font}`;
       instance.state.canvasContext.fillText(
         text,
         x,

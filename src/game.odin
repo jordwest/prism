@@ -54,9 +54,11 @@ game_move_modifiers_to_cost :: proc(modifiers: bit_set[MoveModifier]) -> i32 {
 	return cost
 }
 
-game_calculate_move_cost :: proc(from: TileCoord, to: TileCoord) -> i32 {
+game_calculate_move_cost :: proc(entity: ^Entity, from: TileCoord, to: TileCoord) -> i32 {
 	modifiers := game_get_move_modifier(TileCoord(from), TileCoord(to))
-	return game_move_modifiers_to_cost(modifiers)
+	cost := game_move_modifiers_to_cost(modifiers)
+	if .IsFast in entity.meta.flags do cost = i32(f32(cost) * 0.8)
+	return cost
 }
 
 // //

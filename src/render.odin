@@ -140,10 +140,11 @@ render_tiles :: proc() {
 
 			use_alternative_tile_50 := prism.rand_splitmix_get_bool(&tile_randomiser, 50)
 			use_alternative_tile_500 := prism.rand_splitmix_get_bool(&tile_randomiser, 500)
+			pit_wall_tiles: bit_set[TileType] = {.Floor, .BrickWall}
 			switch tile.type {
 			case .Empty:
 				tile_above, has_tile_above := tile_at(tile_c + {0, -1}).?
-				if has_tile_above && tile_above.type == .Floor do render_sprite(SPRITE_COORD_PIT_WALL, screen_c)
+				if has_tile_above && tile_above.type in pit_wall_tiles do render_sprite(SPRITE_COORD_PIT_WALL, screen_c)
 			case .RopeBridge:
 				render_sprite(
 					use_alternative_tile_500 ? SPRITE_COORD_ROPE_BRIDGE_2 : SPRITE_COORD_ROPE_BRIDGE,

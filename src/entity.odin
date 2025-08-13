@@ -32,6 +32,7 @@ EntityMeta :: struct {
 	spritesheet_coord: [2]f32,
 	max_hp:            i32,
 	team:              Team,
+	flavor_text:       string,
 	flags:             bit_set[EntityFlags],
 }
 
@@ -59,6 +60,7 @@ EntityFlags :: enum {
 	CanSwapPlaces,
 	MovedThisTurn,
 	MovedLastTurn,
+	IsFast,
 }
 
 EntityFilterProc :: proc(_: ^Entity) -> bool
@@ -74,12 +76,14 @@ entity_meta: [EntityMetaId]EntityMeta = {
 		team = .Players,
 		max_hp = 50,
 		flags = {.IsPlayerControlled, .IsObstacle, .CanSwapPlaces},
+		flavor_text = "Why did I come down here?",
 	},
 	.Spider = EntityMeta {
 		spritesheet_coord = SPRITE_COORD_SPIDER,
 		team = .Darkness,
 		max_hp = 7,
-		flags = {.IsAiControlled, .IsObstacle},
+		flags = {.IsAiControlled, .IsObstacle, .IsFast},
+		flavor_text = "Standing at 3 feet tall with thick, black scaled legs - this is no ordinary house spider. It may be weak, but it moves quickly and can easily outrun you.",
 	},
 	.Corpse = EntityMeta{spritesheet_coord = SPRITE_COORD_CORPSE, flags = {}},
 }

@@ -98,7 +98,7 @@ todo,imp,b4,"Handle all players dead, game over"
 todo,balance,b4,Consider limiting ally position swapping to once per turn if unbalanced
 todo,feat,b4,Add win condition again
 todo,feat,b4,Hover tooltips for actions
-todo,feat,b4,Hover tooltips for entity information
+done,feat,b4,Hover tooltips for entity information
 todo,feat,b4,Add multiple dungeon levels
 todo,imp,b4,Show path to cursor when clicking to move
 todo,feat,b4,Potion of revive

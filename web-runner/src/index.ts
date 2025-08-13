@@ -69,6 +69,7 @@ let state: FresnelState = {
   canvasContext: ctx!,
   storage: {},
   mailboxes: new Map(),
+  font: 'sans-serif',
   serverMailbox: [],
   assets: {},
   audioContext: new AudioContext(),
@@ -114,6 +115,7 @@ fetch("assets/manifest.json").then(async (response) => {
   for (var asset of manifest.assets) {
     loadResource(asset.id, asset.filename, asset.type);
   }
+  state.font = manifest.font;
   for (var action of manifest.input.actions) {
     if (action.webKeys != null) {
       action.webKeys.forEach((key) =>
@@ -333,7 +335,6 @@ requestAnimationFrame(frame);
 
 // TODO: Something more robust - gives the font time to load
 setTimeout(() => {
-  state.canvasContext.font = "16px CompaqThin";
   state.canvasContext.textBaseline = "top";
   state.canvasContext.imageSmoothingEnabled = false;
 }, 100);
