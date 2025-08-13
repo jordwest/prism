@@ -12,7 +12,10 @@ on_resize :: proc "c" (w: i32, h: i32) {
 
 	state.width = w
 	state.height = h
+	clay.SetCurrentContext(ctx1)
 	clay.SetLayoutDimensions({f32(w), f32(h)})
+	clay.SetCurrentContext(ctx2)
+	clay.SetLayoutDimensions({f32(w / 2) - 80, f32(h / 2)})
 }
 
 last_cursor_tile_pos: TileCoord
@@ -116,7 +119,25 @@ boot :: proc "c" (width: i32, height: i32, flags: i32) {
 		raw_data(clay_memory[:]),
 	)
 
-	clay.Initialize(clay_arena, {f32(width), f32(height)}, {handler = clay_error_handler})
+	ctx1 = clay.Initialize(clay_arena, {f32(width), f32(height)}, {handler = clay_error_handler})
+
+	// Tell clay how to measure text
+	clay.SetMeasureTextFunction(clay_measure_text, nil)
+
+	clay.SetDebugModeEnabled(CLAY_DEBUG_ENABLED)
+
+	clay.SetMaxElementCount(4096)
+	min_memory_size = clay.MinMemorySize()
+	clay_arena_tooltip: clay.Arena = clay.CreateArenaWithCapacityAndMemory(
+		uint(min_memory_size),
+		raw_data(clay_memory_tooltip[:]),
+	)
+	ctx2 = clay.Initialize(
+		clay_arena_tooltip,
+		{f32(width / 3), f32(height / 2)},
+		{handler = clay_error_handler},
+	)
+	// clay.SetCurrentContext(ctx1)
 
 	fresnel.metric_i32("clay max elements", clay.GetMaxElementCount())
 
@@ -127,6 +148,9 @@ boot :: proc "c" (width: i32, height: i32, flags: i32) {
 
 	return
 }
+
+ctx1: ^clay.Context
+ctx2: ^clay.Context
 
 @(export)
 tick :: proc "c" (dt: f32) {

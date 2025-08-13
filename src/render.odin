@@ -18,7 +18,10 @@ render_system :: proc(dt: f32) {
 	if !state.client.cursor_hidden && command_for_tile(state.client.cursor_pos).type == .Move {
 		render_path_to(state.client.cursor_pos, alpha = 80)
 	}
-	// render_ui()
+	// render_ui(.Main)
+
+	render_ui(.Tooltip, state.client.cursor_screen_pos + {32, 0})
+
 	if state.debug.render_debug_overlays {
 		render_debug_overlays()
 	}
@@ -72,31 +75,8 @@ render_debug_overlays :: proc() {
 		state.client.cursor_pos.x,
 		state.client.cursor_pos.y,
 	)
-	cursor_screen := state.client.cursor_screen_pos + ScreenCoord{32, 32}
+	cursor_screen := state.client.cursor_screen_pos + ScreenCoord{32, -32}
 	fresnel.draw_text(cursor_screen.x, cursor_screen.y, 16, cursor_text)
-
-	entities_at_cursor := derived_entities_at(state.client.cursor_pos, ignore_out_of_bounds = true)
-	if obstacle, has_obstacle := entities_at_cursor.obstacle.?; has_obstacle {
-		fresnel.fill(255, 255, 255, 1)
-		fresnel.draw_text_fmt(cursor_screen.x, cursor_screen.y + 16, 16, "ID %d", obstacle.id)
-		fresnel.draw_text_fmt(
-			cursor_screen.x,
-			cursor_screen.y + 32,
-			16,
-			"%d AP",
-			obstacle.action_points,
-		)
-		fresnel.draw_text_fmt(cursor_screen.x, cursor_screen.y + 48, 16, "%v", obstacle.cmd)
-		fresnel.draw_text_fmt(cursor_screen.x, cursor_screen.y + 64, 16, "%v", obstacle.meta.flags)
-		fresnel.draw_text_fmt(
-			cursor_screen.x,
-			cursor_screen.y + 80,
-			16,
-			"HP %d/%d",
-			obstacle.hp,
-			obstacle.meta.max_hp,
-		)
-	}
 
 	when STUTTER_CHECKER_ENABLED {
 		// Stutter checker
@@ -365,8 +345,28 @@ render_fx :: proc(dt: f32) {
 	}
 }
 
-render_ui :: proc() {
-	render_commands := ui_layout_create()
+UiContext :: enum {
+	Main,
+	Tooltip,
+}
+
+render_ui :: proc(ui: UiContext, offset_in: ScreenCoord = {0, 0}) {
+	ctx := ui == .Main ? ctx1 : ctx2
+	clay.SetCurrentContext(ctx)
+	render_commands := ui == .Main ? ui_layout_create() : ui_tooltip_layout()
+
+	offset := offset_in
+
+	if ui == .Tooltip {
+		dat := clay.GetElementData(clay.ID("TooltipSizer"))
+		if offset.x + dat.boundingBox.width > f32(state.width) do offset.x += -dat.boundingBox.width + -64
+		if offset.y + dat.boundingBox.height > f32(state.height) do offset.y += -dat.boundingBox.height
+		if offset.x <= 0 {
+			// Still doesn't fit on screen, anchor to left of screen and push it below the cursor a bit
+			offset.x = 0
+			offset.y += 32
+		}
+	}
 
 	for i in 0 ..< i32(render_commands.length) {
 		render_command := clay.RenderCommandArray_Get(&render_commands, i)
@@ -380,8 +380,8 @@ render_ui :: proc() {
 				render_command.renderData.rectangle.backgroundColor.a / 255,
 			)
 			fresnel.draw_rect(
-				render_command.boundingBox.x,
-				render_command.boundingBox.y,
+				render_command.boundingBox.x + offset.x,
+				render_command.boundingBox.y + offset.y,
 				render_command.boundingBox.width,
 				render_command.boundingBox.height,
 			)
@@ -389,8 +389,8 @@ render_ui :: proc() {
 			c := render_command.renderData.text.textColor
 			fresnel.fill(c.r, c.g, c.b, c.a)
 			fresnel.draw_text(
-				render_command.boundingBox.x,
-				render_command.boundingBox.y,
+				render_command.boundingBox.x + offset.x,
+				render_command.boundingBox.y + offset.y,
 				i32(render_command.renderData.text.fontSize),
 				string_from_clay_slice(render_command.renderData.text.stringContents),
 			)

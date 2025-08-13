@@ -377,3 +377,7 @@ Got a pit island and rope bridge up, so cool. I think I want to work on fire nex
 Ok damn it's really starting to come together now. Playing with it on iphone and even in Safari it feels very smooth. A proper iOS build might really be feasible...
 
 Tomorrow I think I want to work on getting fire going, and then I can think about adding items, starting with a potion of fire.
+
+# Wednesday 13 Aug 2025
+
+Got a really nice tooltip system working with Clay. Clay is frikking awesome. Damn Nic has really outdone himself.

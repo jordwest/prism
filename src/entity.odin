@@ -6,6 +6,7 @@ EntityId :: distinct i32
 
 Entity :: struct {
 	id:            EntityId,
+	meta_id:       EntityMetaId,
 	meta:          EntityMeta,
 	pos:           TileCoord,
 	cmd:           Command,

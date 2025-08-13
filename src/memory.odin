@@ -1,9 +1,15 @@
 package main
 import "base:runtime"
-import "core:mem"
 import "core:fmt"
+import "core:mem"
 import "fresnel"
 import "prism"
+
+Arena :: struct($T: int) {
+	memory:    [T]u8,
+	arena:     mem.Arena,
+	allocator: mem.Allocator,
+}
 
 // For data that persists for the life of the app
 @(private = "file")
@@ -19,6 +25,8 @@ host_memory: [5242880]u8
 host_arena: mem.Arena
 host_arena_alloc: mem.Allocator
 
+arena_ui_frame: Arena(5242880)
+
 _serialization_buffer: [16384]u8
 _tmp_16k: [16384]u8
 
@@ -30,24 +38,33 @@ pad_after_state: prism.MemPadding
 
 // Clay layout arena
 clay_memory: [5116736]u8
+clay_memory_tooltip: [2558368]u8
 
 pad_after_clay: prism.MemPadding
 
 _memory_init_done: bool
 
-memory_validate :: proc(loc := #caller_location) {
-    if uintptr(fmt._user_formatters) != 0 {
-        v := uintptr(fmt._user_formatters)
-        fmt._user_formatters = nil
-        trace("_user_formatters was %d at %s:%d", v, loc.file_path, loc.line)
-        unreachable()
-    }
+@(private = "file")
+_init_arena :: proc(arena: ^Arena($T)) {
+	arena.arena = mem.Arena {
+		data = arena.memory[:],
+	}
+	arena.allocator = mem.arena_allocator(&arena.arena)
+}
 
-    when MEMORY_VALIDATE_PADDING {
-        prism.mempad_validate(&pad_before_state)
-        prism.mempad_validate(&pad_after_state)
-        prism.mempad_validate(&pad_after_clay)
-    }
+memory_validate :: proc(loc := #caller_location) {
+	if uintptr(fmt._user_formatters) != 0 {
+		v := uintptr(fmt._user_formatters)
+		fmt._user_formatters = nil
+		trace("_user_formatters was %d at %s:%d", v, loc.file_path, loc.line)
+		unreachable()
+	}
+
+	when MEMORY_VALIDATE_PADDING {
+		prism.mempad_validate(&pad_before_state)
+		prism.mempad_validate(&pad_after_state)
+		prism.mempad_validate(&pad_after_clay)
+	}
 }
 
 memory_init :: proc() {
@@ -57,6 +74,8 @@ memory_init :: proc() {
 		data = persistent_memory[:],
 	}
 	persistent_arena_alloc = mem.arena_allocator(&persistent_arena)
+
+	_init_arena(&arena_ui_frame)
 
 	fresnel.log_i32("persistent mem loc", i32(uintptr(&persistent_memory)))
 	fresnel.log_i32("state_mem_start", i32(uintptr(&state)))

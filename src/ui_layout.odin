@@ -1,13 +1,16 @@
 package main
 import clay "clay-odin"
+import "core:fmt"
 import "core:math"
 import "fresnel"
+import "prism"
 
 // Define some colors.
 COLOR_LIGHT :: clay.Color{224, 215, 210, 50}
 COLOR_RED :: clay.Color{168, 66, 28, 150}
 COLOR_ORANGE :: clay.Color{225, 138, 50, 150}
 COLOR_BLACK :: clay.Color{0, 0, 0, 255}
+COLOR_WHITE :: clay.Color{255, 255, 255, 255}
 
 // Layout config is just a struct that can be declared statically, or inline
 sidebar_item_layout := clay.LayoutConfig {
@@ -29,9 +32,9 @@ sidebar_item_component :: proc(index: u32) {
 	) {}
 }
 
+_test_ui_text_buf: [200]u8
 // An example function to create your layout tree
 ui_layout_create :: proc() -> clay.ClayArray(clay.RenderCommand) {
-	context.allocator = context.temp_allocator
 	// Begin constructing the layout.
 	clay.BeginLayout()
 
@@ -119,7 +122,7 @@ ui_layout_create :: proc() -> clay.ClayArray(clay.RenderCommand) {
 
 					count := int(42 + 50 + math.sin(state.t) * 50)
 					fresnel.metric_i32("count", i32(count))
-					chars := make([]u8, count)
+					chars := _test_ui_text_buf[:count]
 					for x := 0; x < count; x += 1 {
 						if x % 5 == 0 {
 							chars[x] = ' '
@@ -159,3 +162,56 @@ ui_layout_create :: proc() -> clay.ClayArray(clay.RenderCommand) {
 	// Returns a list of render commands
 	return clay.EndLayout()
 } // An example function to create your layout tree
+
+ui_tooltip_layout :: proc() -> clay.ClayArray(clay.RenderCommand) {
+	context.temp_allocator = arena_ui_frame.allocator
+	clay.BeginLayout()
+
+	entities_at_cursor := derived_entities_at(state.client.cursor_pos, ignore_out_of_bounds = true)
+	hover_entity, has_hover_entity := prism.maybe_any(
+		^Entity,
+		[]Maybe(^Entity){entities_at_cursor.obstacle, entities_at_cursor.ground},
+	).?
+
+
+	if !has_hover_entity do return clay.EndLayout()
+
+	if clay.UI()(
+	{
+		id = clay.ID("TooltipSizer"),
+		layout = {
+			layoutDirection = .TopToBottom,
+			sizing = {width = clay.SizingFit({}), height = clay.SizingFit({})},
+			padding = {8, 8, 8, 8},
+		},
+		backgroundColor = COLOR_LIGHT,
+	},
+	) {
+		if clay.UI()(
+		{
+			id = clay.ID("MinWidth"),
+			layout = {sizing = {width = clay.SizingFixed(200)}},
+			backgroundColor = COLOR_RED,
+		},
+		) {
+
+		}
+		if has_hover_entity {
+			_add_fmt_text("%s", hover_entity.meta_id)
+			_add_fmt_text("HP: %d/%d", hover_entity.hp, hover_entity.meta.max_hp)
+
+			if state.debug.render_debug_overlays {
+				_add_fmt_text("ID: %d", hover_entity.id)
+				_add_fmt_text("AP: %d", hover_entity.action_points)
+				_add_fmt_text("%v", hover_entity.cmd)
+				_add_fmt_text("%v", hover_entity.meta.flags)
+			}
+		}
+	}
+	return clay.EndLayout()
+}
+
+_add_fmt_text :: proc(fmtstr: string, args: ..any) {
+	text := fmt.tprintf(fmtstr, ..args)
+	clay.TextDynamic(text, clay.TextConfig({textColor = COLOR_WHITE, fontSize = 16}))
+}

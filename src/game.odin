@@ -19,6 +19,7 @@ game_spawn_entity :: proc(meta_id: EntityMetaId, entity: Entity = Entity{}) -> ^
 
 	new_entity := &state.client.game.entities[id]
 	new_entity.id = id
+	new_entity.meta_id = meta_id
 	new_entity.meta = entity_meta[meta_id]
 	new_entity.hp = new_entity.meta.max_hp
 
