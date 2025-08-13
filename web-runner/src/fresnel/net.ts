@@ -1,17 +1,7 @@
 import { FresnelInstance } from "./instance";
-import { FresnelState, Mailbox } from "./types";
-import { I32Pointer, OdinSlicePointer } from "./types";
+import { ClientId, I32Pointer, OdinSlicePointer } from "./types";
 import { NET_FAKE_DELAY } from "../index";
 import { getSlice, writeI32 } from "./util";
-
-const getMailbox = (state: FresnelState, clientId: number): Mailbox => {
-  const mailboxes = state.mailboxes;
-  if (!mailboxes.has(clientId)) {
-    mailboxes.set(clientId, []);
-  }
-
-  return mailboxes.get(clientId)!;
-};
 
 // const delayMs = () => 0;
 const delayMs = () => NET_FAKE_DELAY;
@@ -20,12 +10,14 @@ const delayMs = () => NET_FAKE_DELAY;
 export function createNetImports(instance: FresnelInstance) {
   return {
     client_send_message: (msgPtr: OdinSlicePointer) => {
+      if (!instance.connected) return;
+
       const messageContent = getSlice(instance.memory, msgPtr);
 
       const data = messageContent.slice();
       setTimeout(() => {
         instance.state.serverMailbox.push({
-          clientId: instance.instanceId + 1,
+          clientId: instance.clientId,
           data,
         });
       }, delayMs());
@@ -33,7 +25,10 @@ export function createNetImports(instance: FresnelInstance) {
       return messageContent.length;
     },
     client_poll_message: (msgPtr: OdinSlicePointer) => {
-      const clientMailbox = getMailbox(instance.state, instance.instanceId + 1);
+      const clientMailbox = instance.state.clients.get(instance.clientId);
+      if (clientMailbox == null) {
+        return 0
+      }
 
       const message = clientMailbox.shift();
       if (message == null) {
@@ -50,23 +45,45 @@ export function createNetImports(instance: FresnelInstance) {
       return message.length;
     },
 
-    server_send_message: (clientId: number, msgPtr: OdinSlicePointer) => {
+    client_connect: () => {
+      if (instance.state.listeningServerId != null) {
+        instance.connected = true
+        const clientId = instance.state.nextClientId
+        instance.state.nextClientId++
+        instance.clientId = clientId;
+        instance.state.clients.set(clientId, [])
+
+        const host = instance.state.instances[instance.state.listeningServerId];
+        if (host != null) {
+          host.exports.on_client_connected?.(clientId);
+        }
+      }
+    },
+
+    server_listen: () => {
+      console.info("Server listening")
+      instance.state.listeningServerId = instance.instanceId
+    },
+
+    server_send_message: (clientId: number, msgPtr: OdinSlicePointer): boolean => {
       const messageContent = getSlice(instance.memory, msgPtr);
 
-      const clientMailbox = getMailbox(instance.state, clientId);
+      const clientMailbox = instance.state.clients.get(clientId as ClientId);
       const data = messageContent.slice();
+
+      if (clientMailbox == null) return false
+
       setTimeout(() => {
         clientMailbox.push(data);
       }, delayMs());
-
-      return messageContent.length;
+      return true;
     },
     server_broadcast_message: (msgPtr: OdinSlicePointer) => {
       const messageContent = getSlice(instance.memory, msgPtr);
 
       const data = messageContent.slice();
-      for (var clientId of instance.state.mailboxes.keys()) {
-        const clientMailbox = getMailbox(instance.state, clientId);
+      for (var clientId of instance.state.clients.keys()) {
+        const clientMailbox = instance.state.clients.get(clientId)!;
         setTimeout(() => {
           clientMailbox.push(data);
         }, delayMs());

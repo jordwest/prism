@@ -20,9 +20,11 @@ InputActions :: enum i32 {
 	ZoomOut                   = 102,
 	DebugRenderOverlaysToggle = 9000,
 	DebugNextView             = 9001,
+	TempGameStart             = 9002,
 }
 
-input_system :: proc(dt: f32) {
+input_frame :: proc(dt: f32) {
+
 	player_entity, ok := player_entity().?
 
 	if ok {
@@ -83,6 +85,10 @@ input_system :: proc(dt: f32) {
 
 		command_submit(cmd)
 		state.client.cursor_hidden = true
+	}
+
+	if is_action_just_pressed(.TempGameStart) && state.host.is_host {
+		host_log_entry(LogEntryGameStarted{})
 	}
 
 	// TODO Cheat commands later?

@@ -68,12 +68,22 @@
     },
     {
       "id": 14,
-      "filename": "player-death.mp3",
+      "filename": "death-bell.mp3",
+      "type": "audio"
+    },
+    {
+      "id": 15,
+      "filename": "death-scream.ogg",
       "type": "audio"
     },
     {
       "id": 100,
       "filename": "Daudir.mp3",
+      "type": "audio"
+    },
+    {
+      "id": 200,
+      "filename": "fire.mp3",
       "type": "audio"
     }
   ],
@@ -183,6 +193,13 @@
         "id": 9001,
         "webKeys": [
           "1"
+        ]
+      },
+      {
+        "name": "temp_game_start",
+        "id": 9002,
+        "webKeys": [
+          "f"
         ]
       },
       {

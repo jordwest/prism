@@ -80,6 +80,8 @@ tile_set_fire :: proc(tile: ^TileData, fuel: i32) {
 }
 
 tile_handle_turn :: proc() {
+	state.client.audio.ambience = {}
+
 	for &tile, i in &state.client.game.tiles.data {
 		pos := TileCoord{i32(i) % LEVEL_WIDTH, i32(i) / LEVEL_WIDTH}
 		if tile.fire.fuel > 0 {
@@ -92,6 +94,9 @@ tile_handle_turn :: proc() {
 
 			// Still burning
 			if tile.fire.fuel > 0 {
+				state.client.audio.ambience += {.Fire}
+
+				// Spread fire
 				iter := prism.aabb_iterator(prism.aabb(Vec2i(pos) - {1, 1}, Vec2i({3, 3})))
 				for pos in prism.aabb_iterate(&iter) {
 					tile, valid_tile := tile_at(TileCoord(pos)).?

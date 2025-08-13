@@ -11,7 +11,9 @@ build-wasm-dev:
 build-wasm-release:
     odin build src -source-code-locations:filename -o:size -target:freestanding_wasm32 -out:build/web/assets/app.wasm
     wasm-opt build/web/assets/app.wasm -o build/web/assets/app.wasm -O3
+    (cd build/web/assets && tar -cvzf archive.tar.gz app.wasm)
     ls -la -D "" build/web/assets > .release.asset-sizes
+    rm build/web/assets/archive.tar.gz
 build-web-release:
     rm -f build/web/assets/*.js
     rm -f build/web/assets/*.css

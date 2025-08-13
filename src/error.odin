@@ -16,6 +16,7 @@ InnerError :: union {
 	ClientNotFound,
 	UnexpectedSeqId,
 	NoSpaceForEntity,
+	ErrorCode,
 	mem.Allocator_Error,
 	prism.SerializationResult,
 	prism.DjikstraError,
@@ -31,6 +32,10 @@ ErrorContainer :: struct {
 }
 
 TooManyIterations :: struct {}
+
+ErrorCode :: enum {
+	GameAlreadyStarted = 100,
+}
 
 PlayerCommandWrongEntity :: struct {
 	entity_id:        EntityId,

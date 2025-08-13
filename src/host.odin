@@ -24,6 +24,8 @@ host_boot :: proc() -> HostError {
 	) or_return
 	state.host.clients = make(map[ClientId]Client, 128, allocator = host_arena_alloc) or_return
 
+	fresnel.server_listen()
+
 	return nil
 }
 
@@ -70,8 +72,11 @@ host_handle_client_message :: proc(from_client_id: ClientId, msg: ClientMessage)
 
 	switch m in msg {
 	case ClientMessageIdentify:
-		state.client.game.newest_player_id += 1
-		new_player_id := PlayerId(state.client.game.newest_player_id)
+		new_player_id: PlayerId = 0
+		if m.join_mode == .Play {
+			state.client.game.newest_player_id += 1
+			new_player_id = PlayerId(state.client.game.newest_player_id)
+		}
 
 		client^ = IdentifiedClient {
 			player_id   = new_player_id,
@@ -85,7 +90,7 @@ host_handle_client_message :: proc(from_client_id: ClientId, msg: ClientMessage)
 			host_catch_up_client(from_client_id, m.next_log_seq)
 		}
 
-		host_log_entry(LogEntryPlayerJoined{player_id = new_player_id})
+		if new_player_id > 0 do host_log_entry(LogEntryPlayerJoined{player_id = new_player_id})
 	case ClientMessageCursorPosUpdate:
 		if !client_identified do break
 		host_broadcast_message(

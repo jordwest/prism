@@ -70,17 +70,20 @@ done,content,b4,Room with rope bridge access to a platform
 done,imp,b4,Enemies should only move towards player within a certain distance
 done,content,b4,Fire enemy - when it dies it splats flaming juices in random directions
 done,feat,b4,Fire system - flammable objects burn and spread
-doing,refactor,b4,Add sprite meta instead of just coordinates (like frames for animations)
-todo,refactor,b4,Add a queue for log events coming in from server for more consistency
-todo,feat,b4,Make entities get hurt by fire effect
+done,refactor,b4,Add sprite meta instead of just coordinates (like frames for animations)
+done,refactor,b4,Add a queue for log events coming in from server for more consistency
+done,feat,b4,Make entities get hurt by fire effect
+done,bug,b4,"Weirdness when delay=0, out of order messages or something"
+done,imp,b4,Game over state - at least stop playing turn
+todo,devtool,b4,Replay system to investigate desyncs
 todo,imp,b4,Click & drag to move camera around
 todo,bug,b4,Player indicators should appear above all entities (render order)
 todo,imp,b4,Consider setting a delay after actions (like attack) instead of after every turn
 todo,feat,b4,"Add basic lobby for connecting, setting name and starting game"
+todo,imp,b4,Preload and postload assets - delay loading only until preload assets
 todo,devtool,ideas,Rewind back to previous action (by replaying) for dev purposes
 todo,imp,b4,Cancel all allies commands when an enemy is spotted for the first time
 todo,bug,b4,Don't advance turn when all players are dead
-todo,bug,b4,"Weirdness when delay=0, out of order messages or something"
 todo,imp,b4,Add SFX again
 todo,perf,ideas,Divide calculations across frames to reduce stutter
 todo,feat,ideas,Shift-click to keep auto-attacking an enemy

@@ -9,7 +9,8 @@ import "prism"
 @(private = "file")
 _tempstr_buf: [16384]u8
 
-render_system :: proc(dt: f32) {
+render_frame :: proc(dt: f32) {
+	render_clear()
 	render_move_camera(dt)
 	render_tiles()
 	render_entities(dt)
@@ -25,6 +26,13 @@ render_system :: proc(dt: f32) {
 	if state.debug.render_debug_overlays {
 		render_debug_overlays()
 	}
+}
+
+render_clear :: proc() {
+	fresnel.clear()
+	fresnel.fill(10, 10, 10, 255)
+	fresnel.draw_rect(0, 0, f32(state.width), f32(state.height))
+	fresnel.fill(0, 0, 0, 255)
 }
 
 @(private = "file")
@@ -60,10 +68,13 @@ render_debug_overlays :: proc() {
 	switch state.debug.view {
 	case .None:
 	case .CurrentPlayerDjikstra:
-		dmap, e := derived_djikstra_map_to(state.client.controlling_entity_id)
+		dmap, e := derived_djikstra_map_to(
+			state.client.controlling_entity_id,
+			dont_generate = true,
+		)
 		_visualise_djikstra(dmap)
 	case .AllPlayersDjikstra:
-		dmap, e := derived_allies_djikstra_map()
+		dmap, e := derived_allies_djikstra_map(dont_generate = true)
 		_visualise_djikstra(dmap)
 	}
 
@@ -93,16 +104,27 @@ render_debug_overlays :: proc() {
 
 // TODO: Does this really belong in render? Find a better home
 render_move_camera :: proc(dt: f32) {
-	if e, ok := state.client.game.entities[state.client.controlling_entity_id]; ok {
-		// target := vec2f(e.pos.xy)
-		target := e.spring.pos
-		cmd := entity_get_command(&e)
-		// Move camera to midpoint between player and target... not sure I like it
-		// if cmd.type == .Move && SPRINGS_ENABLED {
-		// 	target = target + ((vec2f(cmd.pos) - target) / 2)
-		// }
-		state.client.camera.target = target
+	focused_entity, ok := entity(state.client.controlling_entity_id).?
+	if state.client.join_mode == .Spectate {
+		for _, player in state.client.game.players {
+			if player.player_entity_id > 0 {
+				focused_entity, ok = entity(player.player_entity_id).?
+				break
+			}
+		}
 	}
+
+	if !ok do return
+
+	// target := vec2f(e.pos.xy)
+	target := focused_entity.spring.pos
+	cmd := entity_get_command(focused_entity)
+	// Move camera to midpoint between player and target... not sure I like it
+	// if cmd.type == .Move && SPRINGS_ENABLED {
+	// 	target = target + ((vec2f(cmd.pos) - target) / 2)
+	// }
+	state.client.camera.target = target
+
 	prism.spring_tick(&state.client.camera, dt, !SPRINGS_ENABLED)
 }
 
@@ -164,7 +186,8 @@ render_tiles :: proc() {
 			}
 
 			if tile.fire.fuel > 0 {
-				render_sprite(SPRITE_COORD_FIRE, screen_c)
+				render_sprite(Sprite.Fire, screen_c)
+				// render_sprite(SPRITE_COORD_FIRE, screen_c)
 			}
 
 		}
@@ -174,7 +197,28 @@ render_tiles :: proc() {
 	fresnel.metric_i32("Tile loop", t1 - t0)
 }
 
-render_sprite :: proc(sprite_coords: [2]f32, pos: ScreenCoord, alpha: u8 = 255) {
+render_sprite :: proc {
+	render_sprite_new,
+	render_sprite_old,
+}
+render_sprite_new :: proc(sprite: Sprite, pos: ScreenCoord, alpha: u8 = 255) {
+	meta := sprite_meta[sprite]
+	global_animation_frame := int(state.t * 8)
+	frame := sprite_choose_frame(&meta, global_animation_frame)
+
+	fresnel.draw_image(
+		&fresnel.DrawImageArgs {
+			image_id = 1,
+			source_offset = frame.offset,
+			source_size = {SPRITE_SIZE, SPRITE_SIZE},
+			dest_offset = pos.xy,
+			dest_size = state.client.zoom * GRID_SIZE,
+			alpha = alpha,
+		},
+	)
+}
+
+render_sprite_old :: proc(sprite_coords: [2]f32, pos: ScreenCoord, alpha: u8 = 255) {
 	fresnel.draw_image(
 		&fresnel.DrawImageArgs {
 			image_id = 1,
@@ -458,7 +502,7 @@ render_path_to :: proc(
 	to_entity: EntityId = state.client.controlling_entity_id,
 	alpha: u8 = 255,
 ) {
-	dmap, e := derived_djikstra_map_to(to_entity)
+	dmap, e := derived_djikstra_map_to(to_entity, dont_generate = true)
 	if dmap.state == .Empty do return
 
 	path_len := prism.djikstra_path(dmap, tmp_path[:], Vec2i(from_pos))

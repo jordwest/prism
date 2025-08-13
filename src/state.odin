@@ -1,5 +1,6 @@
 package main
 
+import "core:container/queue"
 import "prism"
 
 AppState :: struct {
@@ -20,6 +21,7 @@ ClientState :: struct {
 	cursor_hidden:         bool,
 	cursor_last_moved:     f32,
 	// ^^^^^^
+	join_mode:             JoinMode,
 	zoom:                  f32,
 	camera:                prism.Spring(2),
 	my_token:              PlayerToken,
@@ -28,16 +30,24 @@ ClientState :: struct {
 	game:                  GameState,
 	bytes_sent:            i32,
 	bytes_received:        i32,
-	audio_queue:           AudioQueue,
+	audio:                 AudioState,
 	fx:                    prism.Pool(Fx, 100),
+	log_queue:             LogQueue,
 
 	// The sequence id of the command last issued by the client
 	// See JOURNAL.md, 5 Aug 2025
 	cmd_seq:               CmdSeqId,
 }
 
+GameStatus :: enum {
+	Lobby,
+	Started,
+	GameOver,
+}
+
 // Game state (generally expected to be deterministic across clients)
 GameState :: struct {
+	status:           GameStatus,
 	spawn_point:      TileCoord,
 	newest_entity_id: i32,
 	newest_player_id: i32,
@@ -49,6 +59,7 @@ GameState :: struct {
 	derived:          DerivedState,
 	pcg:              Maybe(^PcgState),
 	next_log_seq:     LogSeqId,
+	enemies_killed:   i32,
 }
 
 HostState :: struct {

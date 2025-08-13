@@ -114,36 +114,20 @@ _attack :: proc(e: ^Entity) -> CommandOutcome {
 
 	dist_to_target := prism.tile_distance(target.pos - e.pos)
 
-
 	if dist_to_target == 1 {
 		// Melee
 		is_hit := prism.rand_splitmix_get_bool(&rng, 650)
 
 		if is_hit {
-			fx_spawn_dmg(target.pos, 4)
-			target.hp -= 4
+			event_fire(EventEntityHurt{dmg = 4, source_id = e.id, target_id = target.id})
 			audio_play(.Punch)
 		} else {
-			fx_spawn_dmg(target.pos, 0)
+			event_fire(EventEntityMiss{attacker_id = e.id, target_id = target.id})
 			audio_play(.Miss)
 		}
 
 		entity_consume_ap(e, .IsFast in e.meta.flags ? 80 : 100)
 		entity_clear_cmd(e)
-
-		if target.hp <= 0 {
-			game_spawn_entity(.Corpse, Entity{pos = target.pos})
-			if target.meta_id == .Firebug {
-				iter := prism.aabb_iterator(prism.aabb(Vec2i(target.pos) - {1, 1}, Vec2i({3, 3})))
-				for pos in prism.aabb_iterate(&iter) {
-					tile, valid_tile := tile_at(TileCoord(pos)).?
-					if valid_tile do tile_set_fire(tile, 8)
-				}
-			}
-			entity_despawn(target)
-
-			audio_play(target.meta.team == .Players ? .PlayerDeath : .EnemyDeath)
-		}
 		return .Ok
 	}
 

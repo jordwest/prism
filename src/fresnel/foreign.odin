@@ -37,7 +37,8 @@ foreign input {
 foreign import audio "audio"
 @(default_calling_convention = "c")
 foreign audio {
-	play :: proc(audio_id: i32) -> bool ---
+	play :: proc(audio_id: i32, restart := false) ---
+	stop :: proc(audio_id: i32) ---
 }
 
 foreign import net "net"
@@ -47,6 +48,9 @@ foreign net {
 	client_send_message :: proc(slice: []u8) -> i32 ---
 	// Receive messages from server
 	client_poll_message :: proc(slice: []u8) -> i32 ---
+
+	client_connect :: proc() ---
+	server_listen :: proc() ---
 
 	// TODO: Should these be host_* instead of server_? Since it may be relayed
 	// Send message server -> client

@@ -13,6 +13,8 @@ Deno.addSignalListener("SIGTERM", () => {
   Deno.exit();
 });
 
+let firstBuild = true
+
 Deno.serve(
   { hostname: "localhost", port: 8000, hostname: "0.0.0.0" },
   async (request) => {
@@ -29,6 +31,7 @@ async function buildAll() {
     // Build everything
     await buildWebRunner();
     await buildWasm();
+    firstBuild = false
   } catch (e) {
     console.error(e);
   }
@@ -183,5 +186,6 @@ async function onFileUpdate(event) {
 // Watch for file changes and send wasm
 const watcher = Deno.watchFs("./");
 for await (const event of watcher) {
+  if (firstBuild == true) continue;
   onFileUpdate(event);
 }

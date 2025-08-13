@@ -2,7 +2,7 @@ package main
 
 ////////// CHEATS \\\\\\\\\\\\
 
-FOG_OF_WAR_OFF :: true
+FOG_OF_WAR_OFF :: false
 NO_ENEMIES :: false
 
 ////////// DEBUG OPTIONS \\\\\\\\\\
@@ -28,7 +28,9 @@ when ODIN_DEBUG {
 LOG_HOST_MESSAGES :: false
 // Whether to record messages received by client
 LOG_CLIENT_MESSAGES :: false
+LOG_LOG_ENTRIES :: false
 LOG_COMMANDS :: false
+LOG_EVENTS :: false
 
 /////// MAGIC NUMBERS \\\\\\\\\\\
 
@@ -48,9 +50,9 @@ ENTITY_SPRING_DAMPER :: 10
 ///////// FUTURE STATE \\\\\\\\\
 
 // GAME_SEED :: 0xdeadbeef6532932
-GAME_SEED :: 0xdeadbeef6532
+GAME_SEED :: 0xdeadbeef65f32
 TURN_DELAY :: 0.1
-MUSIC_ENABLED :: false
+MUSIC_ENABLED :: true
 SPRINGS_ENABLED :: true
 
 /////////// DERIVED \\\\\\\\\\\\\

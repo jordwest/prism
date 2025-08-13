@@ -28,7 +28,6 @@ PcgState :: struct {
 	iteration:       int,
 	delay:           int,
 	done:            bool,
-	tiles:           [LEVEL_WIDTH * LEVEL_HEIGHT]PcgTile,
 	rooms:           map[RoomId]Room,
 	room_type_count: [RoomType]int,
 	newest_room_id:  RoomId,
@@ -40,11 +39,6 @@ PcgState :: struct {
 	// Just for visualisation
 	cursor:          prism.Aabb(i32),
 	cursor2:         prism.Aabb(i32),
-}
-
-@(private = "file")
-PcgTile :: struct {
-	// flags: PcgTileFlag,
 }
 
 @(private = "file")
@@ -71,6 +65,16 @@ procgen_init :: proc(pcg: ^PcgState) {
 		x2 = LEVEL_WIDTH - 1,
 		y2 = LEVEL_HEIGHT - 1,
 	}
+}
+procgen_reset :: proc(pcg: ^PcgState) {
+	pcg.done = false
+	pcg.iteration = 0
+	pcg.total_time = 0
+	pcg.newest_room_id = 0
+	pcg.delay = 0
+	clear(&pcg.rooms)
+	pcg.room_type_count = {}
+	priority_queue.clear(&pcg.door_locations)
 }
 
 procgen_iterate :: proc(pcg: ^PcgState) {

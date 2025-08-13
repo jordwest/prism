@@ -1,11 +1,14 @@
 package main
 
+import "core:container/queue"
+import "fresnel"
 import "prism"
 
 ///////////////////// UNION ////////////////////
 
 LogEntry :: union {
 	LogEntryPlayerJoined,
+	LogEntryGameStarted,
 	LogEntryCommand,
 	LogEntryAdvanceTurn,
 }
@@ -14,6 +17,8 @@ log_replay_entry :: proc(entry: LogEntry) -> Error {
 	switch e in entry {
 	case LogEntryPlayerJoined:
 		_on_player_joined(e) or_return
+	case LogEntryGameStarted:
+		_on_game_started(e) or_return
 	case LogEntryCommand:
 		_on_command(e) or_return
 	case LogEntryAdvanceTurn:
@@ -22,11 +27,15 @@ log_replay_entry :: proc(entry: LogEntry) -> Error {
 
 	return nil
 }
-
 ///////////////////// VARIANTS ////////////////////
 
 LogEntryPlayerJoined :: struct {
 	player_id: PlayerId,
+}
+
+LogEntryGameStarted :: struct {
+	// TODO
+	// game_seed: u64,
 }
 
 LogEntryAdvanceTurn :: struct {}
@@ -40,22 +49,50 @@ LogEntryCommand :: struct {
 ////////////////// HANDLERS ///////////////////////
 
 @(private = "file")
+_on_game_started :: proc(entry: LogEntryGameStarted) -> Error {
+	pcg, ok := state.client.game.pcg.?
+	if !ok do return error(InvariantError{})
+
+	if state.client.game.status == .Started do return error(ErrorCode.GameAlreadyStarted)
+
+	if state.client.game.status == .GameOver do game_reset()
+
+	t0 := fresnel.now()
+	for !pcg.done {
+		procgen_iterate(pcg)
+	}
+	t1 := fresnel.now()
+	pcg.total_time += (t1 - t0)
+
+	fresnel.metric_i32("djikstra_iterations", pcg.djikstra_map.iterations)
+
+	// Spawn all players
+	for player_id, &player in &state.client.game.players {
+		spawn, ok := game_find_nearest_traversable_space(state.client.game.spawn_point)
+		player_entity := game_spawn_entity(.Player, {player_id = player_id, pos = spawn})
+		if !ok do return error(NoSpaceForEntity{entity_id = player_entity.id, pos = state.client.game.spawn_point})
+
+		player.player_entity_id = player_entity.id
+
+		if state.client.player_id == player_id {
+			state.client.controlling_entity_id = player_entity.id
+		}
+	}
+
+	state.client.game.status = .Started
+	vision_update()
+
+	return nil
+}
+
+@(private = "file")
 _on_player_joined :: proc(entry: LogEntryPlayerJoined) -> Error {
 	s := &state.client.game
 
-	// Create an entity
-	spawn, ok := game_find_nearest_traversable_space(state.client.game.spawn_point)
-	player_entity := game_spawn_entity(.Player, {player_id = entry.player_id, pos = spawn})
-	if !ok do return error(NoSpaceForEntity{entity_id = player_entity.id, pos = state.client.game.spawn_point})
-
 	s.players[entry.player_id] = Player {
-		player_id        = entry.player_id,
-		player_entity_id = player_entity.id,
-		cursor_spring    = prism.spring_create(2, [2]f32{0, 0}, k = 40, c = 10),
-	}
-
-	if state.client.player_id == entry.player_id {
-		state.client.controlling_entity_id = player_entity.id
+		player_id     = entry.player_id,
+		// player_entity_id = assigned in _on_game_started,
+		cursor_spring = prism.spring_create(2, [2]f32{0, 0}, k = 40, c = 10),
 	}
 
 	vision_update()
@@ -64,7 +101,8 @@ _on_player_joined :: proc(entry: LogEntryPlayerJoined) -> Error {
 }
 @(private = "file")
 _on_advance_turn :: proc(entry: LogEntryAdvanceTurn) -> Error {
-	turn_advance()
+	event_fire(EventTurnEnding{}) or_return
+	event_fire(EventTurnStarting{}) or_return
 	return nil
 }
 
@@ -92,6 +130,50 @@ _on_command :: proc(entry: LogEntryCommand) -> Error {
 	return nil
 }
 
+////////////////// QUEUE ////////////////////
+
+LogQueue :: struct {
+	_queue:   queue.Queue(LogEntry),
+	_backing: [256]LogEntry,
+	i:        int,
+}
+
+log_queue_init :: proc(lq: ^LogQueue) {
+	queue.init_from_slice(&lq._queue, lq._backing[:])
+}
+
+log_queue_can_push :: proc(lq: ^LogQueue) -> bool {
+	return queue.len(lq._queue) < queue.cap(lq._queue)
+}
+
+log_queue_push :: proc(lq: ^LogQueue, log_entry: LogEntry) {
+	queue.push_back(&lq._queue, log_entry)
+}
+
+log_queue_iterate :: proc(lq: ^LogQueue) -> (LogEntry, int, bool) {
+	elem, ok := queue.pop_front_safe(&lq._queue)
+	if !ok do return nil, lq.i, false
+	defer lq.i += 1
+	return elem, lq.i, true
+}
+
+log_frame :: proc() -> Error {
+	MAX_EVENTS_PER_FRAME := 2
+	iters := 0
+	for entry in log_queue_iterate(&state.client.log_queue) {
+		iters += 1
+		if iters > MAX_EVENTS_PER_FRAME do return nil // We can always process more on the next frame
+
+		log_replay_entry(entry) or_return
+		if LOG_LOG_ENTRIES do info("%v", entry)
+
+		if state.client.game.status == .Started {
+			turn_evaluate_all() or_return
+		}
+	}
+	return nil
+}
+
 ///////////////////// SERIALIZATION ////////////////////
 
 @(private = "file")
@@ -103,14 +185,19 @@ log_entry_serialize :: proc(s: ^S, entry: ^LogEntry) -> SResult {
 	state := prism.serialize_union_create(s, entry)
 	prism.serialize_union_nil(0, &state)
 	prism.serialize_union_variant(1, LogEntryPlayerJoined, _serialize_variant, &state) or_return
-	prism.serialize_union_variant(2, LogEntryAdvanceTurn, prism.serialize_empty, &state) or_return
+	prism.serialize_union_variant(2, LogEntryGameStarted, _serialize_variant, &state) or_return
+	prism.serialize_union_variant(3, LogEntryAdvanceTurn, prism.serialize_empty, &state) or_return
 	prism.serialize_union_variant(4, LogEntryCommand, _serialize_variant, &state) or_return
 	return prism.serialize_union_fail_if_not_found(&state)
 }
 
 _serialize_variant :: proc {
+	_game_started_serialize,
 	_player_joined_serialize,
 	_command_serialize,
+}
+_game_started_serialize :: proc(s: ^S, entry: ^LogEntryGameStarted) -> SResult {
+	return nil
 }
 
 _player_joined_serialize :: proc(s: ^S, entry: ^LogEntryPlayerJoined) -> SResult {

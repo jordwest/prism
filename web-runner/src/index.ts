@@ -1,13 +1,15 @@
 import { FresnelInstance, instantiate } from "./fresnel/instance";
 import {
   AssetType,
+  ClientId,
   FresnelState,
+  Mailbox,
   ManifestJson,
   Pointer,
 } from "./fresnel/types";
 
-export const INSTANCES = 1;
-export const NET_FAKE_DELAY = 30;
+export const INSTANCES = 2;
+export const NET_FAKE_DELAY = 0;
 
 const canvas: HTMLCanvasElement = document.getElementById(
   "canvas",
@@ -16,15 +18,34 @@ canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 const ctx = canvas.getContext("2d");
 
+let state: FresnelState = {
+  canvas,
+  canvasContext: ctx!,
+  storage: {},
+  instances: [],
+  clients: new Map(),
+  nextClientId: 100 as ClientId,
+  focusedInstance: 0,
+  listeningServerId: null,
+  font: 'sans-serif',
+  serverMailbox: [],
+  assets: {},
+  audioContext: new AudioContext(),
+  input: {
+    keyToAction: new Map(),
+    mouseButtonToAction: new Map(),
+  },
+};
+
 var line = 0;
 var metrics: Record<string, any> = {};
 
 document.addEventListener("keydown", (e) => {
   if (e.key == "`") {
     console.group(`Metrics at ${performance.now() / 1000}`);
-    for (var i = 0; i < instances.length; i++) {
+    for (var i = 0; i < state.instances.length; i++) {
       console.group(`Instance ${i}`);
-      console.table(instances[i]?.metrics);
+      console.table(state.instances[i]?.metrics);
       console.groupEnd();
     }
     console.groupEnd();
@@ -43,7 +64,7 @@ document.addEventListener("keyup", (e) => {
 });
 
 function setAction(actionId: number | undefined | null) {
-  const instance = instances[focusedInstance];
+  const instance = state.instances[state.focusedInstance];
   if (instance != null && actionId != null) {
     instance.input.pressedActions.add(actionId);
     instance.input.pressedActionsThisFrame.add(actionId);
@@ -51,7 +72,7 @@ function setAction(actionId: number | undefined | null) {
 }
 
 function clearAction(actionId: number | undefined | null) {
-  const instance = instances[focusedInstance];
+  const instance = state.instances[state.focusedInstance];
   if (instance != null && actionId != null) {
     instance.input.pressedActions.delete(actionId);
   }
@@ -60,24 +81,6 @@ function clearAction(actionId: number | undefined | null) {
 canvas.addEventListener("mousedown", (e) => {
   e.preventDefault();
 });
-
-let instances: FresnelInstance[] = [];
-let focusedInstance = 0;
-
-let state: FresnelState = {
-  canvas,
-  canvasContext: ctx!,
-  storage: {},
-  mailboxes: new Map(),
-  font: 'sans-serif',
-  serverMailbox: [],
-  assets: {},
-  audioContext: new AudioContext(),
-  input: {
-    keyToAction: new Map(),
-    mouseButtonToAction: new Map(),
-  },
-};
 
 const loadResource = async (
   resourceId: number,
@@ -100,6 +103,7 @@ const addImage = async (resourceId: number, data: Blob) => {
 const addAudio = (resourceId: number, filename: string) => {
   const audioElement = document.createElement("audio");
   audioElement.src = filename;
+  document.body.appendChild(audioElement);
 
   const track = state.audioContext.createMediaElementSource(audioElement);
   track.connect(state.audioContext.destination);
@@ -136,8 +140,8 @@ window.addEventListener("resize", () => {
   state.canvasContext.textBaseline = "top";
   state.canvasContext.imageSmoothingEnabled = false;
 
-  for (var i = 0; i < instances.length; i++) {
-    const instance = instances[i];
+  for (var i = 0; i < state.instances.length; i++) {
+    const instance = state.instances[i];
     instance?.exports.on_resize?.(
       canvas.width,
       canvas.height * instance!.region.height,
@@ -155,8 +159,8 @@ function getRegionCoord(
   y: number,
 ): { instanceId: number; regionY: number } | null {
   const yPct = y / canvas.height;
-  for (var i = 0; i < instances.length; i++) {
-    const region = instances[i]!.region;
+  for (var i = 0; i < state.instances.length; i++) {
+    const region = state.instances[i]!.region;
     const scale = canvas.height;
     if (yPct > region.y && yPct < region.y + region.height) {
       return { instanceId: i, regionY: (yPct - region.y) * scale };
@@ -172,9 +176,9 @@ canvas.addEventListener("mousemove", (evt) => {
 
   const regionCoord = getRegionCoord(pointerState.y);
   if (regionCoord == null) return;
-  const instance = instances[regionCoord.instanceId];
+  const instance = state.instances[regionCoord.instanceId];
   if (instance != null) {
-    focusedInstance = instance?.instanceId;
+    state.focusedInstance = instance?.instanceId;
   }
 
   instance?.exports.on_mouse_move?.(
@@ -193,7 +197,7 @@ canvas.addEventListener("mousedown", (evt) => {
 
   const regionCoord = getRegionCoord(pointerState.y);
   if (regionCoord == null) return;
-  const instance = instances[regionCoord.instanceId];
+  const instance = state.instances[regionCoord.instanceId];
   instance?.exports.on_mouse_button?.(
     pointerState.x,
     regionCoord.regionY,
@@ -213,7 +217,7 @@ canvas.addEventListener("mouseup", (evt) => {
 
   const regionCoord = getRegionCoord(pointerState.y);
   if (regionCoord == null) return;
-  const instance = instances[regionCoord.instanceId];
+  const instance = state.instances[regionCoord.instanceId];
   instance?.exports.on_mouse_button?.(
     pointerState.x,
     regionCoord.regionY,
@@ -221,14 +225,6 @@ canvas.addEventListener("mouseup", (evt) => {
     evt.button,
   );
 });
-
-// Temp function for notifying instances of a "connection"
-const notifyHostOfConnection = (clientId: number) => {
-  const host = instances[0];
-  if (host != null) {
-    host.exports.on_client_connected?.(clientId);
-  }
-};
 
 const delay = (ms: number) =>
   new Promise<void>((resolve) => setTimeout(() => resolve(), ms));
@@ -240,10 +236,14 @@ async function initWasm(instanceCount: number) {
       "background-color: #990000; font-weight: bold; font-size: 16px; padding: 8px; display: block;",
     );
     const y = height * i;
-    instances.push(await instantiate(state, i, { y, height }, i));
+    const newInstance = await instantiate(state, i, { y, height }, i);
+    state.instances.push(newInstance);
+    newInstance.exports.boot(
+      state.canvas.width,
+      state.canvas.height * newInstance.region.height,
+      i,
+    );
     await delay(100);
-    notifyHostOfConnection(i + 1);
-    await delay(600);
   }
 }
 // initWasm(2);
@@ -253,13 +253,11 @@ async function restartWasm() {
   // Flush all mailboxes so new instances don't receive messages from old instances...
 
   state.serverMailbox = [];
-  for (var mb of state.mailboxes.keys()) {
-    state.mailboxes.set(mb, []);
-  }
+  state.listeningServerId = null;
 
-  let height = 1 / instances.length;
-  for (var i = 0; i < instances.length; i++) {
-    const instance = instances[i];
+  let height = 1 / state.instances.length;
+  for (var i = 0; i < state.instances.length; i++) {
+    const instance = state.instances[i];
 
     if (instance != null) {
       // Notify old instance we're shutting down
@@ -272,8 +270,13 @@ async function restartWasm() {
     );
 
     const y = height * i;
-    instances[i] = await instantiate(state, i, { y, height }, i);
-    notifyHostOfConnection(i + 1);
+    const newInstance = await instantiate(state, i, { y, height });
+    state.instances[i] = newInstance;
+    newInstance.exports.boot(
+      state.canvas.width,
+      state.canvas.height * newInstance.region.height,
+      i,
+    );
   }
 }
 
@@ -302,7 +305,7 @@ const frame: FrameRequestCallback = (time) => {
     let t = (time - lastT) / 1000;
     t = Math.min(0.5, t);
     canvas.style.opacity = "";
-    for (var instance of instances) {
+    for (var instance of state.instances) {
       try {
         instance.exports.tick(t);
         instance.input.pressedActionsThisFrame.clear();
@@ -312,14 +315,14 @@ const frame: FrameRequestCallback = (time) => {
       }
     }
 
-    const regionHeight = canvas.height / instances.length;
+    const regionHeight = canvas.height / state.instances.length;
 
     state.canvasContext.strokeStyle = "#228";
     state.canvasContext.lineWidth = 4;
 
     state.canvasContext.strokeRect(
       0,
-      focusedInstance * regionHeight,
+      state.focusedInstance * regionHeight,
       canvas.width,
       regionHeight,
     );

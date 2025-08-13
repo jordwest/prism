@@ -1,3 +1,5 @@
+import { FresnelInstance } from "./instance";
+
 export type Mailbox = Uint8Array<ArrayBuffer>[];
 export type ServerMailbox = {
   clientId: number;
@@ -7,10 +9,14 @@ export type ServerMailbox = {
 export type FresnelState = {
   canvas: HTMLCanvasElement;
   canvasContext: CanvasRenderingContext2D;
+  instances: FresnelInstance[];
+  focusedInstance: number;
+  listeningServerId: number | null;
+  clients: Map<ClientId, Mailbox>;
+  nextClientId: ClientId;
   font: string;
   storage: Record<string, string>;
   serverMailbox: ServerMailbox;
-  mailboxes: Map<number, Mailbox>;
   assets: Record<number, Asset>;
   audioContext: AudioContext;
   input: {
@@ -48,6 +54,8 @@ export type ManifestAction = {
   webKeys?: string[];
   mouseButtons?: number[];
 };
+
+export type ClientId = number & { __clientId: never };
 
 export type Pointer = number & { __pointer: never };
 export type OdinStringPointer = number & {

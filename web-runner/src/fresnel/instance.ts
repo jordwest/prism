@@ -4,9 +4,11 @@ import { createNetImports } from "./net";
 import {
   FresnelExports,
   FresnelState,
+  Mailbox,
   OdinSlicePointer,
   OdinStringPointer,
   Pointer,
+  ClientId,
 } from "./types";
 import { readOdinString, getSlice } from "./util";
 import basex from "base-x";
@@ -16,8 +18,10 @@ const ENCODING =
 var base94 = basex(ENCODING);
 
 export type FresnelInstance = {
+  connected: boolean;
   wasmInstance: WebAssembly.Instance;
   memory: ArrayBufferLike;
+  clientId: ClientId;
   state: FresnelState;
   metrics: Record<string, any>;
   exports: FresnelExports;
@@ -40,7 +44,6 @@ export async function instantiate(
   state: FresnelState,
   instanceId: number,
   region: { y: number; height: number },
-  flags: number = 0,
 ): Promise<FresnelInstance> {
   // Need to set up a reference here so it can be passed in to the exports
   const instance = {} as FresnelInstance;
@@ -70,12 +73,6 @@ export async function instantiate(
   };
 
   instance.exports.tests?.();
-
-  instance.exports.boot(
-    state.canvas.width,
-    state.canvas.height * region.height,
-    flags,
-  );
 
   console.info("Instance exported memory is ", memoryObj.buffer.byteLength);
 

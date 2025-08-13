@@ -22,11 +22,8 @@ client_boot :: proc(width: i32, height: i32) -> Error {
 	if e_alloc != nil do return error(e_alloc)
 	derived_init() or_return
 	audio_init()
+	log_queue_init(&state.client.log_queue)
 	fx_init()
-
-	if MUSIC_ENABLED {
-		audio_play(.Daudir)
-	}
 
 	state.client.zoom = DEFAULT_ZOOM
 	state.client.camera = prism.spring_create(
@@ -42,36 +39,21 @@ client_boot :: proc(width: i32, height: i32) -> Error {
 	state.client.game.pcg = pcg
 	procgen_init(pcg)
 
+	fresnel.client_connect()
+
 	return nil
 }
 
-client_tick :: proc(dt: f32) {
+client_frame :: proc(dt: f32) -> Error {
 	error_log(client_poll())
 
-	fresnel.clear()
-	fresnel.fill(10, 10, 10, 255)
-	fresnel.draw_rect(0, 0, f32(state.width), f32(state.height))
+	log_frame() or_return
+	input_frame(dt)
+	entity_frame(dt)
+	render_frame(dt)
+	audio_frame()
 
-	fresnel.fill(0, 0, 0, 255)
-
-	game := state.client.game
-
-	if pcg, ok := game.pcg.?; ok {
-		max_iterations := PCG_ITERATION_DELAY == 0 ? 100 : 1
-		t0 := fresnel.now()
-		for i := 0; i < max_iterations && !pcg.done; i += 1 {
-			procgen_iterate(pcg)
-		}
-		t1 := fresnel.now()
-		pcg.total_time += (t1 - t0)
-
-		fresnel.metric_i32("djikstra_iterations", pcg.djikstra_map.iterations)
-	}
-
-	input_system(dt)
-	entity_system(dt)
-	render_system(dt)
-	audio_system()
+	return nil
 }
 
 _msg_in_buf: [1000]u8
@@ -81,6 +63,9 @@ client_poll :: proc() -> Error {
 	client_id: i32
 	bytes_read := 0
 	for {
+		// Apply backpressure if our processing queue gets too full
+		if !log_queue_can_push(&state.client.log_queue) do break
+
 		bytes_read := fresnel.client_poll_message(_serialization_buffer[:])
 		if bytes_read <= 0 do break // No new messages
 		state.client.bytes_received += bytes_read
@@ -100,6 +85,7 @@ client_poll :: proc() -> Error {
 				ClientMessageIdentify {
 					token = state.client.my_token,
 					display_name = "Player me",
+					join_mode = state.client.join_mode,
 					next_log_seq = state.client.game.next_log_seq,
 				},
 			)
@@ -121,11 +107,8 @@ client_poll :: proc() -> Error {
 				warn("Ignoring stale update seq=%d, expect=%d", m.seq, expected_seq)
 				break
 			}
-			e = log_replay_entry(m.entry)
-			if e != nil do error_log(e)
 			state.client.game.next_log_seq += 1
-			e = turn_evaluate_all()
-			if e != nil do error_log(e)
+			log_queue_push(&state.client.log_queue, m.entry)
 		case HostMessageCommandAck:
 			entity, ok := &state.client.game.entities[state.client.controlling_entity_id]
 			if _local_cmd, has_local := entity._local_cmd.?; has_local {

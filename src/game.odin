@@ -28,6 +28,17 @@ game_spawn_entity :: proc(meta_id: EntityMetaId, entity: Entity = Entity{}) -> ^
 	return new_entity
 }
 
+game_reset :: proc() {
+	game := &state.client.game
+	game.current_turn = 0
+	game.enemies_killed = 0
+	game.newest_entity_id = 0
+	derived_clear()
+	game.turn_complete = false
+	clear(&state.client.game.entities)
+	procgen_reset(state.client.game.pcg.?)
+}
+
 game_get_move_modifier :: proc(
 	from: TileCoord,
 	to: TileCoord,
@@ -39,12 +50,22 @@ game_get_move_modifier :: proc(
 	if .Seen not_in tile.flags do modifiers += {.Unseen}
 	entities := derived_entities_at(TileCoord(to))
 	if .Traversable not_in tile.flags do return {.Blocked}
-	if obstacle, has_obstacle := entities.obstacle.?; has_obstacle {
+	if obstacle, has_obstacle := entities.obstacle.?; has_obstacle && !obstacle.despawning {
 		if .MovedLastTurn not_in obstacle.meta.flags do return {.Blocked}
 		modifiers += {.Avoid}
 	}
 	if .Slow in tile.flags do modifiers += {.Slow}
 	return modifiers
+}
+
+game_check_lose_condition :: proc() {
+	for _, player in state.client.game.players {
+		entity, ok := entity(player.player_entity_id).?
+		// A player is still alive, game is not over
+		if ok && !entity.despawning do return
+	}
+
+	event_fire(EventGameOver{})
 }
 
 game_move_modifiers_to_cost :: proc(modifiers: bit_set[MoveModifier]) -> i32 {

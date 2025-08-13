@@ -35,13 +35,19 @@ schema {
     }
 
     table "credits" label="Asset credits" file="credits.csv" {
-        field "name"
-        field "credit"
+        field "status" type="select" {
+            option "ok" label="✅ OK"
+            option "placeholder" label="🟡 Placeholder"
+            option "nolicense" label="‼️ Not licensed"
+        }
         field "type" type="select" {
             option "font" label="🀄️ Font"
             option "sfx" label="🔊 Sound effect"
             option "music" label="🎵 Music"
         }
+        field "file"
+        field "name"
+        field "credit"
         field "url"
         field "notes"
     }

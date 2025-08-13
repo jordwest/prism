@@ -50,11 +50,24 @@ derived_handle_entity_changed :: proc(entity: ^Entity) {
 	}
 
 	delete_key(&state.client.game.derived.entity_djikstra_maps, entity.id)
+	if .MovedLastTurn not_in entity.meta.flags {
+		derived_regenerate_player_maps()
+	}
 	state.client.game.derived.s_tile_entities = .Empty
+}
+
+derived_regenerate_player_maps :: proc() {
+	clear(&state.client.game.derived.entity_djikstra_maps)
+	for _, player in state.client.game.players {
+		derived_djikstra_map_to(player.player_entity_id)
+	}
 }
 
 derived_clear :: proc() {
 	clear(&state.client.game.derived.entity_djikstra_maps)
+	for _, player in state.client.game.players {
+		derived_djikstra_map_to(player.player_entity_id)
+	}
 	state.client.game.derived.s_tile_entities = .Empty
 }
 
@@ -70,14 +83,17 @@ derived_entities_at :: proc(coord: TileCoord, ignore_out_of_bounds := false) -> 
 	return derived.tile_entities[coord.x][coord.y]
 }
 
-derived_allies_djikstra_map :: proc() -> (^prism.DjikstraMap(LEVEL_WIDTH, LEVEL_HEIGHT), Error) {
+derived_allies_djikstra_map :: proc(
+	dont_generate := false,
+) -> (
+	^prism.DjikstraMap(LEVEL_WIDTH, LEVEL_HEIGHT),
+	Error,
+) {
 	dmap, has_existing_map := &state.client.game.derived.allies_djikstra_map.?
 	if has_existing_map do return dmap, nil
 
 	state.client.game.derived.allies_djikstra_map = prism.DjikstraMap(LEVEL_WIDTH, LEVEL_HEIGHT){}
 	dmap = &state.client.game.derived.allies_djikstra_map.?
-
-	trace("Regenerating djikstra map for allies")
 
 	e: prism.DjikstraError
 
@@ -101,6 +117,7 @@ derived_allies_djikstra_map :: proc() -> (^prism.DjikstraMap(LEVEL_WIDTH, LEVEL_
 
 derived_djikstra_map_to :: proc(
 	eid: EntityId,
+	dont_generate: bool = false,
 ) -> (
 	^prism.DjikstraMap(LEVEL_WIDTH, LEVEL_HEIGHT),
 	Error,
@@ -108,6 +125,8 @@ derived_djikstra_map_to :: proc(
 	maps := &state.client.game.derived.entity_djikstra_maps
 	existing_map, has_existing_map := &maps[eid]
 	if has_existing_map do return existing_map, nil
+
+	if dont_generate do return {}, nil
 
 	entity, entity_exists := state.client.game.entities[eid]
 	if !entity_exists do return nil, error(EntityNotFound{entity_id = eid})

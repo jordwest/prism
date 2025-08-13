@@ -64,12 +64,19 @@ EntityFlags :: enum {
 	MovedLastTurn,
 	IsFast,
 	IsSlow,
+	CanTakeDamage,
 }
 
 EntityFilterProc :: proc(_: ^Entity) -> bool
 
 entity :: proc(id: EntityId) -> Maybe(^Entity) {
 	return &state.client.game.entities[id]
+}
+
+entity_or_error :: proc(id: EntityId) -> (^Entity, Error) {
+	e, ok := &state.client.game.entities[id]
+	if !ok do return nil, error(EntityNotFound{entity_id = id})
+	return e, nil
 }
 
 entity_meta: [EntityMetaId]EntityMeta = {
@@ -79,7 +86,7 @@ entity_meta: [EntityMetaId]EntityMeta = {
 		team = .Players,
 		max_hp = 50,
 		vision_distance = 4,
-		flags = {.IsPlayerControlled, .IsObstacle, .CanSwapPlaces},
+		flags = {.IsPlayerControlled, .IsObstacle, .CanSwapPlaces, .CanTakeDamage},
 		flavor_text = "Why did I come down here?",
 	},
 	.Spider = EntityMeta {
@@ -87,16 +94,16 @@ entity_meta: [EntityMetaId]EntityMeta = {
 		team = .Darkness,
 		max_hp = 7,
 		vision_distance = 8,
-		flags = {.IsAiControlled, .IsObstacle, .IsFast},
-		flavor_text = "Standing at 3 feet tall with thick, black scaled legs - this is no ordinary house spider. It may be weak, but it moves quickly and can easily outrun you.",
+		flags = {.IsAiControlled, .IsObstacle, .IsFast, .CanTakeDamage},
+		flavor_text = "3 feet tall with thick, black scaled legs - this is no ordinary house spider. It may be weak, but it moves quickly and can easily outrun you.",
 	},
 	.Firebug = EntityMeta {
 		spritesheet_coord = SPRITE_COORD_FIREBUG,
 		team = .Darkness,
 		max_hp = 12,
 		vision_distance = 4,
-		flags = {.IsAiControlled, .IsObstacle, .IsSlow},
-		flavor_text = "You might've thought it were a giant cockroach if not for the enormous, glowing red pustule this creature seems to be dragging around on its back. The sack of glowing liquid seems to make it difficult to move.",
+		flags = {.IsAiControlled, .IsObstacle, .IsSlow, .CanTakeDamage},
+		flavor_text = "You'd have thought it a giant cockroach if not for the enormous, glowing red pustule this creature seems to be dragging around on its back. The sack of glowing liquid seems to make it difficult to move.",
 	},
 	.Corpse = EntityMeta{spritesheet_coord = SPRITE_COORD_CORPSE, flags = {}},
 }
@@ -113,7 +120,7 @@ Alignment :: enum {
 	Friendly,
 }
 
-entity_system :: proc(dt: f32) {
+entity_frame :: proc(dt: f32) {
 	for _, &e in &state.client.game.entities {
 		if e.spring.k == 0 {
 			e.spring = prism.spring_create(

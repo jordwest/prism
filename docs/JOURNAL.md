@@ -389,4 +389,40 @@ So now a couple things that I've been putting off keeping niggling at me:
  - Sprite animations, and replacing the sprite coords with a more fleshed out struct of sprite information (allowing animation frames etc)
  - Proper turn handling. The queue and all that, and probably moving a bunch of logic out into "events" that get queued up. The idea being that an incoming message triggers an event on the event queue, then that triggers more events. All events should be processed _before_ pulling another message off the message queue. That way timing should all be completely deterministic.
 
-I think I'll start with the sprite animations because I want to get first going. Then need to add entity hurt events that are triggered by fire effects on the tile -- this is why I want to refactor turn handling.
+I think I'll start with the sprite animations because I want to get fire going. Then need to add entity hurt events that are triggered by fire effects on the tile -- this is why I want to refactor turn handling.
+
+Ok that's done, at least enough to get things working for now. Now to tackle this event system. This is gonna be ripping a bunch of stuff apart. Might actually start a branch for this.
+
+Ok events are done, although I opted to skip making a queue for that for now. Events are fired immediately. I'll add the queue when I need to schedule events for later, if ever.
+
+However now it seems multiplayer is broken. There was a race condition before, so perhaps this has just revealed it. Going to see if I can get to the bottom of it.
+
+Ok I think it's probably something to do with the procgen. I think procgen should be a log event, so it doesn't proceed beyond it until the procgen is done. Also maybe players should all join _before_ procgen happens. Player placement depends on procgen, and if the entity is created before the level is ready, there won't be anywhere to place them. So yeah for now, I think I'll add a start button or something that fires off a log entry with the game seed, triggering procgen on each client.
+
+So first thing I need to do is make the web runner actually emulate "listen" and "connect".
+
+Ok think that's all fixed now. I thought I saw a desync at one point, but haven't been able to make it pop up again. I think for now I'll leave a second instance up as a spectator, just to see if I can find any more desyncs like that.
+
+Ok I think I've caught one. It could have been while going through the doorway, something to do with pathing.
+
+It would be so handy to be able to rewind to diagnose... and I don't think it would even be that hard to implement especially since the log entry store is already a thing. Yeah this is going to be really difficult to diagnose without a replay thing. Doesn't have to be all that fancy, just store the log and then replay step by step.
+
+Seems like it's more an issue when there are multiple players. I wonder if the order of iteration of players is the problem, or of their commands or something. Anyway, something to look into tomorrow.
+
+I have a suspicion that the issue could be in the djikstra generation, it could be non-deterministic if one is triggered before the other. I'm not sure how that could happen except in the render pipeline, although actually... it does generate it for the mouse cursor too...... Hmmm. That could actually be it. Although I would think the map should be fairly stable. It only uses the MovedLastTurn flag, which should be the same across all clients. Either way, it seems to have something to do with the player pathing failing on one client and not the other. I bet even a replay wouldn't catch that, actually.
+
+Ok I think I may have fixed it... just by removing djikstra generation from the case where its used in rendering. That does mean the path visualisation has disappeared, but that's an easy fix. Just generate the paths for every player after they move.
+
+Yeah that seems to have fixed it. It does feel a bit brittle, but I'm sure I'll get better at separating out the deterministic stuff as I go. For now the benefits farrrr outweight the costs, game logic is so much easier to follow.
+
+Just had a thought that maybe djikstra maps used for player input and rendering should just be generated separately. Other ones are generated at set times instead of on demand, since on demand introduces a lot more potential for race conditions.
+
+Hmm now I have an issue where the players djikstra maps aren't regenerated (or aren't regenerated properly) when an enemy dies and is blocking a door. It should regenerate immediately after the entity dies, yet somehow that tile still blocks the algorithm (or the algorithm isn't running for some reason)
+
+Ok that's fixed too I think! Just needed to clear them out. Yeah this whole on demand generation thing isn't working so well, I think I'm going to just regenerate them at set times, easier to keep track of ordering and everything.
+
+So tomorrow:
+ - Remove on demand djikstra generation, instead just return nothing if the map doesn't exist
+ - Generate a set of maps after certain events. Consider splitting it up over frames, although probably not necessary
+ - Items? Fire potions? Different weapons?
+ - Lobby and connect button

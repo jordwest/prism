@@ -55,8 +55,14 @@ _cursor_pos_update_serialize :: proc(
 	return nil
 }
 
+JoinMode :: enum u8 {
+	Play,
+	Spectate,
+}
+
 ClientMessageIdentify :: struct {
 	token:        PlayerToken,
+	join_mode:    JoinMode,
 	display_name: string,
 	next_log_seq: LogSeqId,
 }
@@ -67,6 +73,7 @@ _identify_serialize :: proc(
 	msg: ^ClientMessageIdentify,
 ) -> prism.SerializationResult {
 	prism.serialize(s, &msg.token) or_return
+	prism.serialize(s, (^u8)(&msg.join_mode)) or_return
 	prism.serialize(s, &msg.display_name) or_return
 	return nil
 }
