@@ -23,7 +23,6 @@ last_cursor_tile_pos: TileCoord
 on_mouse_move :: proc "c" (pos_x: f32, pos_y: f32, button_down: bool) {
 	context = app_context()
 
-	mouse_moved = true
 	clay.SetPointerState({pos_x, pos_y}, button_down)
 	screen_pos: ScreenCoord = {pos_x, pos_y}
 	state.client.cursor_pos = tile_coord(screen_pos)
@@ -43,8 +42,9 @@ on_mouse_move :: proc "c" (pos_x: f32, pos_y: f32, button_down: bool) {
 @(export)
 on_mouse_button :: proc "c" (pos_x: f32, pos_y: f32, button_down: bool, button: i32) {
 	context = app_context()
+	state.client.cursor_last_moved = state.t
+	ui_tooltip_latch = false
 
-	mouse_moved = true
 	clay.SetPointerState({pos_x, pos_y}, button_down)
 }
 

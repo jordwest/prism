@@ -173,8 +173,7 @@ ui_layout_create :: proc() -> clay.ClayArray(clay.RenderCommand) {
 	return clay.EndLayout()
 } // An example function to create your layout tree
 
-@(private = "file")
-_tooltip_latch := false
+ui_tooltip_latch := false
 
 ui_tooltip_layout :: proc() -> clay.ClayArray(clay.RenderCommand) {
 	context.temp_allocator = arena_ui_frame.allocator
@@ -186,14 +185,14 @@ ui_tooltip_layout :: proc() -> clay.ClayArray(clay.RenderCommand) {
 		[]Maybe(^Entity){entities_at_cursor.obstacle, entities_at_cursor.ground},
 	).?
 
-	if !_tooltip_latch && state.t - state.client.cursor_last_moved < 0.15 do return clay.EndLayout()
+	if !ui_tooltip_latch && state.t - state.client.cursor_last_moved < 0.5 do return clay.EndLayout()
 
 	if !has_hover_entity {
-		_tooltip_latch = false
+		ui_tooltip_latch = false
 		return clay.EndLayout()
 	}
 
-	_tooltip_latch = true
+	ui_tooltip_latch = true
 
 	default_text_config := clay.TextConfig({textColor = COLOR_WHITE, fontSize = 16})
 

@@ -16,8 +16,6 @@ on_panic :: proc(a: string, b: string, loc: runtime.Source_Code_Location) -> ! {
 	unreachable()
 }
 
-mouse_moved := true
-
 // Example measure text function
 clay_measure_text :: proc "c" (
 	text: clay.StringSlice,
