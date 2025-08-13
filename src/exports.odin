@@ -145,8 +145,6 @@ boot :: proc "c" (width: i32, height: i32, flags: i32) {
 	// Tell clay how to measure text
 	clay.SetMeasureTextFunction(clay_measure_text, nil)
 
-	clay.SetDebugModeEnabled(CLAY_DEBUG_ENABLED)
-
 	return
 }
 

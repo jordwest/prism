@@ -69,11 +69,12 @@ done,feat,b4,Add fog of war (and add it to the dijkstra map calcs)
 done,content,b4,Room with rope bridge access to a platform
 done,imp,b4,Enemies should only move towards player within a certain distance
 done,content,b4,Fire enemy - when it dies it splats flaming juices in random directions
-doing,feat,b4,Fire system - flammable objects burn and spread
-todo,refactor,b4,Add sprite meta instead of just coordinates (like frames for animations)
-todo,bug,b4,Player indicators should appear above all entities (render order)
+done,feat,b4,Fire system - flammable objects burn and spread
+doing,refactor,b4,Add sprite meta instead of just coordinates (like frames for animations)
 todo,refactor,b4,Add a queue for log events coming in from server for more consistency
+todo,feat,b4,Make entities get hurt by fire effect
 todo,imp,b4,Click & drag to move camera around
+todo,bug,b4,Player indicators should appear above all entities (render order)
 todo,imp,b4,Consider setting a delay after actions (like attack) instead of after every turn
 todo,feat,b4,"Add basic lobby for connecting, setting name and starting game"
 todo,devtool,ideas,Rewind back to previous action (by replaying) for dev purposes

@@ -187,7 +187,7 @@ ui_tooltip_layout :: proc() -> clay.ClayArray(clay.RenderCommand) {
 
 	if !ui_tooltip_latch && state.t - state.client.cursor_last_moved < 0.5 do return clay.EndLayout()
 
-	if !has_hover_entity {
+	if !has_hover_entity && !state.debug.render_debug_overlays {
 		ui_tooltip_latch = false
 		return clay.EndLayout()
 	}
@@ -255,6 +255,18 @@ ui_tooltip_layout :: proc() -> clay.ClayArray(clay.RenderCommand) {
 					_add_fmt_text("AP: %d", hover_entity.action_points)
 					_add_fmt_text("%v", hover_entity.cmd)
 					_add_fmt_text("%v", hover_entity.meta.flags)
+				}
+			}
+
+			if state.debug.render_debug_overlays {
+				_vertical_spacer(16)
+				tile, valid_tile := tile_at(state.client.cursor_pos).?
+				if valid_tile {
+					_add_fmt_text("%s", tile.type, size = 16)
+					_add_fmt_text("%w", tile.flags, size = 16)
+					if tile.fire.fuel > 0 do _add_fmt_text("%v", tile.fire, size = 16)
+				} else {
+					_add_fmt_text("Out of bounds")
 				}
 			}
 		}

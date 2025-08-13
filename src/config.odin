@@ -7,7 +7,7 @@ NO_ENEMIES :: false
 
 ////////// DEBUG OPTIONS \\\\\\\\\\
 
-DEBUG_OVERLAYS_ENABLED :: true
+DEBUG_OVERLAYS_ENABLED :: false
 STUTTER_CHECKER_ENABLED :: true
 // Delay procedural generation iterations by this many frames
 // (to help visualise the generation)

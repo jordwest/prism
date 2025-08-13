@@ -381,3 +381,12 @@ Tomorrow I think I want to work on getting fire going, and then I can think abou
 # Wednesday 13 Aug 2025
 
 Got a really nice tooltip system working with Clay. Clay is frikking awesome. Damn Nic has really outdone himself.
+
+Fire is working, firebugs work. This is just awesome. It really feels like this is what I'm meant to be doing. Haven't had flow like this in a big project in a loooong time, maybe ever. I just can't put it down.
+
+So now a couple things that I've been putting off keeping niggling at me:
+
+ - Sprite animations, and replacing the sprite coords with a more fleshed out struct of sprite information (allowing animation frames etc)
+ - Proper turn handling. The queue and all that, and probably moving a bunch of logic out into "events" that get queued up. The idea being that an incoming message triggers an event on the event queue, then that triggers more events. All events should be processed _before_ pulling another message off the message queue. That way timing should all be completely deterministic.
+
+I think I'll start with the sprite animations because I want to get first going. Then need to add entity hurt events that are triggered by fire effects on the tile -- this is why I want to refactor turn handling.
