@@ -266,7 +266,8 @@ _spawn_enemies :: proc() {
 
 		if prism.tile_distance(coord - state.client.game.spawn_point) < 10 do continue
 
-		new_enemy := game_spawn_entity(.Spider, {pos = coord})
+		is_spider := prism.rand_splitmix_get_bool(&rng, 800)
+		new_enemy := game_spawn_entity(is_spider ? .Spider : .Firebug, {pos = coord})
 
 		spawned += 1
 	}

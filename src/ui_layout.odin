@@ -17,6 +17,10 @@ COLOR_LIGHT_YELLOW :: clay.Color{255, 255, 170, 150}
 COLOR_PURPLE_800 :: clay.Color{45, 32, 59, 255}
 COLOR_PURPLE_200 :: clay.Color{128, 106, 153, 255}
 
+with_alpha :: proc(color: clay.Color, a: f32) -> clay.Color {
+	return clay.Color{color.r, color.g, color.b, a}
+}
+
 // Layout config is just a struct that can be declared statically, or inline
 sidebar_item_layout := clay.LayoutConfig {
 	sizing = {width = clay.SizingGrow({}), height = clay.SizingFixed(50)},
@@ -168,6 +172,9 @@ ui_layout_create :: proc() -> clay.ClayArray(clay.RenderCommand) {
 	return clay.EndLayout()
 } // An example function to create your layout tree
 
+@(private = "file")
+_tooltip_latch := false
+
 ui_tooltip_layout :: proc() -> clay.ClayArray(clay.RenderCommand) {
 	context.temp_allocator = arena_ui_frame.allocator
 	clay.BeginLayout()
@@ -178,8 +185,14 @@ ui_tooltip_layout :: proc() -> clay.ClayArray(clay.RenderCommand) {
 		[]Maybe(^Entity){entities_at_cursor.obstacle, entities_at_cursor.ground},
 	).?
 
+	if !_tooltip_latch && state.t - state.client.cursor_last_moved < 0.15 do return clay.EndLayout()
 
-	if !has_hover_entity do return clay.EndLayout()
+	if !has_hover_entity {
+		_tooltip_latch = false
+		return clay.EndLayout()
+	}
+
+	_tooltip_latch = true
 
 	default_text_config := clay.TextConfig({textColor = COLOR_WHITE, fontSize = 16})
 

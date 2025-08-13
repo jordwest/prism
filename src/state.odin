@@ -14,9 +14,12 @@ AppState :: struct {
 ClientState :: struct {
 	crashed:               bool,
 	frame_iter_count:      i32, // Used to crash out early instead of getting into infinite loops
+	// vvvvvv Move these into own struct?
 	cursor_pos:            TileCoord,
 	cursor_screen_pos:     ScreenCoord,
 	cursor_hidden:         bool,
+	cursor_last_moved:     f32,
+	// ^^^^^^
 	zoom:                  f32,
 	camera:                prism.Spring(2),
 	my_token:              PlayerToken,

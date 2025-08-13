@@ -2,7 +2,7 @@ package main
 
 ////////// CHEATS \\\\\\\\\\\\
 
-FOG_OF_WAR_OFF :: false
+FOG_OF_WAR_OFF :: true
 NO_ENEMIES :: false
 
 ////////// DEBUG OPTIONS \\\\\\\\\\
@@ -72,6 +72,7 @@ SPRITE_COORD_BRICK_WALL_FACE_2 :: [2]f32{4 * 16, 3 * 16}
 SPRITE_COORD_BRICK_WALL_BEHIND :: [2]f32{1 * 16, 3 * 16}
 SPRITE_COORD_PIT_WALL :: [2]f32{4 * 16, 2 * 16}
 SPRITE_COORD_SPIDER :: [2]f32{0 * 16, 2 * 16}
+SPRITE_COORD_FIREBUG :: [2]f32{4 * 16, 1 * 16}
 SPRITE_COORD_CORPSE :: [2]f32{1 * 16, 2 * 16}
 SPRITE_COORD_WATER :: [2]f32{6 * 16, 2 * 16}
 SPRITE_COORD_ROPE_BRIDGE :: [2]f32{6 * 16, 3 * 16}

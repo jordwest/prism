@@ -32,6 +32,7 @@ EntityMeta :: struct {
 	spritesheet_coord: [2]f32,
 	max_hp:            i32,
 	team:              Team,
+	vision_distance:   i32,
 	flavor_text:       string,
 	flags:             bit_set[EntityFlags],
 }
@@ -50,6 +51,7 @@ EntityMetaId :: enum u8 {
 	None,
 	Player,
 	Spider,
+	Firebug,
 	Corpse,
 }
 
@@ -61,6 +63,7 @@ EntityFlags :: enum {
 	MovedThisTurn,
 	MovedLastTurn,
 	IsFast,
+	IsSlow,
 }
 
 EntityFilterProc :: proc(_: ^Entity) -> bool
@@ -75,6 +78,7 @@ entity_meta: [EntityMetaId]EntityMeta = {
 		spritesheet_coord = SPRITE_COORD_PLAYER,
 		team = .Players,
 		max_hp = 50,
+		vision_distance = 4,
 		flags = {.IsPlayerControlled, .IsObstacle, .CanSwapPlaces},
 		flavor_text = "Why did I come down here?",
 	},
@@ -82,8 +86,17 @@ entity_meta: [EntityMetaId]EntityMeta = {
 		spritesheet_coord = SPRITE_COORD_SPIDER,
 		team = .Darkness,
 		max_hp = 7,
+		vision_distance = 8,
 		flags = {.IsAiControlled, .IsObstacle, .IsFast},
 		flavor_text = "Standing at 3 feet tall with thick, black scaled legs - this is no ordinary house spider. It may be weak, but it moves quickly and can easily outrun you.",
+	},
+	.Firebug = EntityMeta {
+		spritesheet_coord = SPRITE_COORD_FIREBUG,
+		team = .Darkness,
+		max_hp = 12,
+		vision_distance = 4,
+		flags = {.IsAiControlled, .IsObstacle, .IsSlow},
+		flavor_text = "You might've thought it were a giant cockroach if not for the huge, red glowing pustule this creature seems to be dragging around on its back.",
 	},
 	.Corpse = EntityMeta{spritesheet_coord = SPRITE_COORD_CORPSE, flags = {}},
 }

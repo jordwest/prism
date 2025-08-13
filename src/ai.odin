@@ -33,7 +33,7 @@ _ai_next_cmd :: proc(e: ^Entity) -> Command {
 
 	_, cost, ok := prism.djikstra_next(dmap, Vec2i(e.pos))
 	if !ok do return Command{type = .Skip}
-	if cost > 1200 do return Command{type = .Skip}
+	if cost > (e.meta.vision_distance * 100) do return Command{type = .Skip}
 
 	return Command{type = .MoveTowardsAllies}
 }

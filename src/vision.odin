@@ -12,10 +12,10 @@ vision_update :: proc() {
 
 		iter := prism.aabb_iterator(
 			prism.Aabb(i32) {
-				x1 = entity.pos.x - 4,
-				y1 = entity.pos.y - 4,
-				x2 = entity.pos.x + 5,
-				y2 = entity.pos.y + 5,
+				x1 = entity.pos.x - entity.meta.vision_distance,
+				y1 = entity.pos.y - entity.meta.vision_distance,
+				x2 = entity.pos.x + entity.meta.vision_distance + 1,
+				y2 = entity.pos.y + entity.meta.vision_distance + 1,
 			},
 		)
 

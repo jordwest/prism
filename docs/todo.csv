@@ -68,8 +68,8 @@ done,imp,b3,Add hit indicators
 done,feat,b4,Add fog of war (and add it to the dijkstra map calcs)
 done,content,b4,Room with rope bridge access to a platform
 done,imp,b4,Enemies should only move towards player within a certain distance
-todo,feat,b4,Fire system - flammable objects burn and spread
-todo,content,b4,Fire enemy - when it dies it splats flaming juices in random directions
+doing,feat,b4,Fire system - flammable objects burn and spread
+doing,content,b4,Fire enemy - when it dies it splats flaming juices in random directions
 todo,bug,b4,Player indicators should appear above all entities (render order)
 todo,refactor,b4,Add a queue for log events coming in from server for more consistency
 todo,imp,b4,Click & drag to move camera around

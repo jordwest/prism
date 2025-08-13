@@ -28,6 +28,7 @@ on_mouse_move :: proc "c" (pos_x: f32, pos_y: f32, button_down: bool) {
 	screen_pos: ScreenCoord = {pos_x, pos_y}
 	state.client.cursor_pos = tile_coord(screen_pos)
 	state.client.cursor_screen_pos = screen_pos
+	state.client.cursor_last_moved = state.t
 
 	if state.client.cursor_pos != last_cursor_tile_pos {
 		last_cursor_tile_pos = state.client.cursor_pos
