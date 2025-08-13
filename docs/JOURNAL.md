@@ -421,6 +421,8 @@ Hmm now I have an issue where the players djikstra maps aren't regenerated (or a
 
 Ok that's fixed too I think! Just needed to clear them out. Yeah this whole on demand generation thing isn't working so well, I think I'm going to just regenerate them at set times, easier to keep track of ordering and everything.
 
+Also -- why aren't the paths being rendered anymore? Only to the cursor, but not to the current action. I think that whole derived thing might need rewriting... Ok yep that's fixed now too. Just keep winning.
+
 So tomorrow:
  - Remove on demand djikstra generation, instead just return nothing if the map doesn't exist
  - Generate a set of maps after certain events. Consider splitting it up over frames, although probably not necessary

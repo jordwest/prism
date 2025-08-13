@@ -44,12 +44,13 @@ derived_init :: proc() -> Error {
 }
 
 derived_handle_entity_changed :: proc(entity: ^Entity) {
+	delete_key(&state.client.game.derived.entity_djikstra_maps, entity.id)
 	if entity.meta.team == .Players {
 		vision_update()
 		state.client.game.derived.allies_djikstra_map = nil
+		derived_djikstra_map_to(entity.id)
 	}
 
-	delete_key(&state.client.game.derived.entity_djikstra_maps, entity.id)
 	if .MovedLastTurn not_in entity.meta.flags {
 		derived_regenerate_player_maps()
 	}
