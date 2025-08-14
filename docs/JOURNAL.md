@@ -491,3 +491,5 @@ It's like a feeling of worry... pure worry, in the chest. Just not towards or ab
 ### Container system
 
 So I'm thinking about how to have entities *and* tiles contain multiple items, without the memory usage absolutely blowing up. I think the idea that feels most right right now is to put all items in a big generational arena like with entities (or at least how entities will be, or just using a map), then each item can have a "contained by" (which is a union of tile pos, entity, or another item). Then, whenever that value is changed, recalculate all the containers and attach their ids to a linked list that has the item/tile/entity as a key. If that's all stored in an arena, then the arena can just be reset before doing the recalculation, easy.
+
+Ok so I think that's all working as expected. I've got potions appearing on the map, just need to be able to pick them up now. That's a new command which should trigger a pick up item event.

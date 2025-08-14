@@ -14,6 +14,7 @@ render_frame :: proc(dt: f32) {
 	render_clear()
 	render_move_camera(dt)
 	render_tiles()
+	render_items()
 	render_entities(dt)
 	render_tile_cursors(dt)
 	render_fx(dt)
@@ -146,10 +147,9 @@ render_move_camera :: proc(dt: f32) {
 render_tiles :: proc() {
 	t0 := fresnel.now()
 	grid_size := GRID_SIZE * state.client.zoom
+	canvas_size := vec2f(state.width, state.height)
 
 	tiles := &state.client.game.tiles
-
-	canvas_size := vec2f(state.width, state.height)
 
 	rng := prism.rand_splitmix_create(GAME_SEED, RNG_TILE_VARIANCE)
 	for x: i32 = 0; x < LEVEL_WIDTH; x += 1 {
@@ -247,6 +247,36 @@ render_sprite_old :: proc(sprite_coords: [2]f32, pos: ScreenCoord, alpha: u8 = 2
 			alpha = alpha,
 		},
 	)
+}
+
+render_items :: proc() {
+	grid_size := GRID_SIZE * state.client.zoom
+	canvas_size := vec2f(state.width, state.height)
+
+	for container_id, _ in &state.client.game.containers.index {
+		if coord, ok := container_id.(prism.TileCoord); ok {
+			screen_c := screen_coord(coord)
+			cull :=
+				screen_c.x < -grid_size ||
+				screen_c.y < -grid_size ||
+				screen_c.x > (canvas_size.x + grid_size) ||
+				screen_c.y > (canvas_size.y + grid_size)
+			if cull do continue
+
+			tile, valid_tile := tile_at(coord).?
+			if !valid_tile do continue
+			if .Seen not_in tile.flags do continue
+
+			iter := container_iterator(container_id)
+			// Only render one item
+			item, _, ok := container_iterate(&iter)
+			if !ok do continue
+			switch t in item.type {
+			case PotionType:
+				render_sprite(Sprite.Potion, screen_c)
+			}
+		}
+	}
 }
 
 render_entities :: proc(dt: f32) {
@@ -353,11 +383,12 @@ render_tile_cursors :: proc(dt: f32) {
 	if !state.client.cursor_hidden {
 		// Draw this player's cursor
 		if command_for_tile(state.client.cursor_pos).type == .Move {
-			render_sprite(SPRITE_COORD_RECT, screen_coord(state.client.cursor_pos))
+			render_sprite(SPRITE_COORD_RECT, screen_coord(state.client.cursor_pos), alpha = 100)
 			render_sprite(SPRITE_COORD_FOOTSTEPS, screen_coord(state.client.cursor_pos))
 		}
 		if command_for_tile(state.client.cursor_pos).type == .Attack {
-			render_sprite(SPRITE_COORD_RECT, screen_coord(state.client.cursor_pos))
+			// render_sprite(SPRITE_COORD_RECT, screen_coord(state.client.cursor_pos))
+			render_sprite(SPRITE_COORD_CURSOR_ATTACK, screen_coord(state.client.cursor_pos))
 		}
 		if command_for_tile(state.client.cursor_pos).type == .Skip {
 			render_sprite(SPRITE_COORD_RECT, screen_coord(state.client.cursor_pos))

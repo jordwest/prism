@@ -95,6 +95,7 @@ procgen_iterate :: proc(pcg: ^PcgState) {
 		when !NO_ENEMIES {
 			_add_grass()
 			_spawn_enemies()
+			_spawn_items()
 		}
 
 		pcg.done = true
@@ -292,5 +293,36 @@ _spawn_enemies :: proc() {
 		new_enemy := game_spawn_entity(is_spider ? .Spider : .Firebug, {pos = coord})
 
 		spawned += 1
+	}
+}
+
+@(private = "file")
+_spawn_items :: proc() {
+	rng := rng_new(RNG_ITEM_PLACEMENT)
+
+	spawn_max := 5
+	spawned := 0
+	for i := 0; i < 100 && spawned < spawn_max; i += 1 {
+		x := rng_range(&rng, 0, LEVEL_WIDTH)
+		y := rng_range(&rng, 0, LEVEL_HEIGHT)
+		coord := TileCoord({x, y})
+
+		tile, valid := tile_at(coord).?
+		if !valid do continue
+
+		if .Traversable not_in tile.flags do continue
+
+		if prism.tile_distance(coord - state.client.game.spawn_point) < 15 do continue
+
+		item_spawn(ItemStack{container_id = coord, type = .Fire, count = 1})
+
+		spawned += 1
+	}
+
+	containers_reset()
+
+	iter := container_iterator(EntityId(123))
+	for item in container_iterate(&iter) {
+		trace("container A contains: %w", item^)
 	}
 }

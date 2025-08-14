@@ -38,7 +38,7 @@ containers_init :: proc() -> Error {
 	return nil
 }
 
-containers_reset :: proc() {
+containers_reset :: proc() -> Error {
 	mem.arena_free_all(&arena_containers.arena)
 
 	state.client.game.containers.index = make(
@@ -67,7 +67,8 @@ containers_reset :: proc() {
 				existing_list = &state.client.game.containers.index[item.container_id]
 			}
 
-			new_node := new(ContainerNode, allocator = arena_containers.allocator)
+			new_node, e := new(ContainerNode, allocator = arena_containers.allocator)
+			if e != nil do return error(e)
 			new_node.item_id = ItemId(item_id)
 
 			list.push_back(existing_list, &new_node.node)
@@ -75,6 +76,7 @@ containers_reset :: proc() {
 		// if item.container
 		// Item
 	}
+	return nil
 }
 
 container_iterator :: proc(container_id: ContainerId) -> ContainerIterator {

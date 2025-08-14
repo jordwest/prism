@@ -93,7 +93,7 @@ _entity_died :: proc(evt: ^EventEntityDied) -> Error {
 		iter := prism.aabb_iterator(prism.aabb(Vec2i(deceased.pos) - {1, 1}, Vec2i({3, 3})))
 		for pos in prism.aabb_iterate(&iter) {
 			tile, valid_tile := tile_at(TileCoord(pos)).?
-			fuel: i32 = pos == Vec2i(deceased.pos) ? 9 : 5
+			fuel: i32 = pos == Vec2i(deceased.pos) ? 14 : 5
 			if valid_tile do tile_set_fire(tile, fuel)
 		}
 	}

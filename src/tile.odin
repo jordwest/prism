@@ -90,7 +90,6 @@ tile_handle_turn :: proc() {
 	for &tile, i in &state.client.game.tiles.data {
 		pos := TileCoord{i32(i) % LEVEL_WIDTH, i32(i) / LEVEL_WIDTH}
 		just_ignited := tile.fire.ignition
-		is_flammable := .Flammable in tile.flags || .Grass in tile.flags
 		tile.fire.ignition = false
 
 		if tile.fire.fuel > 0 {
@@ -109,10 +108,11 @@ tile_handle_turn :: proc() {
 				// Spread fire
 				iter := prism.aabb_iterator(prism.aabb(Vec2i(pos) - {1, 1}, Vec2i({3, 3})))
 				for pos in prism.aabb_iterate(&iter) {
-					tile, valid_tile := tile_at(TileCoord(pos)).?
+					neighbour, valid_tile := tile_at(TileCoord(pos)).?
+					is_flammable := .Flammable in neighbour.flags || .Grass in neighbour.flags
 					if !prism.aabb_is_edge(iter.aabb, pos) do continue
 					if !valid_tile do continue
-					if is_flammable && !just_ignited && tile.fire.fuel == 0 do tile_set_fire(tile, 0)
+					if is_flammable && !just_ignited && neighbour.fire.fuel == 0 do tile_set_fire(neighbour, 0)
 				}
 			}
 		}

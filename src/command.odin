@@ -10,6 +10,7 @@ CommandTypeId :: enum u8 {
 	Move,
 	Attack,
 	MoveTowardsAllies,
+	PickUp,
 }
 
 Command :: struct {
@@ -76,6 +77,8 @@ command_execute :: proc(entity: ^Entity) -> CommandOutcome {
 		return _attack(entity) // TODO
 	case .MoveTowardsAllies:
 		return _move_towards_allies(entity)
+	case .PickUp:
+		return _pick_up(entity)
 	case .Skip:
 		return _skip(entity)
 	}
@@ -216,6 +219,11 @@ _move_or_swap :: proc(entity: ^Entity, pos: TileCoord, allow_swap: bool = true) 
 	entity_set_pos(entity, pos)
 	entity_consume_ap(entity, cost)
 	return .Moved
+}
+
+_pick_up :: proc(entity: ^Entity) -> CommandOutcome {
+	// entity.cmd.
+	return .Ok
 }
 
 _move_towards_allies :: proc(entity: ^Entity) -> CommandOutcome {

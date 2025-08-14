@@ -13,8 +13,7 @@ client_boot :: proc(width: i32, height: i32) -> Error {
 	log_queue_init(&state.client.log_queue)
 	fx_init()
 
-
-	//////////// test
+	//////////// test DELETE ME
 	item_spawn(
 		ItemStack{count = 1, type = PotionType.Healing, container_id = EntityId(123)},
 	) or_return
