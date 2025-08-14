@@ -121,7 +121,7 @@ _attack :: proc(e: ^Entity) -> CommandOutcome {
 
 	if dist_to_target == 1 {
 		// Melee
-		is_hit := rng_bool(&rng, 650)
+		is_hit := rng_bool(&rng, 900)
 		dmg := rng_dice(&rng, {3, 3})
 
 		if is_hit {

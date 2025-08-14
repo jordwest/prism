@@ -85,6 +85,8 @@ todo,feat,b4,Heal ability (potion?)
 todo,content,b4,Fire traps
 todo,imp,b4,Click & drag to move camera around
 todo,feat,b4,Add critical hits - chance for double max roll
+todo,feat,ideas,Startle mechanic - guaranteed crit if surprised
+todo,feat,b4,Sleeping enemies - can be killed instantly
 todo,content,b4,Grass crunch sound
 todo,bug,b4,Player indicators should appear above all entities (render order)
 todo,imp,b4,Consider setting a delay after actions (like attack) instead of after every turn
@@ -96,7 +98,6 @@ todo,devtool,ideas,Rewind back to previous action (by replaying) for dev purpose
 todo,imp,b4,Cancel all allies commands when an enemy is spotted for the first time
 todo,bug,b4,Don't advance turn when all players are dead
 todo,imp,b4,Add SFX again
-todo,perf,ideas,Divide calculations across frames to reduce stutter
 todo,devtool,ideas,Hydrate client and server entity state in hot reload
 todo,feat,b4,Make rust websocket server and connect it up
 todo,feat,b4,Make use of client token to relogin a user (and store it in localstorage)
@@ -114,6 +115,7 @@ todo,imp,b4,"Add animation queue (movement plays in parallel, attacks in sequenc
 todo,feat,b4,Shock traps (probs easiest as tile effects like fire or net don't need to be implemented)
 todo,imp,b4,Versioning for serialization - especially for anything saved to localstorage
 todo,devtool,ideas,Replay system to investigate desyncs
+todo,feat,ideas,Limb system - injure specific limbs that affect the entity
 todo,imp,ideas,Less dead ends - connect rooms that are side by side but have long distances using djikstra
 todo,feat,ideas,Shield ability (potion?)
 todo,feat,ideas,Grappling hook - grapple across to a platform
@@ -135,3 +137,4 @@ todo,feat,ideas,"Randomly generate a list of ""mercenaries"" that the player can
 todo,feat,ideas,Show when another player has their inventory open - their cursor and what they're looking at
 todo,feat,ideas,Auto-follow other players
 todo,feat,ideas,Auto-explore (if everyone else is following)
+todo,perf,ideas,Divide calculations across frames to reduce stutter
