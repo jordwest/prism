@@ -169,7 +169,7 @@ entity_swap_pos :: proc(a: ^Entity, b: ^Entity) {
 
 entity_clear_cmd :: proc(entity: ^Entity) {
 	entity.cmd = Command{}
-	entity._local_cmd = nil
+	// entity._local_cmd = nil
 }
 
 entity_consume_ap :: proc(entity: ^Entity, ap: i32) {

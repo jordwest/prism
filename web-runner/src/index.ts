@@ -9,7 +9,7 @@ import {
 } from "./fresnel/types";
 
 export const INSTANCES = 2;
-export const NET_FAKE_DELAY = 0;
+export const NET_FAKE_DELAY = 100;
 
 const canvas: HTMLCanvasElement = document.getElementById(
   "canvas",

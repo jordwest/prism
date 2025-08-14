@@ -81,28 +81,27 @@ done,devtool,b4,Step through log entry debugging
 done,content,b4,Add grass and make it burrrn
 done,imp,b4,Cancel player command if taking damage
 done,imp,b4,Add varying damage amounts
-todo,feat,b4,Heal ability (potion?)
+doing,feat,b4,Items and basic inventory UI
+todo,content,b4,Heal ability (potion?)
+todo,content,b4,Water potion
 todo,content,b4,Fire traps
 todo,imp,b4,Click & drag to move camera around
 todo,feat,b4,Add critical hits - chance for double max roll
-todo,feat,ideas,Startle mechanic - guaranteed crit if surprised
 todo,feat,b4,Sleeping enemies - can be killed instantly
-todo,content,b4,Grass crunch sound
+todo,imp,b4,Grass crunch sound
 todo,bug,b4,Player indicators should appear above all entities (render order)
 todo,imp,b4,Consider setting a delay after actions (like attack) instead of after every turn
 todo,feat,b4,"Add basic lobby for connecting, setting name and starting game"
 todo,imp,b4,Handle individual player death
 todo,feat,b4,Button mechanism requiring multiple players to unlock a door
+todo,imp,b4,Add a proper LOS algorithm
 todo,imp,b4,Preload and postload assets - delay loading only until preload assets
-todo,devtool,ideas,Rewind back to previous action (by replaying) for dev purposes
 todo,imp,b4,Cancel all allies commands when an enemy is spotted for the first time
 todo,bug,b4,Don't advance turn when all players are dead
 todo,imp,b4,Add SFX again
-todo,devtool,ideas,Hydrate client and server entity state in hot reload
 todo,feat,b4,Make rust websocket server and connect it up
 todo,feat,b4,Make use of client token to relogin a user (and store it in localstorage)
 todo,imp,b4,Darken non currently visible areas
-todo,imp,b4,Add a proper LOS algorithm
 todo,refactor,b4,Test turn system and iron out weird bugs with a refactor
 todo,imp,b4,Cancel any pending command when enemy is spotted for first time
 todo,imp,b4,"Handle all players dead, game over"
@@ -114,16 +113,20 @@ todo,feat,b4,Potion of revive
 todo,imp,b4,"Add animation queue (movement plays in parallel, attacks in sequence)"
 todo,feat,b4,Shock traps (probs easiest as tile effects like fire or net don't need to be implemented)
 todo,imp,b4,Versioning for serialization - especially for anything saved to localstorage
+todo,devtool,ideas,Hydrate client and server entity state in hot reload
+todo,feat,ideas,Startle mechanic - guaranteed crit if surprised
 todo,devtool,ideas,Replay system to investigate desyncs
 todo,feat,ideas,Limb system - injure specific limbs that affect the entity
 todo,imp,ideas,Less dead ends - connect rooms that are side by side but have long distances using djikstra
 todo,feat,ideas,Shield ability (potion?)
 todo,feat,ideas,Grappling hook - grapple across to a platform
+todo,devtool,ideas,Rewind back to previous action (by replaying) for dev purposes
 todo,imp,ideas,Don't show target for first ~50-100ms of player input to avoid flashes
 todo,refactor,ideas,Add checksum to messaging?
-todo,feat,ideas,Gems that can be attached to weapons for added effects:
 todo,refactor,ideas,Consider splitting server and client into separate packages
+todo,feat,ideas,Gems that can be attached to weapons for added effects:
 todo,content,ideas,Gem of lifesteal (lifesteal on crit)
+todo,perf,ideas,Divide calculations across frames to reduce stutter
 todo,content,ideas,Gem of flame (fire effect on crit)
 todo,content,ideas,Gem of parry (increased speed after dodging an attack)
 todo,feat,ideas,Shift-click to keep auto-attacking an enemy
@@ -132,9 +135,8 @@ todo,devtool,ideas,Add microui for debug tools
 todo,feat,ideas,"The god Thoth is watching over the player, pleased and displeased with actions"
 todo,content,ideas,Net traps
 todo,feat,ideas,Play as ghost when dead but teammates still alive (see journal for more)
-todo,perf,ideas,Networkless play (using a dummy server instead of the server connecting to itself)
+nope,perf,ideas,Networkless play (using a dummy server instead of the server connecting to itself)
 todo,feat,ideas,"Randomly generate a list of ""mercenaries"" that the player can choose from to contract. Gate progress through price of hiring them"
 todo,feat,ideas,Show when another player has their inventory open - their cursor and what they're looking at
 todo,feat,ideas,Auto-follow other players
 todo,feat,ideas,Auto-explore (if everyone else is following)
-todo,perf,ideas,Divide calculations across frames to reduce stutter

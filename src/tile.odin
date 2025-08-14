@@ -39,7 +39,8 @@ tile_default_flags: [TileType]TileFlags = {
 }
 
 TileFire :: struct {
-	fuel: i32, // How many turns worth of fuel is left in this tile
+	fuel:     i32, // How many turns worth of fuel is left in this tile
+	ignition: bool,
 }
 
 tile_set_type :: proc(tile: ^TileData, type: TileType) {
@@ -76,6 +77,7 @@ tile_draw :: proc(pos: TileCoord, type: TileType) {
 tile_set_fire :: proc(tile: ^TileData, fuel: i32) {
 	if tile.type == .Empty do return
 	if tile.fire.fuel > 0 do return // Already on fire
+	tile.fire.ignition = true // Ignited this turn
 	if .Obstacle in tile.flags do return
 	if .Flammable in tile.flags do tile.fire.fuel += 6
 	if .Grass in tile.flags do tile.fire.fuel += 4
@@ -87,6 +89,10 @@ tile_handle_turn :: proc() {
 
 	for &tile, i in &state.client.game.tiles.data {
 		pos := TileCoord{i32(i) % LEVEL_WIDTH, i32(i) / LEVEL_WIDTH}
+		just_ignited := tile.fire.ignition
+		is_flammable := .Flammable in tile.flags || .Grass in tile.flags
+		tile.fire.ignition = false
+
 		if tile.fire.fuel > 0 {
 			tile.fire.fuel -= 1
 
@@ -106,7 +112,7 @@ tile_handle_turn :: proc() {
 					tile, valid_tile := tile_at(TileCoord(pos)).?
 					if !prism.aabb_is_edge(iter.aabb, pos) do continue
 					if !valid_tile do continue
-					if .Flammable in tile.flags || .Grass in tile.flags && tile.fire.fuel == 0 do tile_set_fire(tile, 0)
+					if is_flammable && !just_ignited && tile.fire.fuel == 0 do tile_set_fire(tile, 0)
 				}
 			}
 		}
@@ -155,11 +161,26 @@ tile_draw_fill :: proc(aabb: prism.Aabb(i32), type: TileType = .Floor) {
 	}
 }
 
-tile_connect_region :: proc(start: TileCoord, region: prism.Aabb(i32), type: TileType = .Floor) {
+tile_connect_region :: proc(
+	start: TileCoord,
+	region: prism.Aabb(i32),
+	type: TileType = .Floor,
+	y_first := false,
+) {
 	current := start
 
 	for {
 		tile_draw(current, .RopeBridge)
+		if y_first {
+			if current.y >= region.y2 {
+				current.y -= 1
+				continue
+			}
+			if current.y < region.y1 {
+				current.y += 1
+				continue
+			}
+		}
 		if current.x >= region.x2 {
 			current.x -= 1
 			continue

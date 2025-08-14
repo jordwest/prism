@@ -471,3 +471,19 @@ Added some little grass sprites. I'm thinking I'll use the same frame things for
 Ok what's next.. I think maybe some more content. Would be good to start adding items, maybe a potion of healing to make the level last longer. Also want to then play with that and experiment ways to heal that don't involve sitting and resting, which wouldn't play well with multiplayer. Unless, I do some kind of campfire thing where you only get a limited number, and everyone in a vicinity can heal by it. Or just skip that entirely and have some kind of well of life, where everybody can take a shot from it.
 
 Also would be cool to add some buttons where all players have to stand on them to unlock a door together. Or there are mechanisms with two buttons for three players, and one button for two players. Only one player can go through the door (and there may be enemies!). Maybe other doors close down at the same time.
+
+Thinking now about how to ignite things properly. Looping through the array and setting surrounding tiles on fire doesn't work because if they're in the positive x, y direction, they'll spead instantly on the same turn.
+
+What I think I need is an Igniting flag that gets set, then the first actually starts on the next turn. Alternatively, I can set the turn on which the fire started, and then don't spread if it's the current turn.
+
+Ah yes that seems to have fixed the problem.
+
+I think it might be time to bite the bullet and start on the item and inventory system. Can start out without a UI for now, just something simple that logs to console. Although maybe that's a waste of effort... it wouldn't even be that hard to display a non-scrolling list of items with clay. Also it would feel really motivating to have a UI that feels responsive to use.
+
+Ok so the first item will be a healing potion, I need to flesh out the data structures for this thing.
+
+Should individual items have their own data? I guess they might, be I think I can just use the same pattern as I've used for entities + meta. The meta can either copy across or just be a pointer. Actually yeah, certain items might have upgrades and not stack together.
+
+Interestingly today it feels like that obsessive, intense energy has gone, and left the usual kind of emptiness in the chest. There's still a pull towards working on this, but it doesn't have that same energy as before. It's like now the project is feeling pretty good, and there's a mild fear of going further on it because of the overwhelming size of the possibilities ahead. I think I'll just take more breaks, but still keen to keep working on it, still so many ideas for things to add. Also I think once I have an inventory system, just creating items and creatures will start to really fill out the world.
+
+It's like a feeling of worry... pure worry, in the chest. Just not towards or about anything, although some things pop into the mind, it just feels like, afraid. That I'm not going to be ok.

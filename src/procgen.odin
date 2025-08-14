@@ -199,7 +199,7 @@ _try_add_room :: proc(
 		// Draw pit island room
 		// tile_draw_outline(outer_rect)
 		tile_draw_fill(island)
-		tile_connect_region(bridge_start, island)
+		tile_connect_region(bridge_start, island, y_first = door.direction == .South)
 
 		game_spawn_entity(.Firebug, {pos = TileCoord(pos)})
 
@@ -260,7 +260,7 @@ _try_add_room :: proc(
 _add_grass :: proc() {
 	region_iter := prism.aabb_iterator(prism.aabb(Vec2i{0, 0}, Vec2i{LEVEL_WIDTH, LEVEL_HEIGHT}))
 	for pos in prism.aabb_iterate(&region_iter) {
-		val := noise.noise_2d(1, {f64(pos.x) * 0.1, f64(pos.y) * 0.1})
+		val := noise.noise_2d(RNG_GRASS_PLACEMENT, {f64(pos.x) * 0.1, f64(pos.y) * 0.1})
 		if val > 0.7 {
 			tile, ok := tile_at(TileCoord(pos)).?
 			if !ok do continue
