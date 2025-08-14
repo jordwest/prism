@@ -7,9 +7,9 @@ NO_ENEMIES :: false
 
 ////////// DEBUG OPTIONS \\\\\\\\\\
 
-DEBUG_SPECTATE :: false
+DEBUG_SPECTATE :: true
 DEBUG_TURN_STEPPING :: false
-DEBUG_OVERLAYS_ENABLED :: false
+DEBUG_OVERLAYS_ENABLED :: true
 STUTTER_CHECKER_ENABLED :: false
 // Delay procedural generation iterations by this many frames
 // (to help visualise the generation)
@@ -27,7 +27,7 @@ when ODIN_DEBUG {
 	LOG_LEVEL :: LogLevel.Error
 }
 // Whether to record messages received by host
-LOG_HOST_MESSAGES :: false
+LOG_HOST_MESSAGES :: true
 // Whether to record messages received by client
 LOG_CLIENT_MESSAGES :: false
 LOG_LOG_ENTRIES :: false

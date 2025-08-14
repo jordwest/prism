@@ -14,13 +14,16 @@ export function createNetImports(instance: FresnelInstance) {
 
       const messageContent = getSlice(instance.memory, msgPtr);
 
+      // Fake "localhost" has no delay
+      const sendingToLocalhost = instance.instanceId == instance.state.listeningServerId
+
       const data = messageContent.slice();
       setTimeout(() => {
         instance.state.serverMailbox.push({
           clientId: instance.clientId,
           data,
         });
-      }, delayMs());
+      }, sendingToLocalhost ? 0 : delayMs());
 
       return messageContent.length;
     },
@@ -73,9 +76,12 @@ export function createNetImports(instance: FresnelInstance) {
 
       if (clientMailbox == null) return false
 
+      // Fake "localhost" has no delay
+      const sendingToLocalhost = instance.clientId === clientId
+
       setTimeout(() => {
         clientMailbox.push(data);
-      }, delayMs());
+      }, sendingToLocalhost ? 0 : delayMs());
       return true;
     },
     server_broadcast_message: (msgPtr: OdinSlicePointer) => {
@@ -83,10 +89,11 @@ export function createNetImports(instance: FresnelInstance) {
 
       const data = messageContent.slice();
       for (var clientId of instance.state.clients.keys()) {
+        const sendingToLocalhost = instance.clientId === clientId
         const clientMailbox = instance.state.clients.get(clientId)!;
         setTimeout(() => {
           clientMailbox.push(data);
-        }, delayMs());
+        }, sendingToLocalhost ? 0 : delayMs());
       }
 
       return messageContent.length;

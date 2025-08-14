@@ -54,6 +54,8 @@ GameState :: struct {
 	current_turn:     i32,
 	turn_complete:    bool, // All players have completed their turn and waiting for turn to advance
 	tiles:            Tiles,
+	items:            ItemTable,
+	containers:       Containers,
 	players:          map[PlayerId]Player,
 	entities:         map[EntityId]Entity,
 	derived:          DerivedState,

@@ -487,3 +487,7 @@ Should individual items have their own data? I guess they might, be I think I ca
 Interestingly today it feels like that obsessive, intense energy has gone, and left the usual kind of emptiness in the chest. There's still a pull towards working on this, but it doesn't have that same energy as before. It's like now the project is feeling pretty good, and there's a mild fear of going further on it because of the overwhelming size of the possibilities ahead. I think I'll just take more breaks, but still keen to keep working on it, still so many ideas for things to add. Also I think once I have an inventory system, just creating items and creatures will start to really fill out the world.
 
 It's like a feeling of worry... pure worry, in the chest. Just not towards or about anything, although some things pop into the mind, it just feels like, afraid. That I'm not going to be ok.
+
+### Container system
+
+So I'm thinking about how to have entities *and* tiles contain multiple items, without the memory usage absolutely blowing up. I think the idea that feels most right right now is to put all items in a big generational arena like with entities (or at least how entities will be, or just using a map), then each item can have a "contained by" (which is a union of tile pos, entity, or another item). Then, whenever that value is changed, recalculate all the containers and attach their ids to a linked list that has the item/tile/entity as a key. If that's all stored in an arena, then the arena can just be reset before doing the recalculation, easy.

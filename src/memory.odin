@@ -34,6 +34,8 @@ pad_before_state: prism.MemPadding
 
 state: AppState
 
+arena_containers: Arena(102400) // containers.odin
+
 pad_after_state: prism.MemPadding
 
 // Clay layout arena
@@ -76,6 +78,7 @@ memory_init :: proc() {
 	persistent_arena_alloc = mem.arena_allocator(&persistent_arena)
 
 	_init_arena(&arena_ui_frame)
+	_init_arena(&arena_containers)
 
 	fresnel.log_i32("persistent mem loc", i32(uintptr(&persistent_memory)))
 	fresnel.log_i32("state_mem_start", i32(uintptr(&state)))

@@ -109,7 +109,7 @@ host_send_message :: proc(client_id: ClientId, msg: HostMessage) {
 	m: HostMessage = msg
 	s := prism.create_serializer(_serialization_buffer[:])
 	host_message_union_serialize(&s, &m)
-	state.host.bytes_sent += i32(len(s.stream))
+	state.host.bytes_sent += s.offset
 	fresnel.server_send_message(i32(client_id), s.stream[:s.offset])
 }
 
@@ -117,7 +117,7 @@ host_broadcast_message :: proc(msg: HostMessage) {
 	m: HostMessage = msg
 	s := prism.create_serializer(_serialization_buffer[:])
 	host_message_union_serialize(&s, &m)
-	state.host.bytes_sent += i32(len(s.stream) * len(state.host.clients))
+	state.host.bytes_sent += s.offset * i32(len(state.host.clients))
 	fresnel.server_broadcast_message(s.stream[:s.offset])
 }
 

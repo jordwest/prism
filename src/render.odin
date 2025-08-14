@@ -52,6 +52,19 @@ render_debug_overlays :: proc() {
 	_add_debug_text("Turn %d, t=%.2f", state.client.game.current_turn, state.t)
 	_add_debug_text("%.0f FPS (%.0f max, %.0f min)", debug_get_fps())
 	_add_debug_text("Log queue size: %d", queue.len(state.client.log_queue._queue))
+	_add_debug_text("Entity count: %d", len(state.client.game.entities))
+	_add_debug_text(
+		"Entity size: %db x %d = %.3fKB",
+		size_of(Entity),
+		cap(state.client.game.entities),
+		f32(size_of(Entity) * cap(state.client.game.entities)) / 1000,
+	)
+	if state.host.is_host {
+		_add_debug_text("host tx ↑: %.3fKB", f32(state.host.bytes_sent) / 1000)
+		_add_debug_text("host rx ↓: %.3fKB", f32(state.host.bytes_received) / 1000)
+	}
+	_add_debug_text("tx ↑ %.3fKB", f32(state.client.bytes_sent) / 1000)
+	_add_debug_text("rx ↓ %.3fKB", f32(state.client.bytes_received) / 1000)
 
 	if pcg, ok := state.client.game.pcg.?; ok {
 		if !pcg.done {

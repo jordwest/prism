@@ -20,7 +20,7 @@ fx_init :: proc() {
 }
 
 fx_add :: proc(fx: Fx) -> bool {
-	id, ok := prism.pool_add(&state.client.fx, fx)
+	id, _, ok := prism.pool_add(&state.client.fx, fx)
 	return ok
 }
 

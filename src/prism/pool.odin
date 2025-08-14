@@ -47,17 +47,17 @@ pool_init :: proc(arr: ^Pool($T, $Capacity)) {
 	arr.next_id = 1
 }
 
-pool_add :: proc(arr: ^Pool($T, $Capacity), item: T) -> (PoolId, bool) {
+pool_add :: proc(arr: ^Pool($T, $Capacity), item: T) -> (PoolId, ^T, bool) {
 	old_slot, has_old_slot := queue.pop_front_safe(&arr.holes)
 	if has_old_slot {
 		arr.generations[old_slot.id] = old_slot.gen + 1
 		arr.items[old_slot.id] = item
-		return PoolId{id = old_slot.id, gen = old_slot.gen + 1}, true
+		return PoolId{id = old_slot.id, gen = old_slot.gen + 1}, &arr.items[old_slot.id], true
 	}
 
 	// No free slots
 
-	if arr.next_id >= Capacity + 1 do return {}, false
+	if arr.next_id >= Capacity + 1 do return {}, nil, false
 
 	// Use new slot
 
@@ -68,12 +68,12 @@ pool_add :: proc(arr: ^Pool($T, $Capacity), item: T) -> (PoolId, bool) {
 	arr.items[id.id] = item
 	arr.next_id += 1
 	arr.generations[id.id] = id.gen
-	return id, true
+	return id, &arr.items[id.id], true
 }
 
 pool_get :: proc(arr: ^Pool($T, $Capacity), id: PoolId) -> Maybe(^T) {
 	if arr.generations[id.id] != id.gen do return nil
-	return &arr.generations[id.id]
+	return &arr.items[id.id]
 }
 
 pool_delete :: proc(arr: ^Pool($T, $Capacity), id: PoolId) -> Maybe(T) {

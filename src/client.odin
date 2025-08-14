@@ -8,22 +8,34 @@ import "prism"
 client_boot :: proc(width: i32, height: i32) -> Error {
 	e_alloc: mem.Allocator_Error
 
-	state.client.game.players, e_alloc = make(
-		map[PlayerId]Player,
-		8,
-		allocator = persistent_arena_alloc,
-	)
-	if e_alloc != nil do return error(e_alloc)
-	state.client.game.entities, e_alloc = make(
-		map[EntityId]Entity,
-		2048,
-		allocator = persistent_arena_alloc,
-	)
-	if e_alloc != nil do return error(e_alloc)
-	derived_init() or_return
+	game_init() or_return
 	audio_init()
 	log_queue_init(&state.client.log_queue)
 	fx_init()
+
+
+	//////////// test
+	item_spawn(
+		ItemStack{count = 1, type = PotionType.Healing, container_id = EntityId(123)},
+	) or_return
+	item_spawn(
+		ItemStack{count = 1, type = PotionType.Fire, container_id = TileCoord{5, 6}},
+	) or_return
+	item_spawn(
+		ItemStack{count = 5, type = PotionType.Fire, container_id = EntityId(123)},
+	) or_return
+	containers_reset()
+
+	iter := container_iterator(EntityId(123))
+	for item in container_iterate(&iter) {
+		trace("container A contains: %w", item^)
+	}
+
+	iter = container_iterator(TileCoord{5, 6})
+	for item in container_iterate(&iter) {
+		trace("container B contains: %w", item^)
+	}
+	///////////////
 
 	state.client.zoom = DEFAULT_ZOOM
 	state.client.camera = prism.spring_create(
@@ -132,6 +144,6 @@ client_send_message :: proc(msg: ClientMessage) {
 	m: ClientMessage = msg
 	s := prism.create_serializer(_serialization_buffer[:])
 	client_message_union_serialize(&s, &m)
-	state.client.bytes_sent += i32(len(s.stream))
+	state.client.bytes_sent += i32(s.offset)
 	fresnel.client_send_message(s.stream[:s.offset])
 }

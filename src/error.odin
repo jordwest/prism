@@ -14,6 +14,7 @@ InnerError :: union {
 	SerializationError,
 	DeserializationError,
 	ClientNotFound,
+	NoCapacity,
 	UnexpectedSeqId,
 	NoSpaceForEntity,
 	ErrorCode,
@@ -47,6 +48,8 @@ NoSpaceForEntity :: struct {
 	entity_id: EntityId,
 	pos:       TileCoord,
 }
+
+NoCapacity :: struct {}
 
 UnexpectedSeqId :: struct {
 	expected: LogSeqId,

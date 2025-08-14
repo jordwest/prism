@@ -1,6 +1,7 @@
 package main
 
 import "core:math"
+import "core:mem"
 import "prism"
 
 MoveModifier :: enum {
@@ -182,4 +183,29 @@ game_find_nearest_traversable_space :: proc(
 	}
 
 	return {}, false
+}
+
+
+game_init :: proc() -> Error {
+	e_alloc: mem.Allocator_Error
+
+	state.client.game.players, e_alloc = make(
+		map[PlayerId]Player,
+		8,
+		allocator = persistent_arena_alloc,
+	)
+	if e_alloc != nil do return error(e_alloc)
+	state.client.game.entities, e_alloc = make(
+		map[EntityId]Entity,
+		2048,
+		allocator = persistent_arena_alloc,
+	)
+	if e_alloc != nil do return error(e_alloc)
+
+	derived_init() or_return
+
+	items_init()
+	containers_init()
+
+	return nil
 }

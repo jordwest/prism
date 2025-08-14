@@ -89,6 +89,7 @@ todo,imp,b4,Click & drag to move camera around
 todo,feat,b4,Add critical hits - chance for double max roll
 todo,feat,b4,Sleeping enemies - can be killed instantly
 todo,imp,b4,Grass crunch sound
+todo,feat,ideas,Item identification system
 todo,bug,b4,Player indicators should appear above all entities (render order)
 todo,imp,b4,Consider setting a delay after actions (like attack) instead of after every turn
 todo,feat,b4,"Add basic lobby for connecting, setting name and starting game"

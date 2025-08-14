@@ -167,9 +167,9 @@ entity_swap_pos :: proc(a: ^Entity, b: ^Entity) {
 	entity_set_pos(b, pos_b)
 }
 
-entity_clear_cmd :: proc(entity: ^Entity) {
+entity_clear_cmd :: proc(entity: ^Entity, clear_local := false) {
 	entity.cmd = Command{}
-	// entity._local_cmd = nil
+	if clear_local do entity._local_cmd = nil
 }
 
 entity_consume_ap :: proc(entity: ^Entity, ap: i32) {
