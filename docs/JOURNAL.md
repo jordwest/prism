@@ -467,3 +467,7 @@ Ohhhh shit it's actually because I'm pulling things off the queue and then retur
 Yep replays are working quite consistently now which is nice! Time for more content *rubs hands*
 
 Added some little grass sprites. I'm thinking I'll use the same frame things for animation for sprite variations for now.
+
+Ok what's next.. I think maybe some more content. Would be good to start adding items, maybe a potion of healing to make the level last longer. Also want to then play with that and experiment ways to heal that don't involve sitting and resting, which wouldn't play well with multiplayer. Unless, I do some kind of campfire thing where you only get a limited number, and everyone in a vicinity can heal by it. Or just skip that entirely and have some kind of well of life, where everybody can take a shot from it.
+
+Also would be cool to add some buttons where all players have to stand on them to unlock a door together. Or there are mechanisms with two buttons for three players, and one button for two players. Only one player can go through the door (and there may be enemies!). Maybe other doors close down at the same time.

@@ -92,7 +92,7 @@ entity_meta: [EntityMetaId]EntityMeta = {
 	.Spider = EntityMeta {
 		spritesheet_coord = SPRITE_COORD_SPIDER,
 		team = .Darkness,
-		max_hp = 7,
+		max_hp = 5,
 		vision_distance = 8,
 		flags = {.IsAiControlled, .IsObstacle, .IsFast, .CanTakeDamage},
 		flavor_text = "3 feet tall with thick, black scaled legs - this is no ordinary house spider. It may be weak, but it moves quickly and can easily outrun you.",
@@ -103,7 +103,7 @@ entity_meta: [EntityMetaId]EntityMeta = {
 		max_hp = 12,
 		vision_distance = 4,
 		flags = {.IsAiControlled, .IsObstacle, .IsSlow, .CanTakeDamage},
-		flavor_text = "You'd have thought it a giant cockroach if not for the enormous, glowing red pustule this creature seems to be dragging around on its back. The sack of glowing liquid seems to make it difficult to move.",
+		flavor_text = "You'd have mistaken it for a giant cockroach if not for the enormous, glowing red pustule this creature seems to be dragging around on its back. The sack of glowing liquid seems to make it difficult to move.",
 	},
 	.Corpse = EntityMeta{spritesheet_coord = SPRITE_COORD_CORPSE, flags = {}},
 }

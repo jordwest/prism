@@ -48,6 +48,14 @@ rand_splitmix_get_i32_range :: proc(
 	return min + i32(state.z % u64(max - min))
 }
 
+rand_splitmix_get_dice_roll :: proc(state: ^SplitMixState, dice_num_sides: []i32) -> i32 {
+	total: i32 = 0
+	for sides in dice_num_sides {
+		total += rand_splitmix_get_i32_range(state, 1, sides)
+	}
+	return total
+}
+
 rand_splitmix_get_tilecoord_in_aabb :: proc(state: ^SplitMixState, aabb: Aabb(i32)) -> TileCoord {
 	x := rand_splitmix_get_i32_range(state, aabb.x1, aabb.x2)
 	y := rand_splitmix_get_i32_range(state, aabb.y1, aabb.y2)

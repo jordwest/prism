@@ -113,18 +113,19 @@ _attack :: proc(e: ^Entity) -> CommandOutcome {
 	target, target_ok := entity(e.cmd.target_entity).?
 	if !target_ok do return .CommandFailed
 
-	rng := prism.rand_splitmix_create(GAME_SEED, RNG_HIT)
-	prism.rand_splitmix_add_i32(&rng, i32(e.id))
-	prism.rand_splitmix_add_i32(&rng, i32(e.move_seq))
+	rng := rng_new(RNG_HIT)
+	rng_add(&rng, i32(e.id))
+	rng_add(&rng, i32(e.move_seq))
 
 	dist_to_target := prism.tile_distance(target.pos - e.pos)
 
 	if dist_to_target == 1 {
 		// Melee
-		is_hit := prism.rand_splitmix_get_bool(&rng, 650)
+		is_hit := rng_bool(&rng, 650)
+		dmg := rng_dice(&rng, {3, 3})
 
 		if is_hit {
-			event_fire(EventEntityHurt{dmg = 4, source_id = e.id, target_id = target.id})
+			event_fire(EventEntityHurt{dmg = dmg, source_id = e.id, target_id = target.id})
 			audio_play(.Punch)
 		} else {
 			event_fire(EventEntityMiss{attacker_id = e.id, target_id = target.id})

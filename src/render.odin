@@ -420,6 +420,9 @@ render_ui :: proc(ui: UiContext, offset_in: ScreenCoord = {0, 0}) {
 			offset.x = 0
 			offset.y += 32
 		}
+		if offset.y <= 0 {
+			offset.y = 0
+		}
 	}
 
 	for i in 0 ..< i32(render_commands.length) {

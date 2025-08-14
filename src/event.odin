@@ -67,7 +67,9 @@ _entity_hurt :: proc(evt: ^EventEntityHurt) -> Error {
 	target := entity_or_error(evt.target_id) or_return
 
 	target.hp -= evt.dmg
-	fx_spawn_dmg(target.pos, 4)
+	fx_spawn_dmg(target.pos, evt.dmg)
+
+	if .IsPlayerControlled in target.meta.flags do target.cmd = Command{}
 
 	if target.hp <= 0 {
 		event_fire(EventEntityDied{entity_id = target.id}) or_return

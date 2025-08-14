@@ -187,7 +187,7 @@ boot :: proc "c" (width: i32, height: i32, flags: i32) {
 	)
 	ctx2 = clay.Initialize(
 		clay_arena_tooltip,
-		{f32(width / 3), f32(height / 2)},
+		{f32(width / 3), f32(height)},
 		{handler = clay_error_handler},
 	)
 	// clay.SetCurrentContext(ctx1)
@@ -280,4 +280,17 @@ serialize :: proc {
 	prism.serialize_string,
 	prism.serialize_vec2i,
 	prism.serialize_u8,
+}
+
+rng_new :: proc(stream: u64) -> prism.SplitMixState {
+	return prism.rand_splitmix_create(GAME_SEED, stream)
+}
+rng_dice :: prism.rand_splitmix_get_dice_roll
+rng_range :: prism.rand_splitmix_get_i32_range
+rng_bool :: prism.rand_splitmix_get_bool
+rng_add :: proc {
+	prism.rand_splitmix_add_f32,
+	prism.rand_splitmix_add_i32,
+	prism.rand_splitmix_add_int,
+	prism.rand_splitmix_add_u64,
 }

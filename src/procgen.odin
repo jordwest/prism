@@ -261,7 +261,7 @@ _add_grass :: proc() {
 	region_iter := prism.aabb_iterator(prism.aabb(Vec2i{0, 0}, Vec2i{LEVEL_WIDTH, LEVEL_HEIGHT}))
 	for pos in prism.aabb_iterate(&region_iter) {
 		val := noise.noise_2d(1, {f64(pos.x) * 0.1, f64(pos.y) * 0.1})
-		if val > 0.5 {
+		if val > 0.7 {
 			tile, ok := tile_at(TileCoord(pos)).?
 			if !ok do continue
 			if tile.type != .Floor do continue
