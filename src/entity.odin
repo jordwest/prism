@@ -179,6 +179,9 @@ entity_consume_ap :: proc(entity: ^Entity, ap: i32) {
 
 entity_add_ap :: proc(entity: ^Entity, ap: i32 = 100) {
 	entity.action_points += ap
+	if entity.action_points > 100 {
+		err("Entity %d has %d AP", entity.id, entity.action_points)
+	}
 }
 
 entity_id_serialize :: proc(s: ^prism.Serializer, eid: ^EntityId) -> prism.SerializationResult {

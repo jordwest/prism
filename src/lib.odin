@@ -129,7 +129,7 @@ boot :: proc "c" (width: i32, height: i32, flags: i32) {
 	}
 
 	if (flags == 1) {
-		// state.client.join_mode = .Spectate
+		state.client.join_mode = .Spectate
 	}
 
 	trace("Is host: %w", state.host.is_host)

@@ -35,6 +35,7 @@ game_reset :: proc() {
 	game.newest_entity_id = 0
 	derived_clear()
 	game.turn_complete = false
+	game.status = .Lobby
 	clear(&state.client.game.entities)
 	procgen_reset(state.client.game.pcg.?)
 }
@@ -51,7 +52,9 @@ game_get_move_modifier :: proc(
 	entities := derived_entities_at(TileCoord(to))
 	if .Traversable not_in tile.flags do return {.Blocked}
 	if obstacle, has_obstacle := entities.obstacle.?; has_obstacle && !obstacle.despawning {
-		if .MovedLastTurn not_in obstacle.meta.flags do return {.Blocked}
+		moved_recently :=
+			.MovedLastTurn in obstacle.meta.flags || .MovedThisTurn in obstacle.meta.flags
+		if !moved_recently do return {.Blocked}
 		modifiers += {.Avoid}
 	}
 	if .Slow in tile.flags do modifiers += {.Slow}

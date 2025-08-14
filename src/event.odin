@@ -106,6 +106,9 @@ _entity_died :: proc(evt: ^EventEntityDied) -> Error {
 
 @(private = "file")
 _turn_starting :: proc(evt: ^EventTurnStarting) -> Error {
+	state.host.turn_sent_off = false
+	state.client.game.turn_complete = false
+
 	tile_handle_turn()
 	return nil
 }

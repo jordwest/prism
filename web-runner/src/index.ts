@@ -50,7 +50,7 @@ document.addEventListener("keydown", (e) => {
     }
     console.groupEnd();
   }
-  if (e.key == "r") {
+  if (e.key == "R") {
     restartWasm();
   }
 
@@ -236,7 +236,7 @@ async function initWasm(instanceCount: number) {
       "background-color: #990000; font-weight: bold; font-size: 16px; padding: 8px; display: block;",
     );
     const y = height * i;
-    const newInstance = await instantiate(state, i, { y, height }, i);
+    const newInstance = await instantiate(state, i, { y, height });
     state.instances.push(newInstance);
     newInstance.exports.boot(
       state.canvas.width,

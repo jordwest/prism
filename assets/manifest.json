@@ -203,6 +203,13 @@
         ]
       },
       {
+        "name": "debug_host_replay_log",
+        "id": 9003,
+        "webKeys": [
+          "r"
+        ]
+      },
+      {
         "name": "zoom_in",
         "id": 101,
         "webKeys": [

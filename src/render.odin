@@ -1,6 +1,7 @@
 package main
 
 import clay "clay-odin"
+import "core:container/queue"
 import "core:fmt"
 import "core:math"
 import "fresnel"
@@ -50,6 +51,7 @@ render_debug_overlays :: proc() {
 	_add_debug_text("Debug overlays: %v", state.debug.view)
 	_add_debug_text("Turn %d, t=%.2f", state.client.game.current_turn, state.t)
 	_add_debug_text("%.0f FPS (%.0f max, %.0f min)", debug_get_fps())
+	_add_debug_text("Log queue size: %d", queue.len(state.client.log_queue._queue))
 
 	if pcg, ok := state.client.game.pcg.?; ok {
 		if !pcg.done {

@@ -10,6 +10,13 @@ DebugState :: struct {
 	render_debug_overlays: bool,
 	view:                  DebugView,
 	frame_time_queue:      queue.Queue(f32),
+	turn_stepping:         DebugTurnStepState,
+}
+
+DebugTurnStepState :: enum {
+	Off,
+	Paused,
+	Step,
 }
 
 DebugView :: enum {
@@ -25,6 +32,7 @@ debug_init :: proc() {
 	fresnel.draw_rect(1, 2, 3, 4)
 	queue.init_with_contents(&state.debug.frame_time_queue, _frame_time_queue[:])
 	state.debug.render_debug_overlays = DEBUG_OVERLAYS_ENABLED
+	state.debug.turn_stepping = DEBUG_TURN_STEPPING ? .Paused : .Off
 }
 
 debug_tick :: proc(dt: f32) {

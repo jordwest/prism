@@ -2,6 +2,7 @@ package main
 
 import "core:math"
 import "fresnel"
+import "prism"
 
 InputActions :: enum i32 {
 	MoveUp                    = 1,
@@ -21,9 +22,49 @@ InputActions :: enum i32 {
 	DebugRenderOverlaysToggle = 9000,
 	DebugNextView             = 9001,
 	TempGameStart             = 9002,
+	DebugHostReplay           = 9003,
 }
 
+_replay_storage: [1048576]u8
 input_frame :: proc(dt: f32) {
+	if state.debug.turn_stepping != .Off {
+		if is_action_just_pressed(.Skip) {
+			if log_queue_can_pop(&state.client.log_queue) do state.debug.turn_stepping = .Step
+			return // Ignore all other input this frame to avoid player wait firing
+		}
+	}
+
+	if is_action_just_pressed(.DebugHostReplay) && state.host.is_host {
+		if len(state.host.game_log) <= 1 {
+			// Load replay
+			bytes := fresnel.storage_get("replay", _replay_storage[:])
+			if bytes == 0 do return
+			count: i32 = 0
+			ser := prism.create_deserializer(_replay_storage[:])
+			entry: LogEntry
+			result := serialize(&ser, &count)
+			game_reset()
+			clear(&state.client.game.players)
+			for i: i32 = 0; i < count; i += 1 {
+				result := serialize(&ser, &entry)
+				trace("Deserialization Result %v - %v", result, entry)
+				log_queue_push(&state.client.log_queue, entry)
+			}
+			state.host.is_host = false
+		} else {
+			ser := prism.create_serializer(_replay_storage[:])
+			count := i32(len(state.host.game_log))
+			serialize(&ser, &count)
+			for &log in &state.host.game_log {
+				result := serialize(&ser, &log)
+				trace("Serialization Result %v", result)
+			}
+			fresnel.storage_set("replay", _replay_storage[:ser.offset])
+		}
+		// Temporary hack to make this replaying work, since the host will otherwise
+		// submit a bunch of turn end events to the log
+		trace("%v", state.host.game_log)
+	}
 
 	player_entity, ok := player_entity().?
 

@@ -14,6 +14,7 @@ LogEntry :: union {
 }
 
 log_replay_entry :: proc(entry: LogEntry) -> Error {
+	if LOG_LOG_ENTRIES do info("log_replay_entry: %v", entry)
 	switch e in entry {
 	case LogEntryPlayerJoined:
 		_on_player_joined(e) or_return
@@ -146,6 +147,10 @@ log_queue_can_push :: proc(lq: ^LogQueue) -> bool {
 	return queue.len(lq._queue) < queue.cap(lq._queue)
 }
 
+log_queue_can_pop :: proc(lq: ^LogQueue) -> bool {
+	return queue.len(lq._queue) > 0
+}
+
 log_queue_push :: proc(lq: ^LogQueue, log_entry: LogEntry) {
 	queue.push_back(&lq._queue, log_entry)
 }
@@ -158,18 +163,21 @@ log_queue_iterate :: proc(lq: ^LogQueue) -> (LogEntry, int, bool) {
 }
 
 log_frame :: proc() -> Error {
-	MAX_EVENTS_PER_FRAME := 2
-	iters := 0
-	for entry in log_queue_iterate(&state.client.log_queue) {
-		iters += 1
-		if iters > MAX_EVENTS_PER_FRAME do return nil // We can always process more on the next frame
+	if state.debug.turn_stepping == .Paused do return nil
 
-		log_replay_entry(entry) or_return
-		if LOG_LOG_ENTRIES do info("%v", entry)
+	entry, _, ok := log_queue_iterate(&state.client.log_queue)
 
-		if state.client.game.status == .Started {
-			turn_evaluate_all() or_return
-		}
+	if entry == nil do return nil
+
+	log_replay_entry(entry) or_return
+
+	if state.client.game.status == .Started && !state.client.game.turn_complete {
+		turn_evaluate_all() or_return
+	}
+
+	if state.debug.turn_stepping == .Step {
+		state.debug.turn_stepping = .Paused
+		return nil
 	}
 	return nil
 }

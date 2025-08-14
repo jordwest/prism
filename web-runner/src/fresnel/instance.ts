@@ -242,7 +242,7 @@ function createCoreImports(instance: FresnelInstance) {
 
       const b94encoded = base94.encode(data);
 
-      instance.state.storage[key] = b94encoded;
+      localStorage.setItem(key, b94encoded)
     },
     storage_get: (
       keyPtr: OdinStringPointer,
@@ -250,7 +250,7 @@ function createCoreImports(instance: FresnelInstance) {
     ): number => {
       const key = `${instance.instanceId}:${readOdinString(instance.memory, keyPtr)}`;
       const destination = getSlice(instance.memory, slice);
-      const b94encoded = instance.state.storage[key];
+      const b94encoded = localStorage.getItem(key)
       if (b94encoded != null) {
         if (b94encoded.length > destination.length) {
           return -2; // ERROR Slice not big enough

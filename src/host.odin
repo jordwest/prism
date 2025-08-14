@@ -32,12 +32,7 @@ host_boot :: proc() -> HostError {
 host_tick :: proc(dt: f32) {
 	host_poll()
 
-	if state.client.game.turn_complete && state.t - state.host.last_turn_at >= TURN_DELAY {
-		state.client.game.turn_complete = false
-		state.host.last_turn_at = state.t
-
-		host_log_entry(LogEntryAdvanceTurn{})
-	}
+	turn_host_frame()
 }
 
 host_on_client_connected :: proc(clientId: ClientId) {

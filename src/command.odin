@@ -59,6 +59,9 @@ command_execute_all_ai :: proc(entity: ^Entity) -> CommandOutcome {
 command_execute :: proc(entity: ^Entity) -> CommandOutcome {
 	cmd := entity.cmd
 	ap := entity.action_points
+
+	trace("_execute %s %d (AP %d)", cmd.type, entity.id, entity.action_points)
+
 	if ap <= 0 do return .NeedsActionPoints
 
 	when LOG_COMMANDS {
@@ -83,7 +86,9 @@ command_execute :: proc(entity: ^Entity) -> CommandOutcome {
 }
 
 _move :: proc(entity: ^Entity) -> CommandOutcome {
+	trace("_move %d (AP %d)", entity.id, entity.action_points)
 	outcome, at_target := _player_move_towards(entity, entity.cmd.pos, allow_swap = true)
+	trace("outcome %v", outcome)
 	switch outcome {
 	case .Moved:
 		if at_target do entity_clear_cmd(entity)
@@ -154,6 +159,7 @@ _player_move_towards :: proc(
 	reached_target: bool,
 ) {
 	dist_to_target := prism.tile_distance(destination - entity.pos)
+	trace("_player_move_towards %d: %v -> %v", entity.id, entity.pos, destination)
 
 	if dist_to_target == 0 {
 		entity_clear_cmd(entity)
@@ -191,6 +197,8 @@ _move_or_swap :: proc(entity: ^Entity, pos: TileCoord, allow_swap: bool = true) 
 	if !valid_tile do return .Blocked
 	if .Obstacle in tile.flags do return .Blocked
 
+	trace("_move_or_swap %d: %v -> %v", entity.id, entity.pos, pos)
+
 	// Check if there's something in the way
 	entities := derived_entities_at(pos)
 	if obstacle, has_obstacle := entities.obstacle.?; has_obstacle {
@@ -205,6 +213,11 @@ _move_or_swap :: proc(entity: ^Entity, pos: TileCoord, allow_swap: bool = true) 
 	if cost <= 0 do return .Blocked
 
 	if entity.player_id == state.client.player_id do audio_play(.Footstep)
+
+	distance_moved := prism.tile_distance(entity.pos - pos)
+	if distance_moved > 1 {
+		err("Entity moved too far in one movement - from %v to %v", entity.pos, pos)
+	}
 
 	entity_set_pos(entity, pos)
 	entity_consume_ap(entity, cost)

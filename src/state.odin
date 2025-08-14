@@ -70,6 +70,9 @@ HostState :: struct {
 	bytes_sent:     i32,
 	bytes_received: i32,
 	game_log:       [dynamic]LogEntry,
+	// True when the current completed turn has been sent off, to avoid double sends.
+	// Resets at the beginning of another turn
+	turn_sent_off:  bool,
 }
 
 ClientId :: distinct i32

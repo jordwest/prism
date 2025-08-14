@@ -428,3 +428,40 @@ So tomorrow:
  - Generate a set of maps after certain events. Consider splitting it up over frames, although probably not necessary
  - Items? Fire potions? Different weapons?
  - Lobby and connect button
+
+# Thursday 14 Aug 2025
+
+So maybe the replay system at this point is a bit overkill, however it could be good to at least let the client pause processing of events and have a key that steps through. That way I can do something kinda like step through debugging when an issue crops up. Then the replay system would just involve saving the moves and reloading them (actually, maybe I just have the host save the moves anyway, and when an issue pops up I can implement the replay system? eh still probs too much work at this stage)
+
+Ok so stepping is implemented and I've already found a bug. Somehow the players jump forward like 4 tiles when contesting a doorway.
+
+Sooo somehow, the player is getting like 500 AP for some reason. Ah... I bet its the cost thing. Although, that is returning if it's 0 or less...
+
+Ok so somehow, the turn is advancing when it shouldn't be. The player has no command, so it should be returning early.
+
+Ok I think I might know what's happening. turn_evaluate_all is called after each command, so here's the timeline:
+
+1. Player issues move command
+2. Player moves, but cannot move anymore this turn
+3. Other player moves, then cannot move anymore this turn
+4. First somehow player issues another move command while turn is incomplete
+5. Turn is marked as "complete", but the end turn event isn't yet queued up
+6. End turn event is queued up
+7. Player command is processed, and evaluates turn_evaluate_all, which says the turn is incomplete and issues another turn complete command
+8. End turn event is processed
+
+So really what I think is needed is for the turn_evaluate_all to exit if the turn is already complete. Thing is that turn_complete is being used as a latch to test if the turn completion has been sent off yet or not. So I think I need two flags here, one used for turn_complete (as currently) which prevents turn evaluation, and another to check if the turn has been sent off yet and avoid double-sends.
+
+Then, when a turn log entry is received, reset both of these flags.
+
+Ok that seems to have fixed it.
+
+So now I'm trying to get replays working properly, because there's actually an issue when playing back a set of events. It seems like playing them all very quickly has some different effects.
+
+Ok yep playing back through but _stepping_ through makes the replay work perfectly. So there's some kind of frame dependent weirdness going on. Actually good that I ended up doing this replay thing or I probably wouldn't have discovered this issue.
+
+Ah, I think I might know what it is. There are some calcs happening each frame, but if there are 2 or more events sitting in the queue, they'll both get processed but the frame events will only get processed once. So I guess maybe I should move those events out of frame handlers and into event handlers instead. But also I might first test to see if limiting log entry processing to once per frame fixes things.
+
+Ohhhh shit it's actually because I'm pulling things off the queue and then returning, so events are getting lost completely. God I'm dumb. Ooooh k yep that has really fixed things.
+
+Yep replays are working quite consistently now which is nice! Time for more content *rubs hands*

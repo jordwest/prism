@@ -8,6 +8,7 @@ TurnOutcome :: enum {
 	Error,
 }
 
+
 turn_evaluate_all :: proc() -> Error {
 	outcome, e := turn_evaluate()
 	if e != nil do return e
@@ -72,4 +73,16 @@ turn_evaluate :: proc() -> (outcome: TurnOutcome, e: Error) {
 
 turn_complete :: proc() {
 	state.client.game.turn_complete = true
+}
+
+turn_host_frame :: proc() {
+	// HOST ONLY: Sends off the turn complete event to all clients
+	if state.client.game.turn_complete &&
+	   !state.host.turn_sent_off &&
+	   state.t - state.host.last_turn_at >= TURN_DELAY {
+		state.host.turn_sent_off = true
+		state.host.last_turn_at = state.t
+
+		host_log_entry(LogEntryAdvanceTurn{})
+	}
 }
