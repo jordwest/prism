@@ -1,6 +1,7 @@
 package main
 
 import "core:container/priority_queue"
+import "core:math/noise"
 import "core:mem"
 import "fresnel"
 import "prism"
@@ -92,6 +93,7 @@ procgen_iterate :: proc(pcg: ^PcgState) {
 		info("Procedural generation done in %d iterations, %dms", pcg.iteration, pcg.total_time)
 
 		when !NO_ENEMIES {
+			_add_grass()
 			_spawn_enemies()
 		}
 
@@ -252,6 +254,20 @@ _try_add_room :: proc(
 	}
 
 	return true
+}
+
+@(private = "file")
+_add_grass :: proc() {
+	region_iter := prism.aabb_iterator(prism.aabb(Vec2i{0, 0}, Vec2i{LEVEL_WIDTH, LEVEL_HEIGHT}))
+	for pos in prism.aabb_iterate(&region_iter) {
+		val := noise.noise_2d(1, {f64(pos.x) * 0.1, f64(pos.y) * 0.1})
+		if val > 0.5 {
+			tile, ok := tile_at(TileCoord(pos)).?
+			if !ok do continue
+			if tile.type != .Floor do continue
+			tile.flags += {.Grass}
+		}
+	}
 }
 
 @(private = "file")

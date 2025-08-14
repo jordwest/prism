@@ -2,6 +2,7 @@ package main
 
 Sprite :: enum {
 	Fire,
+	Grass,
 }
 
 SpriteMeta :: struct {
@@ -20,6 +21,13 @@ sprite_meta: [Sprite]SpriteMeta = {
 			SpriteFrame{offset = {0 * SPRITE_SIZE, 7 * SPRITE_SIZE}},
 			SpriteFrame{offset = {1 * SPRITE_SIZE, 7 * SPRITE_SIZE}},
 			SpriteFrame{offset = {2 * SPRITE_SIZE, 7 * SPRITE_SIZE}},
+		},
+	},
+	.Grass = SpriteMeta {
+		ascii_char = '"',
+		frames = {
+			SpriteFrame{offset = {0 * SPRITE_SIZE, 6 * SPRITE_SIZE}},
+			SpriteFrame{offset = {1 * SPRITE_SIZE, 6 * SPRITE_SIZE}},
 		},
 	},
 }

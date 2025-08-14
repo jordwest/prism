@@ -188,8 +188,12 @@ render_tiles :: proc() {
 			}
 
 			if tile.fire.fuel > 0 {
-				render_sprite(Sprite.Fire, screen_c)
-				// render_sprite(SPRITE_COORD_FIRE, screen_c)
+				global_animation_frame := int(state.t * 8)
+				render_sprite(Sprite.Fire, screen_c, frame_index = global_animation_frame)
+			}
+
+			if .Grass in tile.flags {
+				render_sprite(Sprite.Grass, screen_c)
 			}
 
 		}
@@ -203,10 +207,9 @@ render_sprite :: proc {
 	render_sprite_new,
 	render_sprite_old,
 }
-render_sprite_new :: proc(sprite: Sprite, pos: ScreenCoord, alpha: u8 = 255) {
+render_sprite_new :: proc(sprite: Sprite, pos: ScreenCoord, frame_index := 0, alpha: u8 = 255) {
 	meta := sprite_meta[sprite]
-	global_animation_frame := int(state.t * 8)
-	frame := sprite_choose_frame(&meta, global_animation_frame)
+	frame := sprite_choose_frame(&meta, frame_index)
 
 	fresnel.draw_image(
 		&fresnel.DrawImageArgs {

@@ -78,10 +78,11 @@ done,feat,b4,Make entities get hurt by fire effect
 done,bug,b4,"Weirdness when delay=0, out of order messages or something"
 done,imp,b4,Game over state - at least stop playing turn
 done,devtool,b4,Step through log entry debugging
-todo,content,b4,Add grass and make it burrrn
+done,content,b4,Add grass and make it burrrn
 todo,feat,b4,Heal ability (potion?)
 todo,content,b4,Fire traps
 todo,imp,b4,Click & drag to move camera around
+todo,content,b4,Grass crunch sound
 todo,bug,b4,Player indicators should appear above all entities (render order)
 todo,imp,b4,Consider setting a delay after actions (like attack) instead of after every turn
 todo,feat,b4,"Add basic lobby for connecting, setting name and starting game"

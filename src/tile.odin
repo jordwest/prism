@@ -24,6 +24,7 @@ TileFlag :: enum {
 	Traversable,
 	Obstacle,
 	Flammable,
+	Grass,
 	Slow,
 	Seen,
 }
@@ -74,8 +75,10 @@ tile_draw :: proc(pos: TileCoord, type: TileType) {
 
 tile_set_fire :: proc(tile: ^TileData, fuel: i32) {
 	if tile.type == .Empty do return
+	if tile.fire.fuel > 0 do return // Already on fire
 	if .Obstacle in tile.flags do return
 	if .Flammable in tile.flags do tile.fire.fuel += 6
+	if .Grass in tile.flags do tile.fire.fuel += 4
 	tile.fire.fuel += fuel
 }
 
@@ -90,6 +93,7 @@ tile_handle_turn :: proc() {
 			// Consumed all fuel
 			if tile.fire.fuel == 0 {
 				if tile.type == .RopeBridge do tile_set_type(&tile, .Empty)
+				if .Grass in tile.flags do tile.flags -= {.Grass}
 			}
 
 			// Still burning
@@ -102,7 +106,7 @@ tile_handle_turn :: proc() {
 					tile, valid_tile := tile_at(TileCoord(pos)).?
 					if !prism.aabb_is_edge(iter.aabb, pos) do continue
 					if !valid_tile do continue
-					if .Flammable in tile.flags && tile.fire.fuel == 0 do tile_set_fire(tile, 0)
+					if .Flammable in tile.flags || .Grass in tile.flags && tile.fire.fuel == 0 do tile_set_fire(tile, 0)
 				}
 			}
 		}

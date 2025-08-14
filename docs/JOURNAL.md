@@ -465,3 +465,5 @@ Ah, I think I might know what it is. There are some calcs happening each frame, 
 Ohhhh shit it's actually because I'm pulling things off the queue and then returning, so events are getting lost completely. God I'm dumb. Ooooh k yep that has really fixed things.
 
 Yep replays are working quite consistently now which is nice! Time for more content *rubs hands*
+
+Added some little grass sprites. I'm thinking I'll use the same frame things for animation for sprite variations for now.
