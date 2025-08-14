@@ -172,7 +172,7 @@ Ok that took 3h but I think totally worth it, and knocked off the issue with rep
 
 Wow, 59 hours tracked in the past 7 days... crazy. I don't think I've every worked so much on a project in my life.
 
-Listening to [this](https://www.youtube.com/watch?v=_ie639ilKW8) after listening to Jayasara's Rumi reading, and thinking this kind of music would really fit with the theme of the game. Perhaps it could be about diving deep in a desert dungeon to discover hidden parts of yourself, and the twist at the end could be discovering that all the characters you've played are the same all-knowing one.
+#lore Listening to [this](https://www.youtube.com/watch?v=_ie639ilKW8) after listening to Jayasara's Rumi reading, and thinking this kind of music would really fit with the theme of the game. Perhaps it could be about diving deep in a desert dungeon to discover hidden parts of yourself, and the twist at the end could be discovering that all the characters you've played are the same all-knowing one.
 
 Next thing is I'm getting these errors when moving the character quickly before the second client start up:
 
@@ -493,3 +493,11 @@ It's like a feeling of worry... pure worry, in the chest. Just not towards or ab
 So I'm thinking about how to have entities *and* tiles contain multiple items, without the memory usage absolutely blowing up. I think the idea that feels most right right now is to put all items in a big generational arena like with entities (or at least how entities will be, or just using a map), then each item can have a "contained by" (which is a union of tile pos, entity, or another item). Then, whenever that value is changed, recalculate all the containers and attach their ids to a linked list that has the item/tile/entity as a key. If that's all stored in an arena, then the arena can just be reset before doing the recalculation, easy.
 
 Ok so I think that's all working as expected. I've got potions appearing on the map, just need to be able to pick them up now. That's a new command which should trigger a pick up item event.
+
+Picking up is done, works pretty well. Now to just draw some rudimentary inventory UI.
+
+Ok so super basic inventory UI is working. Now I need to get it to be clickable... it's time to actually look deeper into mouse interaction in clay. I had mouseover events working before, but the challenge now is that I need to filter UI events out from interacting with the game board.
+
+#lore #idea: have a "Reincarnate" button instead of respawn. Leave little notes/clues around or inscriptions on the wall that suggest many have been on this same path. The "Grail of Temula" (Temula is amulet backwards).
+
+Ok I'm getting a bit slow now, maybe burnout setting in. I'm going to just check out how I might do the UI mouse interaction so I can mull over it overnight.

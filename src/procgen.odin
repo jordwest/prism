@@ -320,9 +320,4 @@ _spawn_items :: proc() {
 	}
 
 	containers_reset()
-
-	iter := container_iterator(EntityId(123))
-	for item in container_iterate(&iter) {
-		trace("container A contains: %w", item^)
-	}
 }

@@ -51,7 +51,7 @@ rand_splitmix_get_i32_range :: proc(
 rand_splitmix_get_dice_roll :: proc(state: ^SplitMixState, dice_num_sides: []i32) -> i32 {
 	total: i32 = 0
 	for sides in dice_num_sides {
-		total += rand_splitmix_get_i32_range(state, 1, sides)
+		total += rand_splitmix_get_i32_range(state, 1, sides + 1)
 	}
 	return total
 }

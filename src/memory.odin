@@ -54,6 +54,10 @@ _init_arena :: proc(arena: ^Arena($T)) {
 	arena.allocator = mem.arena_allocator(&arena.arena)
 }
 
+arena_free :: proc(arena: ^Arena($T)) {
+	mem.arena_free_all(&arena.arena)
+}
+
 memory_validate :: proc(loc := #caller_location) {
 	if uintptr(fmt._user_formatters) != 0 {
 		v := uintptr(fmt._user_formatters)

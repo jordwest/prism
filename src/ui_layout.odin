@@ -15,7 +15,8 @@ COLOR_GRAY_200 :: clay.Color{170, 170, 170, 255}
 COLOR_LIGHT_RED :: clay.Color{255, 170, 170, 150}
 COLOR_LIGHT_YELLOW :: clay.Color{255, 255, 170, 150}
 COLOR_LIGHT_GREEN :: clay.Color{170, 255, 170, 150}
-COLOR_PURPLE_800 :: clay.Color{45, 32, 59, 255}
+COLOR_PURPLE_800 :: clay.Color{20, 16, 24, 255}
+COLOR_PURPLE_500 :: clay.Color{45, 32, 59, 255}
 COLOR_PURPLE_200 :: clay.Color{128, 106, 153, 255}
 
 with_alpha :: proc(color: clay.Color, a: f32) -> clay.Color {
@@ -44,128 +45,78 @@ sidebar_item_component :: proc(index: u32) {
 
 _test_ui_text_buf: [200]u8
 // An example function to create your layout tree
-ui_layout_create :: proc() -> clay.ClayArray(clay.RenderCommand) {
+ui_layout_screen :: proc() -> clay.ClayArray(clay.RenderCommand) {
+	context.temp_allocator = arena_ui_frame.allocator
 	// Begin constructing the layout.
 	clay.BeginLayout()
+	default_text_config := clay.TextConfig({textColor = COLOR_WHITE, fontSize = FONT_SIZE_BASE})
 
 	// An example of laying out a UI with a fixed-width sidebar and flexible-width main content
 	// NOTE: To create a scope for child components, the Odin API uses `if` with components that have children
 	if clay.UI()(
 	{
 		id = clay.ID("OuterContainer"),
-		layout = {
-			sizing = {width = clay.SizingGrow({}), height = clay.SizingGrow({})},
-			padding = {16, 16, 16, 16},
-			childGap = 16,
-		},
+		layout = {sizing = {width = clay.SizingGrow({}), height = clay.SizingGrow({})}},
 		// backgroundColor = {250, 250, 255, 0},
 	},
 	) {
 		if clay.UI()(
 		{
-			id = clay.ID("SideBar"),
-			layout = {
-				layoutDirection = .TopToBottom,
-				sizing = {
-					width = clay.SizingFixed(300 + math.cos(state.t * 0.2) * 100),
-					height = clay.SizingGrow({}),
-				},
-				padding = {16, 16, 16, 16},
-				childGap = 16,
-			},
-			backgroundColor = COLOR_LIGHT,
+			id = clay.ID("PlayArea"),
+			layout = {sizing = {width = clay.SizingGrow({}), height = clay.SizingGrow({})}},
 		},
-		) {
-			if clay.UI()(
-			{
-				id = clay.ID("ProfilePictureOuter"),
-				layout = {
-					layoutDirection = clay.LayoutDirection.TopToBottom,
-					sizing = {width = clay.SizingGrow({})},
-					padding = {16, 16, 16, 16},
-					childGap = 16,
-					childAlignment = {y = .Center},
-				},
-				backgroundColor = COLOR_RED,
-				cornerRadius = {6, 6, 6, 6},
-			},
-			) {
-				if clay.UI()(
-				{
-					id = clay.ID("ProfilePicture"),
-					layout = {
-						sizing = {width = clay.SizingFixed(60), height = clay.SizingFixed(60)},
-					},
-					// image = {
-					// 	// How you define `profile_picture` depends on your renderer.
-					// 	imageData = &profile_picture,
-					// 	sourceDimensions = {width = 60, height = 60},
-					// },
-				},
-				) {}
-				if clay.UI()(
-				{
-					id = clay.ID("Sizer"),
-					layout = {
-						sizing = {width = clay.SizingGrow({}), height = clay.SizingGrow({})},
-					},
-					backgroundColor = COLOR_LIGHT,
-				},
-				) {
-					clay.Text(
-						"Here's some text inside the sizing area",
-						clay.TextConfig({textColor = COLOR_BLACK, fontSize = 32}),
-					)
-				}
-				if clay.UI()(
-				{
-					id = clay.ID("Textual"),
-					layout = {
-						sizing = {
-							width  = clay.SizingGrow({}),
-							height = clay.SizingGrow({}), // + math.sin(state.t) * 20),
-						},
-					},
-					backgroundColor = clay.Hovered() ? COLOR_LIGHT : COLOR_ORANGE,
-				},
-				) {
-
-					count := int(42 + 50 + math.sin(state.t) * 50)
-					fresnel.metric_i32("count", i32(count))
-					chars := _test_ui_text_buf[:count]
-					for x := 0; x < count; x += 1 {
-						if x % 5 == 0 {
-							chars[x] = ' '
-						} else {
-							chars[x] = u8(x)
-						}
-					}
-
-					clay.TextDynamic(
-						string(chars), // "Clay - A UI Library with text wrapping",
-						clay.TextConfig({textColor = COLOR_BLACK, fontSize = 16}),
-					)
-				}
-
-			}
-
-			// Standard Odin code like loops, etc. work inside components.
-			// Here we render 5 sidebar items.
-			for i in u32(0) ..< 5 {
-				sidebar_item_component(i)
-			}
-		}
-
+		) {}
 		if clay.UI()(
 		{
-			id = clay.ID("MainContent"),
-			layout = {sizing = {width = clay.SizingGrow({}), height = clay.SizingGrow({})}},
-			backgroundColor = COLOR_LIGHT,
+			id = clay.ID("InventorySidebar"),
+			layout = {
+				layoutDirection = .TopToBottom,
+				padding = {8, 8, 8, 8},
+				sizing = {width = clay.SizingPercent(0.25), height = clay.SizingGrow({})},
+				childGap = 8,
+			},
+			backgroundColor = COLOR_PURPLE_800,
 		},
 		) {
-			clay.Text("One ", clay.TextConfig({textColor = COLOR_BLACK, fontSize = 16}))
-			clay.Text("Two", clay.TextConfig({textColor = COLOR_BLACK, fontSize = 16}))
-			clay.Text(" Three", clay.TextConfig({textColor = COLOR_BLACK, fontSize = 16}))
+			clay.Text(
+				"Inventory",
+				clay.TextConfig({textColor = COLOR_GRAY_200, fontSize = FONT_SIZE_BASE}),
+			)
+			if state.host.is_host && state.client.game.status != .Started {
+
+				if clay.UI()(
+				{
+					id = clay.ID("StartButton"),
+					layout = {
+						padding = {16, 16, 16, 16},
+						sizing = {width = clay.SizingGrow({}), height = clay.SizingFit({})},
+					},
+					backgroundColor = COLOR_PURPLE_500,
+				},
+				) {
+					clay.Text("Start", default_text_config)
+				}
+			}
+			if clay.UI()(
+			{
+				id = clay.ID("InventoryList"),
+				layout = {
+					layoutDirection = .TopToBottom,
+					sizing = {width = clay.SizingGrow({}), height = clay.SizingGrow({})},
+					childGap = 4,
+				},
+			},
+			) {
+
+				player_entity_id := state.client.controlling_entity_id
+				inventory_iter := container_iterator(player_entity_id)
+				for item in container_iterate(&inventory_iter) {
+					switch t in item.type {
+					case PotionType:
+						_add_fmt_text("%d Potion of %s", item.count, item.type)
+					}
+				}
+			}
 		}
 	}
 
@@ -175,7 +126,7 @@ ui_layout_create :: proc() -> clay.ClayArray(clay.RenderCommand) {
 
 ui_tooltip_latch := false
 
-ui_tooltip_layout :: proc() -> clay.ClayArray(clay.RenderCommand) {
+ui_layout_tooltip :: proc() -> clay.ClayArray(clay.RenderCommand) {
 	context.temp_allocator = arena_ui_frame.allocator
 	clay.BeginLayout()
 
@@ -187,14 +138,14 @@ ui_tooltip_layout :: proc() -> clay.ClayArray(clay.RenderCommand) {
 
 	if !ui_tooltip_latch && state.t - state.client.cursor_last_moved < 0.5 do return clay.EndLayout()
 
-	if !has_hover_entity && !state.debug.render_debug_overlays {
+	if state.client.cursor_over_ui || (!has_hover_entity && !state.debug.render_debug_overlays) {
 		ui_tooltip_latch = false
 		return clay.EndLayout()
 	}
 
 	ui_tooltip_latch = true
 
-	default_text_config := clay.TextConfig({textColor = COLOR_WHITE, fontSize = 16})
+	default_text_config := clay.TextConfig({textColor = COLOR_WHITE, fontSize = FONT_SIZE_BASE})
 
 	if clay.UI()(
 	{
@@ -211,7 +162,7 @@ ui_tooltip_layout :: proc() -> clay.ClayArray(clay.RenderCommand) {
 		{
 			id = clay.ID("TooltipPadder"),
 			layout = {layoutDirection = .TopToBottom, padding = {8, 8, 8, 8}, childGap = 4},
-			backgroundColor = COLOR_PURPLE_800,
+			backgroundColor = COLOR_PURPLE_500,
 		},
 		) {
 
@@ -225,17 +176,28 @@ ui_tooltip_layout :: proc() -> clay.ClayArray(clay.RenderCommand) {
 
 			}
 			if has_hover_entity {
-				_add_fmt_text("%s", hover_entity.meta_id, size = 16)
+				player, is_player := player_from_entity(hover_entity).?
+
+				if is_player {
+					clay.TextDynamic(player.display_name, default_text_config)
+				} else {
+					_add_fmt_text("%s", hover_entity.meta_id, size = FONT_SIZE_BASE)
+				}
+
 				if .IsFast in hover_entity.meta.flags {
 					clay.Text(
 						"Fast",
-						clay.TextConfig({textColor = COLOR_LIGHT_YELLOW, fontSize = 16}),
+						clay.TextConfig(
+							{textColor = COLOR_LIGHT_YELLOW, fontSize = FONT_SIZE_BASE},
+						),
 					)
 				}
 				if .IsSlow in hover_entity.meta.flags {
 					clay.Text(
 						"Slow",
-						clay.TextConfig({textColor = COLOR_LIGHT_GREEN, fontSize = 16}),
+						clay.TextConfig(
+							{textColor = COLOR_LIGHT_GREEN, fontSize = FONT_SIZE_BASE},
+						),
 					)
 				}
 				if hover_entity.meta.max_hp > 0 do _add_fmt_text("HP: %d/%d", hover_entity.hp, hover_entity.meta.max_hp, color = COLOR_LIGHT_RED)
@@ -262,9 +224,9 @@ ui_tooltip_layout :: proc() -> clay.ClayArray(clay.RenderCommand) {
 				_vertical_spacer(16)
 				tile, valid_tile := tile_at(state.client.cursor_pos).?
 				if valid_tile {
-					_add_fmt_text("%s", tile.type, size = 16)
-					_add_fmt_text("%w", tile.flags, size = 16)
-					if tile.fire.fuel > 0 do _add_fmt_text("%v", tile.fire, size = 16)
+					_add_fmt_text("%s", tile.type, size = FONT_SIZE_BASE)
+					_add_fmt_text("%w", tile.flags, size = FONT_SIZE_BASE)
+					if tile.fire.fuel > 0 do _add_fmt_text("%v", tile.fire, size = FONT_SIZE_BASE)
 				} else {
 					_add_fmt_text("Out of bounds")
 				}
@@ -279,7 +241,12 @@ _vertical_spacer :: proc(size: f32 = 8) {
 
 }
 
-_add_fmt_text :: proc(fmtstr: string, args: ..any, color: [4]f32 = COLOR_WHITE, size: u16 = 16) {
+_add_fmt_text :: proc(
+	fmtstr: string,
+	args: ..any,
+	color: [4]f32 = COLOR_WHITE,
+	size: u16 = FONT_SIZE_BASE,
+) {
 	text := fmt.tprintf(fmtstr, ..args)
 	clay.TextDynamic(text, clay.TextConfig({textColor = color, fontSize = size}))
 }

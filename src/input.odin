@@ -1,5 +1,6 @@
 package main
 
+import clay "clay-odin"
 import "core:math"
 import "fresnel"
 import "prism"
@@ -23,6 +24,7 @@ InputActions :: enum i32 {
 	DebugNextView             = 9001,
 	TempGameStart             = 9002,
 	DebugHostReplay           = 9003,
+	DebugHostReplaySave       = 9004,
 }
 
 _replay_storage: [1048576]u8
@@ -35,35 +37,36 @@ input_frame :: proc(dt: f32) {
 	}
 
 	if is_action_just_pressed(.DebugHostReplay) && state.host.is_host {
-		if len(state.host.game_log) <= 1 {
-			// Load replay
-			bytes := fresnel.storage_get("replay", _replay_storage[:])
-			if bytes == 0 do return
-			count: i32 = 0
-			ser := prism.create_deserializer(_replay_storage[:])
-			entry: LogEntry
-			result := serialize(&ser, &count)
-			game_reset()
-			clear(&state.client.game.players)
-			for i: i32 = 0; i < count; i += 1 {
-				result := serialize(&ser, &entry)
-				trace("Deserialization Result %v - %v", result, entry)
-				log_queue_push(&state.client.log_queue, entry)
-			}
-			state.host.is_host = false
-		} else {
-			ser := prism.create_serializer(_replay_storage[:])
-			count := i32(len(state.host.game_log))
-			serialize(&ser, &count)
-			for &log in &state.host.game_log {
-				result := serialize(&ser, &log)
-				trace("Serialization Result %v", result)
-			}
-			fresnel.storage_set("replay", _replay_storage[:ser.offset])
+		// Load replay
+		bytes := fresnel.storage_get("replay", _replay_storage[:])
+		if bytes == 0 do return
+		count: i32 = 0
+		ser := prism.create_deserializer(_replay_storage[:])
+		entry: LogEntry
+		result := serialize(&ser, &count)
+		game_reset()
+		clear(&state.client.game.players)
+		for i: i32 = 0; i < count; i += 1 {
+			result := serialize(&ser, &entry)
+			trace("Deserialization Result %v - %v", result, entry)
+			log_queue_push(&state.client.log_queue, entry)
 		}
 		// Temporary hack to make this replaying work, since the host will otherwise
 		// submit a bunch of turn end events to the log
-		trace("%v", state.host.game_log)
+		state.host.is_host = false
+		return
+	}
+
+	if is_action_just_pressed(.DebugHostReplaySave) && state.host.is_host {
+		ser := prism.create_serializer(_replay_storage[:])
+		count := i32(len(state.host.game_log))
+		serialize(&ser, &count)
+		for &log in &state.host.game_log {
+			result := serialize(&ser, &log)
+			trace("Serialization Result %v %v", result, log)
+		}
+		fresnel.storage_set("replay", _replay_storage[:ser.offset])
+		return
 	}
 
 	player_entity, ok := player_entity().?
@@ -120,13 +123,23 @@ input_frame :: proc(dt: f32) {
 		state.client.zoom = math.max(1, state.client.zoom - 1)
 	}
 
-	if ok && is_action_just_pressed(.LeftClick) {
-		cmd := command_for_tile(state.client.cursor_pos)
-		if cmd.type == .None do return
+	if state.client.cursor_over_ui {
+		if is_action_just_pressed(.LeftClick) {
+			clay.SetCurrentContext(ctx1)
+			if clay.PointerOver(clay.ID("StartButton")) {
+				host_log_entry(LogEntryGameStarted{})
+			}
+		}
+	} else {
+		if ok && is_action_just_pressed(.LeftClick) {
+			cmd := command_for_tile(state.client.cursor_pos)
+			if cmd.type == .None do return
 
-		command_submit(cmd)
-		state.client.cursor_hidden = true
+			command_submit(cmd)
+			// state.client.cursor_hidden = true
+		}
 	}
+
 
 	if is_action_just_pressed(.TempGameStart) && state.host.is_host {
 		host_log_entry(LogEntryGameStarted{})

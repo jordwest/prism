@@ -59,6 +59,7 @@ audio_frame :: proc() {
 		// TODO
 		case .PlayerDeath:
 			// fresnel.play(14, true)
+			fresnel.stop(100)
 			fresnel.play(15, true)
 		case .IntroSong:
 			if !MUSIC_ENABLED do continue

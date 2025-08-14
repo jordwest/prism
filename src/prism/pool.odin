@@ -4,21 +4,21 @@ import "core:container/queue"
 import "core:mem"
 
 PoolId :: struct #packed {
-	id:  int,
-	gen: int,
+	id:  i32,
+	gen: i32,
 }
 
-Pool :: struct($T: typeid, $Capacity: int) {
+Pool :: struct($T: typeid, $Capacity: i32) {
 	_holes_container: [Capacity + 1]PoolId,
 	holes:            queue.Queue(PoolId),
-	next_id:          int,
+	next_id:          i32,
 	items:            [Capacity + 1]T,
-	generations:      [Capacity + 1]int,
+	generations:      [Capacity + 1]i32,
 }
 
-PoolIterator :: struct($T: typeid, $Capacity: int) {
+PoolIterator :: struct($T: typeid, $Capacity: i32) {
 	pool: ^Pool(T, Capacity),
-	i:    int,
+	i:    i32,
 }
 
 pool_iterator :: proc(pool: ^Pool($T, $Capacity)) -> PoolIterator(T, Capacity) {
@@ -27,7 +27,7 @@ pool_iterator :: proc(pool: ^Pool($T, $Capacity)) -> PoolIterator(T, Capacity) {
 
 pool_iterate :: proc(iter: ^PoolIterator($T, $Capacity)) -> (data: ^T, id: PoolId, ok: bool) {
 	for {
-		i := iter.i
+		i: i32 = iter.i
 		iter.i += 1
 		if i >= iter.pool.next_id do return nil, {}, false
 		if i >= Capacity + 1 do return nil, {}, false

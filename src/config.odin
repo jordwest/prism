@@ -9,8 +9,9 @@ NO_ENEMIES :: false
 
 DEBUG_SPECTATE :: true
 DEBUG_TURN_STEPPING :: false
-DEBUG_OVERLAYS_ENABLED :: true
+DEBUG_OVERLAYS_ENABLED :: false
 STUTTER_CHECKER_ENABLED :: false
+CLAY_DEBUG_ENABLED :: false
 // Delay procedural generation iterations by this many frames
 // (to help visualise the generation)
 PCG_ITERATION_DELAY :: 0
@@ -27,7 +28,7 @@ when ODIN_DEBUG {
 	LOG_LEVEL :: LogLevel.Error
 }
 // Whether to record messages received by host
-LOG_HOST_MESSAGES :: true
+LOG_HOST_MESSAGES :: false
 // Whether to record messages received by client
 LOG_CLIENT_MESSAGES :: false
 LOG_LOG_ENTRIES :: false
@@ -36,7 +37,6 @@ LOG_EVENTS :: false
 
 /////// MAGIC NUMBERS \\\\\\\\\\\
 
-CLAY_DEBUG_ENABLED :: false
 MAX_PLAYERS :: 8
 MAX_ENTITIES :: 2048
 SPRITE_SIZE :: 16
@@ -48,6 +48,7 @@ LEVEL_WIDTH :: 60
 LEVEL_HEIGHT :: 40
 ENTITY_SPRING_CONSTANT :: 40
 ENTITY_SPRING_DAMPER :: 10
+FONT_SIZE_BASE :: 22
 
 ///////// FUTURE STATE \\\\\\\\\
 

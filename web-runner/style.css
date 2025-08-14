@@ -16,6 +16,12 @@
     font-weight: normal;
 }
 
+@font-face {
+    font-family: "LanaPixel";
+    src: url("./LanaPixel.ttf") format("truetype");
+    font-weight: normal;
+}
+
 body {
     font-family: "CompaqThin";
     font-size: 16px;

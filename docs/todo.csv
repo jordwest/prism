@@ -119,6 +119,7 @@ todo,feat,ideas,Startle mechanic - guaranteed crit if surprised
 todo,devtool,ideas,Replay system to investigate desyncs
 todo,feat,ideas,Limb system - injure specific limbs that affect the entity
 todo,imp,ideas,Less dead ends - connect rooms that are side by side but have long distances using djikstra
+todo,bug,ideas,Randomise turn order for player (and enemies?) instead of ordered by id
 todo,feat,ideas,Shield ability (potion?)
 todo,feat,ideas,Grappling hook - grapple across to a platform
 todo,devtool,ideas,Rewind back to previous action (by replaying) for dev purposes

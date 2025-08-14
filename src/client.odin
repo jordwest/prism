@@ -1,5 +1,6 @@
 package main
 
+import clay "clay-odin"
 import "core:math"
 import "core:mem"
 import "fresnel"
@@ -58,6 +59,8 @@ client_boot :: proc(width: i32, height: i32) -> Error {
 client_frame :: proc(dt: f32) -> Error {
 	error_log(client_poll())
 
+	clay.SetCurrentContext(ctx1)
+	state.client.cursor_over_ui = clay.PointerOver(clay.ID("InventorySidebar"))
 	log_frame() or_return
 	input_frame(dt)
 	entity_frame(dt)

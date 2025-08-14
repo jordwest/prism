@@ -52,9 +52,9 @@ containers_reset :: proc() -> Error {
 	for item, item_id in prism.pool_iterate(&item_iterator) {
 		switch cid in item.container_id {
 		case EntityId:
-			trace("Item in inventory of %d", cid)
+			trace("Item %w in inventory of %d", item, cid)
 		case TileCoord:
-			trace("Item contained in tile %d", cid)
+			trace("Item %w contained in tile %d", item, cid)
 		case ItemId:
 			trace("Item contained by item %v", cid)
 		case nil:
@@ -99,4 +99,18 @@ container_iterate :: proc(iterator: ^ContainerIterator) -> (^ItemStack, ItemId, 
 
 		return item, node.item_id, true
 	}
+}
+
+container_first_item :: proc(
+	container_id: ContainerId,
+) -> (
+	first: Maybe(^ItemStack),
+	has_more: bool,
+	more: ContainerIterator,
+) {
+	iter := container_iterator(container_id)
+	item, _, ok := container_iterate(&iter)
+	if !ok do return nil, false, iter
+	has_more = iter.list_iter.curr != nil
+	return item, has_more, iter
 }

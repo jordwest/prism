@@ -371,6 +371,8 @@ canvas.addEventListener("mousedown", () => {
   //   errorSound.currentTime = 0;
   // }
   // errorSound.play();
+  //
+  state.audioContext.resume()
   audioElement3.play();
   // hotReloadSound.play();
 });

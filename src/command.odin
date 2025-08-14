@@ -17,6 +17,7 @@ Command :: struct {
 	type:          CommandTypeId,
 	pos:           TileCoord,
 	target_entity: EntityId,
+	target_item:   ItemId,
 }
 
 CommandOutcome :: enum {
@@ -221,8 +222,34 @@ _move_or_swap :: proc(entity: ^Entity, pos: TileCoord, allow_swap: bool = true) 
 	return .Moved
 }
 
-_pick_up :: proc(entity: ^Entity) -> CommandOutcome {
-	// entity.cmd.
+_pick_up :: proc(e: ^Entity) -> CommandOutcome {
+	trace("Execute pick up")
+	target_item, ok := item(e.cmd.target_item).?
+	if !ok do return .CommandFailed // Item doesn't exist anymore
+
+
+	dist_to_target := prism.tile_distance(e.cmd.pos - e.pos)
+	trace("To target %d", dist_to_target)
+
+	if target_item.container_id != e.cmd.pos {
+		// Item is not in this tile anymore
+		trace("Missing from tile")
+		return .CommandFailed
+	}
+
+	if dist_to_target == 0 {
+		item_set_container(target_item, e.id)
+
+		entity_consume_ap(e, .IsFast in e.meta.flags ? 80 : 100)
+		entity_clear_cmd(e)
+		return .Ok
+	}
+	trace("Move towards")
+
+	outcome, reached := _player_move_towards(e, e.cmd.pos, true)
+	if outcome != .Moved do return .CommandFailed
+
+	trace("Returning ok")
 	return .Ok
 }
 
@@ -246,9 +273,10 @@ _move_towards_allies :: proc(entity: ^Entity) -> CommandOutcome {
 }
 
 command_serialize :: proc(s: ^prism.Serializer, cmd: ^Command) -> prism.SerializationResult {
-	prism.serialize(s, (^u8)(&cmd.type)) or_return
-	prism.serialize(s, (^[2]i32)(&cmd.pos)) or_return
-	prism.serialize(s, (^i32)(&cmd.target_entity)) or_return
+	serialize(s, (^u8)(&cmd.type)) or_return
+	serialize(s, (^[2]i32)(&cmd.pos)) or_return
+	serialize(s, &cmd.target_entity) or_return
+	serialize(s, &cmd.target_item) or_return
 	return nil
 }
 
@@ -272,6 +300,12 @@ command_for_tile :: proc(coord: TileCoord) -> Command {
 			return Command{type = .Move, pos = coord}
 		}
 		return Command{}
+	}
+
+	first_item, has_more_than_1_item, _ := container_first_item(coord)
+	item, has_item := first_item.?
+	if has_item && !has_more_than_1_item {
+		return Command{type = .PickUp, pos = coord, target_item = item.id}
 	}
 
 	return Command{type = .Move, pos = coord}

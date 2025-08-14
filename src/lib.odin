@@ -71,11 +71,13 @@ last_cursor_tile_pos: TileCoord
 on_mouse_move :: proc "c" (pos_x: f32, pos_y: f32, button_down: bool) {
 	context = app_context()
 
+	clay.SetCurrentContext(ctx1)
 	clay.SetPointerState({pos_x, pos_y}, button_down)
 	screen_pos: ScreenCoord = {pos_x, pos_y}
 	state.client.cursor_pos = tile_coord(screen_pos)
 	state.client.cursor_screen_pos = screen_pos
 	state.client.cursor_last_moved = state.t
+
 
 	if state.client.cursor_pos != last_cursor_tile_pos {
 		last_cursor_tile_pos = state.client.cursor_pos
@@ -93,6 +95,7 @@ on_mouse_button :: proc "c" (pos_x: f32, pos_y: f32, button_down: bool, button: 
 	state.client.cursor_last_moved = state.t
 	ui_tooltip_latch = false
 
+	clay.SetCurrentContext(ctx1)
 	clay.SetPointerState({pos_x, pos_y}, button_down)
 }
 
@@ -270,6 +273,7 @@ serialize :: proc {
 	state_serialize,
 	command_serialize,
 	entity_id_serialize,
+	item_id_serialize,
 	player_id_serialize,
 	log_entry_serialize,
 	log_seq_id_serialize,

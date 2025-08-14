@@ -18,11 +18,14 @@ render_frame :: proc(dt: f32) {
 	render_entities(dt)
 	render_tile_cursors(dt)
 	render_fx(dt)
-	if !state.client.cursor_hidden && command_for_tile(state.client.cursor_pos).type == .Move {
+	if !state.client.cursor_hidden &&
+	   !state.client.cursor_over_ui &&
+	   command_for_tile(state.client.cursor_pos).type == .Move {
 		render_path_to(state.client.cursor_pos, alpha = 80)
 	}
-	// render_ui(.Main)
 
+	arena_free(&arena_ui_frame)
+	render_ui(.Main)
 	render_ui(.Tooltip, state.client.cursor_screen_pos + {32, 0})
 
 	if state.debug.render_debug_overlays {
@@ -42,13 +45,13 @@ _debug_y_offset: f32 = 16
 
 @(private = "file")
 _add_debug_text :: proc(fmt_str: string, args: ..any) {
-	fresnel.draw_text_fmt(16, _debug_y_offset, 16, fmt_str, ..args)
-	_debug_y_offset += 16
+	fresnel.draw_text_fmt(16, _debug_y_offset, FONT_SIZE_BASE, fmt_str, ..args)
+	_debug_y_offset += FONT_SIZE_BASE
 }
 
 render_debug_overlays :: proc() {
 	fresnel.fill(255, 255, 255, 255)
-	_debug_y_offset = 16
+	_debug_y_offset = FONT_SIZE_BASE
 	_add_debug_text("Debug overlays: %v", state.debug.view)
 	_add_debug_text("Turn %d, t=%.2f", state.client.game.current_turn, state.t)
 	_add_debug_text("%.0f FPS (%.0f max, %.0f min)", debug_get_fps())
@@ -60,6 +63,7 @@ render_debug_overlays :: proc() {
 		cap(state.client.game.entities),
 		f32(size_of(Entity) * cap(state.client.game.entities)) / 1000,
 	)
+	if state.client.cursor_over_ui do _add_debug_text("Cursor over UI")
 	if state.host.is_host {
 		_add_debug_text("host tx ↑: %.3fKB", f32(state.host.bytes_sent) / 1000)
 		_add_debug_text("host rx ↓: %.3fKB", f32(state.host.bytes_received) / 1000)
@@ -103,7 +107,7 @@ render_debug_overlays :: proc() {
 		state.client.cursor_pos.y,
 	)
 	cursor_screen := state.client.cursor_screen_pos + ScreenCoord{32, -32}
-	fresnel.draw_text(cursor_screen.x, cursor_screen.y, 16, cursor_text)
+	fresnel.draw_text(cursor_screen.x, cursor_screen.y, FONT_SIZE_BASE, cursor_text)
 
 	when STUTTER_CHECKER_ENABLED {
 		// Stutter checker
@@ -324,10 +328,13 @@ render_entities :: proc(dt: f32) {
 				render_sprite(e.meta.spritesheet_coord, screen_c, alpha)
 			}
 
-			if is_current_player {
+			if is_current_player && !player_is_alone() {
+				bounce_offset_y := has_ap ? math.sin(state.t * 5) * 0.25 : 0
 				render_sprite(
 					SPRITE_COORD_ACTIVE_CHEVRON,
-					screen_coord(TileCoordF(e.spring.pos) + TileCoordF({0, -0.5})),
+					screen_coord(
+						TileCoordF(e.spring.pos) + TileCoordF({0, -0.5 + bounce_offset_y}),
+					),
 					has_ap ? 255 : 50,
 				)
 			} else {
@@ -380,6 +387,8 @@ _render_hitpoints :: proc(hp: i32, max_hp: i32, screen_coord: ScreenCoord, size:
 
 render_tile_cursors :: proc(dt: f32) {
 
+	if state.client.cursor_over_ui do return
+
 	if !state.client.cursor_hidden {
 		// Draw this player's cursor
 		if command_for_tile(state.client.cursor_pos).type == .Move {
@@ -415,7 +424,7 @@ render_tile_cursors :: proc(dt: f32) {
 
 			render_sprite(SPRITE_COORD_OTHER_PLAYER_CURSOR, cursor_pos)
 			fresnel.fill(255, 255, 255, 1)
-			fresnel.draw_text(text_pos.x, text_pos.y, 16, "Player")
+			fresnel.draw_text(text_pos.x, text_pos.y, FONT_SIZE_BASE, "Player")
 		}
 	}
 }
@@ -433,12 +442,12 @@ render_fx :: proc(dt: f32) {
 		switch fx.type {
 		case .MissIndicator:
 			fresnel.fill(255, 255, 255, 255)
-			fresnel.draw_text(coord.x, coord.y, 16 * i32(state.client.zoom), "MISS")
+			fresnel.draw_text(coord.x, coord.y, FONT_SIZE_BASE, "MISS")
 
 		case .HitIndicator:
 			fresnel.fill(255, 0, 0, 255)
 			s := fmt.bprintf(_tmp_16k[:], "%d", fx.dmg)
-			fresnel.draw_text(coord.x, coord.y, 16 * i32(state.client.zoom), s)
+			fresnel.draw_text(coord.x, coord.y, FONT_SIZE_BASE, s)
 		}
 	}
 }
@@ -451,7 +460,7 @@ UiContext :: enum {
 render_ui :: proc(ui: UiContext, offset_in: ScreenCoord = {0, 0}) {
 	ctx := ui == .Main ? ctx1 : ctx2
 	clay.SetCurrentContext(ctx)
-	render_commands := ui == .Main ? ui_layout_create() : ui_tooltip_layout()
+	render_commands := ui == .Main ? ui_layout_screen() : ui_layout_tooltip()
 
 	offset := offset_in
 
@@ -539,7 +548,7 @@ _visualise_djikstra :: proc(dmap: ^prism.DjikstraMap($Width, $Height), offset: [
 
 					cost_str := fmt.bprintf(_tempstr_buf[:], "%d", cost)
 					fresnel.fill(255, 255, 255, 0.5)
-					fresnel.draw_text(offset.x, offset.y, 16, cost_str)
+					fresnel.draw_text(offset.x, offset.y, FONT_SIZE_BASE, cost_str)
 				} else if dtile.visited {
 					fresnel.fill(255, 0, 0, 0.5)
 					fresnel.draw_rect(offset.x, offset.y, dims, dims)

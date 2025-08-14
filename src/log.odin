@@ -165,6 +165,11 @@ log_queue_iterate :: proc(lq: ^LogQueue) -> (LogEntry, int, bool) {
 log_frame :: proc() -> Error {
 	if state.debug.turn_stepping == .Paused do return nil
 
+	// t_animation_continue, is_waiting_for_animation := state.client.t_animation_continue
+	// if is_waiting_for_animation {
+	//     if state.t > t_animation_continue
+	// }
+
 	entry, _, ok := log_queue_iterate(&state.client.log_queue)
 
 	if entry == nil do return nil

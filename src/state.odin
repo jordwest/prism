@@ -20,6 +20,7 @@ ClientState :: struct {
 	cursor_screen_pos:     ScreenCoord,
 	cursor_hidden:         bool,
 	cursor_last_moved:     f32,
+	cursor_over_ui:        bool,
 	// ^^^^^^
 	join_mode:             JoinMode,
 	zoom:                  f32,
@@ -33,10 +34,18 @@ ClientState :: struct {
 	audio:                 AudioState,
 	fx:                    prism.Pool(Fx, 100),
 	log_queue:             LogQueue,
+	t_animation_continue:  Maybe(f32),
 
 	// The sequence id of the command last issued by the client
 	// See JOURNAL.md, 5 Aug 2025
 	cmd_seq:               CmdSeqId,
+}
+
+LogEntryReplayState :: union {
+	LogEntryReplayWaitingForAnimation,
+}
+LogEntryReplayWaitingForAnimation :: struct {
+	t_continue_after: f32,
 }
 
 GameStatus :: enum {
@@ -93,19 +102,6 @@ log_seq_id_serialize :: proc(s: ^prism.Serializer, seq: ^LogSeqId) -> prism.Seri
 }
 cmd_seq_id_serialize :: proc(s: ^prism.Serializer, seq: ^CmdSeqId) -> prism.SerializationResult {
 	return prism.serialize_i32(s, (^i32)(seq))
-}
-player_id_serialize :: proc(s: ^prism.Serializer, eid: ^PlayerId) -> prism.SerializationResult {
-	return prism.serialize_i32(s, (^i32)(eid))
-}
-
-Player :: struct {
-	player_id:         PlayerId,
-	player_entity_id:  EntityId,
-
-	// Not deterministic
-	cursor_tile:       TileCoord,
-	cursor_updated_at: f32,
-	cursor_spring:     prism.Spring(2),
 }
 
 Client :: union {
