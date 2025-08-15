@@ -214,6 +214,7 @@ ui_layout_tooltip :: proc() -> clay.ClayArray(clay.RenderCommand) {
 				if state.debug.render_debug_overlays {
 					_vertical_spacer(16)
 					_add_fmt_text("ID: %d", hover_entity.id)
+					_add_fmt_text("Player ID: %d", hover_entity.player_id)
 					_add_fmt_text("AP: %d", hover_entity.action_points)
 					_add_fmt_text("%v", hover_entity.cmd)
 					_add_fmt_text("%v", hover_entity.meta.flags)

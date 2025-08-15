@@ -165,19 +165,19 @@ log_queue_iterate :: proc(lq: ^LogQueue) -> (LogEntry, int, bool) {
 log_frame :: proc() -> Error {
 	if state.debug.turn_stepping == .Paused do return nil
 
-	// t_animation_continue, is_waiting_for_animation := state.client.t_animation_continue
-	// if is_waiting_for_animation {
-	//     if state.t > t_animation_continue
-	// }
+	switch state.client.log_entry_replay_state {
+	case .AwaitingEntry:
+		// Pick the next log entry off the queue or return
+		entry, _, ok := log_queue_iterate(&state.client.log_queue)
+		if entry == nil do return nil
+		log_replay_entry(entry) or_return
+	case .AwaitingAnimation:
+		if state.t < state.client.t_evaluate_turns_after do return nil // Still waiting
+		state.client.log_entry_replay_state = .AwaitingEntry
+	}
 
-	entry, _, ok := log_queue_iterate(&state.client.log_queue)
-
-	if entry == nil do return nil
-
-	log_replay_entry(entry) or_return
-
-	if state.client.game.status == .Started && !state.client.game.turn_complete {
-		turn_evaluate_all() or_return
+	if state.client.game.status == .Started {
+		turn_evaluate() or_return
 	}
 
 	if state.debug.turn_stepping == .Step {

@@ -13,39 +13,39 @@ AppState :: struct {
 }
 
 ClientState :: struct {
-	crashed:               bool,
-	frame_iter_count:      i32, // Used to crash out early instead of getting into infinite loops
+	crashed:                bool,
+	frame_iter_count:       i32, // Used to crash out early instead of getting into infinite loops
 	// vvvvvv Move these into own struct?
-	cursor_pos:            TileCoord,
-	cursor_screen_pos:     ScreenCoord,
-	cursor_hidden:         bool,
-	cursor_last_moved:     f32,
-	cursor_over_ui:        bool,
+	cursor_pos:             TileCoord,
+	cursor_screen_pos:      ScreenCoord,
+	cursor_hidden:          bool,
+	cursor_last_moved:      f32,
+	cursor_over_ui:         bool,
 	// ^^^^^^
-	join_mode:             JoinMode,
-	zoom:                  f32,
-	camera:                prism.Spring(2),
-	my_token:              PlayerToken,
-	player_id:             PlayerId,
-	controlling_entity_id: EntityId,
-	game:                  GameState,
-	bytes_sent:            i32,
-	bytes_received:        i32,
-	audio:                 AudioState,
-	fx:                    prism.Pool(Fx, 100),
-	log_queue:             LogQueue,
-	t_animation_continue:  Maybe(f32),
+	join_mode:              JoinMode,
+	zoom:                   f32,
+	camera:                 prism.Spring(2),
+	my_token:               PlayerToken,
+	player_id:              PlayerId,
+	controlling_entity_id:  EntityId,
+	game:                   GameState,
+	bytes_sent:             i32,
+	bytes_received:         i32,
+	audio:                  AudioState,
+	fx:                     prism.Pool(Fx, 100),
+	log_queue:              LogQueue,
+	t_evaluate_turns_after: f32,
+	log_entry_replay_state: LogEntryReplayState,
 
 	// The sequence id of the command last issued by the client
 	// See JOURNAL.md, 5 Aug 2025
-	cmd_seq:               CmdSeqId,
+	cmd_seq:                CmdSeqId,
 }
 
-LogEntryReplayState :: union {
-	LogEntryReplayWaitingForAnimation,
-}
-LogEntryReplayWaitingForAnimation :: struct {
-	t_continue_after: f32,
+
+LogEntryReplayState :: enum {
+	AwaitingEntry, // We're ready to receive new events whenever they come in
+	AwaitingAnimation, // Still processing the last event - but delayed to let an animation play
 }
 
 GameStatus :: enum {

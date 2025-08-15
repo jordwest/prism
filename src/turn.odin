@@ -5,18 +5,13 @@ import "core:mem"
 TurnOutcome :: enum {
 	TurnComplete,
 	AwaitingInput,
+	AwaitingAnimation,
 	Error,
 }
 
-
-turn_evaluate_all :: proc() -> Error {
-	outcome, e := turn_evaluate()
-	if e != nil do return e
-
-	return nil
-}
-
 turn_evaluate :: proc() -> (outcome: TurnOutcome, e: Error) {
+	if state.client.game.turn_complete do return .TurnComplete, nil
+
 	awaiting_input := false
 	// Execute any pending player commands first
 	for _, &entity in state.client.game.entities {
@@ -32,6 +27,9 @@ turn_evaluate :: proc() -> (outcome: TurnOutcome, e: Error) {
 			awaiting_input = true
 		case .NeedsInput:
 			awaiting_input = true
+		case .WaitForAnimation:
+			log_entry_delay_processing_for_animation()
+			return .AwaitingAnimation, nil
 		case .Ok:
 			// Current command should have executed until
 			// it has been exhausted and is waiting on input
@@ -45,23 +43,27 @@ turn_evaluate :: proc() -> (outcome: TurnOutcome, e: Error) {
 
 	// Now evaluate all AI
 	for _, &entity in state.client.game.entities {
-		if .IsAiControlled in entity.meta.flags {
-			outcome := command_execute_all_ai(&entity)
+		if .IsAiControlled not_in entity.meta.flags do continue
 
-			switch outcome {
-			case .NeedsActionPoints:
-				continue
-			case .CommandFailed:
-				return .Error, error(InvariantError{})
-			case .NeedsInput:
-				return .Error, error(InvariantError{})
-			case .Ok:
-				// Current command should have executed until
-				// it has been exhausted and is waiting on input
-				// or action points, so we should never get an
-				// `Ok` from command_execute_all
-				return .Error, error(InvariantError{})
-			}
+		outcome := command_execute_all_ai(&entity)
+		trace("Outcome for %d is %w", entity.id, outcome)
+
+		switch outcome {
+		case .NeedsActionPoints:
+			continue
+		case .CommandFailed:
+			return .Error, error(InvariantError{})
+		case .NeedsInput:
+			return .Error, error(InvariantError{})
+		case .WaitForAnimation:
+			log_entry_delay_processing_for_animation()
+			return .AwaitingAnimation, nil
+		case .Ok:
+			// Current command should have executed until
+			// it has been exhausted and is waiting on input
+			// or action points, so we should never get an
+			// `Ok` from command_execute_all
+			return .Error, error(InvariantError{})
 		}
 	}
 
@@ -69,6 +71,14 @@ turn_evaluate :: proc() -> (outcome: TurnOutcome, e: Error) {
 	turn_complete()
 
 	return .TurnComplete, nil
+}
+
+log_entry_delay_processing_for_animation :: proc(
+	/* delay_length: DelayLength enum ? */
+) {
+	state.client.log_entry_replay_state = .AwaitingAnimation
+	state.client.t_evaluate_turns_after = state.t + ANIMATION_DELAY
+	trace("Delay at %.3f until %.3f", state.t, state.client.t_evaluate_turns_after)
 }
 
 turn_complete :: proc() {

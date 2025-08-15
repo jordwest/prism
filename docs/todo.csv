@@ -81,8 +81,9 @@ done,devtool,b4,Step through log entry debugging
 done,content,b4,Add grass and make it burrrn
 done,imp,b4,Cancel player command if taking damage
 done,imp,b4,Add varying damage amounts
+done,imp,b4,Add animation delay
 doing,feat,b4,Items and basic inventory UI
-todo,content,b4,Heal ability (potion?)
+doing,content,b4,Heal ability (potion?)
 todo,content,b4,Water potion
 todo,content,b4,Fire traps
 todo,imp,b4,Click & drag to move camera around
@@ -111,7 +112,6 @@ todo,feat,b4,Add win condition again
 todo,feat,b4,Hover tooltips for actions
 todo,feat,b4,Add multiple dungeon levels
 todo,feat,b4,Potion of revive
-todo,imp,b4,"Add animation queue (movement plays in parallel, attacks in sequence)"
 todo,feat,b4,Shock traps (probs easiest as tile effects like fire or net don't need to be implemented)
 todo,imp,b4,Versioning for serialization - especially for anything saved to localstorage
 todo,devtool,ideas,Hydrate client and server entity state in hot reload

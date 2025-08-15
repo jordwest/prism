@@ -17,6 +17,7 @@ Entity :: struct {
 	despawning:    bool,
 	ai:            AiBrain,
 	move_seq:      i32,
+	t_last_hurt:   f32,
 
 	// Not serialized
 	_local_cmd:    Maybe(LocalCommand),
@@ -142,6 +143,12 @@ entity_set_pos :: proc(entity: ^Entity, pos: TileCoord) {
 	entity.pos = pos
 	entity.meta.flags = entity.meta.flags + {.MovedThisTurn}
 	derived_handle_entity_changed(entity)
+}
+
+entity_is_current_player :: proc(e: ^Entity) -> bool {
+	if e.player_id == nil do return false
+	if state.client.player_id == 0 do return false
+	return e.player_id == state.client.player_id
 }
 
 entity_alignment :: proc(this: ^Entity, other: ^Entity) -> Alignment {

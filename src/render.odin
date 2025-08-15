@@ -53,10 +53,19 @@ render_debug_overlays :: proc() {
 	fresnel.fill(255, 255, 255, 255)
 	_debug_y_offset = FONT_SIZE_BASE
 	_add_debug_text("Debug overlays: %v", state.debug.view)
+	_add_debug_text(
+		"Player id=%d / entity=%d",
+		state.client.player_id,
+		state.client.controlling_entity_id,
+	)
 	_add_debug_text("Turn %d, t=%.2f", state.client.game.current_turn, state.t)
 	_add_debug_text("%.0f FPS (%.0f max, %.0f min)", debug_get_fps())
 	_add_debug_text("Log queue size: %d", queue.len(state.client.log_queue._queue))
-	_add_debug_text("Entity count: %d", len(state.client.game.entities))
+	_add_debug_text(
+		"%d players / %d entities",
+		len(state.client.game.players),
+		len(state.client.game.entities),
+	)
 	_add_debug_text(
 		"Entity size: %db x %d = %.3fKB",
 		size_of(Entity),
@@ -360,6 +369,10 @@ render_entities :: proc(dt: f32) {
 
 		if e.hp < e.meta.max_hp {
 			_render_hitpoints(e.hp, e.meta.max_hp, screen_c, {1, f32(1) / f32(8)} * grid_size)
+		}
+
+		if state.t - e.t_last_hurt < 0.05 {
+			render_sprite(Sprite.HitEffect, screen_c)
 		}
 
 		if entity_alignment_to_player(&e) == .Friendly {

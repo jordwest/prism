@@ -77,6 +77,16 @@
       "type": "audio"
     },
     {
+      "id": 16,
+      "filename": "player-hurt-001.ogg",
+      "type": "audio"
+    },
+    {
+      "id": 17,
+      "filename": "player-hurt-002.ogg",
+      "type": "audio"
+    },
+    {
       "id": 100,
       "filename": "Daudir.mp3",
       "type": "audio"

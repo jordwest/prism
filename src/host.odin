@@ -12,8 +12,6 @@ host_boot :: proc() -> HostError {
 	memory_init_host()
 	alloc_error: mem.Allocator_Error
 
-	game := state.client.game
-
 	info("Size of game log %d", size_of(LogEntry) * 100_000)
 	state.host.is_host = true
 	state.host.game_log = make(

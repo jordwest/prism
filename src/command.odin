@@ -32,6 +32,9 @@ CommandOutcome :: enum {
 
 	// Has action points but no command
 	NeedsInput,
+
+	// Command executed but no more processing required until animation delay completes
+	WaitForAnimation,
 }
 
 // Execute current command for this entity as long as possible this turn
@@ -52,7 +55,7 @@ command_execute_all_ai :: proc(entity: ^Entity) -> CommandOutcome {
 	for {
 		ai_evaluate(entity)
 		outcome = command_execute(entity)
-		if outcome == .NeedsActionPoints do return .NeedsActionPoints
+		if outcome == .WaitForAnimation || outcome == .NeedsActionPoints do return outcome
 	}
 
 	return outcome
@@ -126,7 +129,7 @@ _attack :: proc(e: ^Entity) -> CommandOutcome {
 
 		if is_hit {
 			event_fire(EventEntityHurt{dmg = dmg, source_id = e.id, target_id = target.id})
-			audio_play(.Punch)
+			if entity_is_current_player(e) do audio_play(.Punch)
 		} else {
 			event_fire(EventEntityMiss{attacker_id = e.id, target_id = target.id})
 			audio_play(.Miss)
@@ -134,7 +137,7 @@ _attack :: proc(e: ^Entity) -> CommandOutcome {
 
 		entity_consume_ap(e, .IsFast in e.meta.flags ? 80 : 100)
 		entity_clear_cmd(e)
-		return .Ok
+		return .WaitForAnimation
 	}
 
 	outcome, reached := _player_move_towards(e, target.pos, true)

@@ -22,6 +22,7 @@ game_spawn_entity :: proc(meta_id: EntityMetaId, entity: Entity = Entity{}) -> ^
 	new_entity.id = id
 	new_entity.meta_id = meta_id
 	new_entity.meta = entity_meta[meta_id]
+	if GOD_MODE && meta_id == .Player do new_entity.meta.max_hp = 100000000
 	new_entity.hp = new_entity.meta.max_hp
 
 	derived_handle_entity_changed(new_entity)

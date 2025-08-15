@@ -7,6 +7,7 @@ import "prism"
 SoundEffect :: enum {
 	Footstep,
 	Punch,
+	PlayerHurt,
 	Miss,
 	EnemyDeath,
 	PlayerDeath,
@@ -51,6 +52,8 @@ audio_frame :: proc() {
 		switch sfx {
 		case .Punch:
 			fresnel.play(2, true)
+		case .PlayerHurt:
+			fresnel.play(prism.rand_splitmix_get_i32_range(&rng, 16, 18), true)
 		case .Footstep:
 			fresnel.play(prism.rand_splitmix_get_i32_range(&rng, 4, 13), true)
 		case .Miss:
@@ -70,6 +73,7 @@ audio_frame :: proc() {
 }
 
 audio_play :: proc(sound: SoundEffect) {
+	trace("Queuing sound %w", sound)
 	ok, e := queue.push_back(&state.client.audio.queue, sound)
 	if !ok || e != nil {
 		err("Failed to queue sound %s: %v", sound, e)

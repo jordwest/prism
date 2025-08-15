@@ -69,7 +69,14 @@ _entity_hurt :: proc(evt: ^EventEntityHurt) -> Error {
 	target.hp -= evt.dmg
 	fx_spawn_dmg(target.pos, evt.dmg)
 
-	if .IsPlayerControlled in target.meta.flags do target.cmd = Command{}
+	if entity_is_current_player(target) do audio_play(.PlayerHurt)
+
+	if .IsPlayerControlled in target.meta.flags {
+		// TODO: Don't cancel an attack command when the player's command
+		// is to attack this entity and the enemy is in range of the player
+		target.cmd = Command{}
+	}
+	target.t_last_hurt = state.t
 
 	if target.hp <= 0 {
 		event_fire(EventEntityDied{entity_id = target.id}) or_return
