@@ -8,7 +8,7 @@ GOD_MODE :: false
 
 ////////// DEBUG OPTIONS \\\\\\\\\\
 
-DEBUG_SPECTATE :: true
+DEBUG_SPECTATE :: false
 DEBUG_TURN_STEPPING :: false
 DEBUG_OVERLAYS_ENABLED :: false
 STUTTER_CHECKER_ENABLED :: false

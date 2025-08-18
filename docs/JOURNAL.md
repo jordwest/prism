@@ -150,6 +150,7 @@ Had this idea for what to do when a player dies. They could resurrect as a ghost
  - Can go through walls
  - Can affect psychic abilities/enemies
  - Infinite HP (but teammates may stay alive)
+ - Can bless or curse items. For example - 20% chance to bless, 10% chance to curse. If it fails, the curse % goes up the next time (eg 20% bless, 20% curse).
  - Can't carry items - upgrades abilities instead
     - Telekenesis? Can hurl items around the room
  - Generally a pretty weak character on its own but should still act as a good support for the team (or cause chaos)
@@ -509,3 +510,31 @@ Today was a pretty slow day compared to the past two weeks. I needed to just sit
 I did get animation delays working this morning, as well as almost being able to consume potions, however it's now freezing up when clicking the item in the inventory.
 
 Ok now suddenly it's working again for some reason.
+
+# Monday 18 Aug 2025
+
+Thinking about loot sharing. Some ideas:
+
+### Gold only
+You only collect gold on each floor, not items. Each player gets this gold. Then, at the end of the floor, all players can access the shop where they can choose from a limited set of items (different for each player but using the same loot table). This is similar to how Noita works (although it also has lootable wands)
+
+### Consumables are duplicated
+Another idea - consumables are given to each player when collected. If I pick up a health potion, every player gets a health potion. This feels a bit unrealistic and awkward to me.
+
+### Shared consumables
+All consumables go into a shared pool and can be used by any player at any time.
+
+### Combined
+
+I'm leaning towards something like:
+ - The level contains mostly mundane loot - unenchanted level 1 weapons which can be upgraded, but are not an exciting find in and of themselves.
+ - Picking up items makes them go into a shared loot pool. A player can also directly equip an item, but cannot carry it in their own inventory otherwise.
+ - Purchased items are "owned" by the player who purchased it. Only they can use it, but they can choose to release ownership.
+
+So shared inventory, equally distributed gold collection, individual equipment.
+
+A shared loot pool also means all players are more likely to die together, eg when running out of health potions. Gold can then supplement the found loot and be used to purchase upgrades at the shop.
+
+I think if there's plenty of mundane loot on each level, there should be more than enough to go around. The real exciting loot would appear in the shop or in the special per-player loot rooms.
+
+Create resurrection potion by combining three health potions - this means everyone can keep playing but the loss of three potions significantly reduces the survivability of the team. Sort of a way of reducing the health pool of the team when a teammate dies, but still an interesting decision that the team must make (and be careful not to anger the dead player's ghost).
