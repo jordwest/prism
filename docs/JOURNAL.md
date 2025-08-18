@@ -501,3 +501,11 @@ Ok so super basic inventory UI is working. Now I need to get it to be clickable.
 #lore #idea: have a "Reincarnate" button instead of respawn. Leave little notes/clues around or inscriptions on the wall that suggest many have been on this same path. The "Grail of Temula" (Temula is amulet backwards).
 
 Ok I'm getting a bit slow now, maybe burnout setting in. I'm going to just check out how I might do the UI mouse interaction so I can mull over it overnight.
+
+# Friday 15 Aug 2025
+
+Today was a pretty slow day compared to the past two weeks. I needed to just sit and rest for most of the day. Lots of stuff coming up and it feels like the body just needs to rest.
+
+I did get animation delays working this morning, as well as almost being able to consume potions, however it's now freezing up when clicking the item in the inventory.
+
+Ok now suddenly it's working again for some reason.

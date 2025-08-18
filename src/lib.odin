@@ -281,6 +281,7 @@ serialize :: proc {
 	prism.serialize_array,
 	prism.serialize_f32,
 	prism.serialize_i32,
+	prism.serialize_u64,
 	prism.serialize_string,
 	prism.serialize_vec2i,
 	prism.serialize_u8,

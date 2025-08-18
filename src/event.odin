@@ -6,13 +6,25 @@ Event :: union {
 	EventEntityDied,
 	EventEntityHurt,
 	EventEntityMiss,
+	EventEntityHeal,
 	EventTurnStarting,
 	EventTurnEnding,
+	EventPotionConsume,
 	EventGameOver,
 }
 
 EventTurnStarting :: struct {}
 EventTurnEnding :: struct {}
+
+EventPotionConsume :: struct {
+	item_id:   ItemId,
+	entity_id: EntityId,
+}
+
+EventEntityHeal :: struct {
+	entity_id: EntityId,
+	hp:        i32,
+}
 
 DamageSource :: enum {
 	Enemy,
@@ -52,10 +64,14 @@ _handle :: proc(evt: ^Event) -> Error {
 		return _entity_died(&evt)
 	case EventEntityMiss:
 		return _entity_miss(&evt)
+	case EventEntityHeal:
+		return _entity_heal(&evt)
 	case EventTurnStarting:
 		return _turn_starting(&evt)
 	case EventTurnEnding:
 		return _turn_ending(&evt)
+	case EventPotionConsume:
+		return _potion_consume(&evt)
 	case EventGameOver:
 		return _game_over(&evt)
 	}
@@ -90,6 +106,14 @@ _entity_miss :: proc(evt: ^EventEntityMiss) -> Error {
 	return nil
 }
 
+_entity_heal :: proc(evt: ^EventEntityHeal) -> Error {
+	target := entity_or_error(evt.entity_id) or_return
+
+	target.hp = min(target.meta.max_hp, target.hp + evt.hp)
+
+	return nil
+}
+
 @(private = "file")
 _entity_died :: proc(evt: ^EventEntityDied) -> Error {
 	deceased := entity_or_error(evt.entity_id) or_return
@@ -97,12 +121,7 @@ _entity_died :: proc(evt: ^EventEntityDied) -> Error {
 	state.client.game.enemies_killed += 1
 	game_spawn_entity(.Corpse, Entity{pos = deceased.pos})
 	if deceased.meta_id == .Firebug {
-		iter := prism.aabb_iterator(prism.aabb(Vec2i(deceased.pos) - {1, 1}, Vec2i({3, 3})))
-		for pos in prism.aabb_iterate(&iter) {
-			tile, valid_tile := tile_at(TileCoord(pos)).?
-			fuel: i32 = pos == Vec2i(deceased.pos) ? 14 : 5
-			if valid_tile do tile_set_fire(tile, fuel)
-		}
+		tile_create_fireball(deceased.pos, 1.8, 10)
 	}
 	entity_despawn(deceased)
 
@@ -153,5 +172,34 @@ _turn_ending :: proc(evt: ^EventTurnEnding) -> Error {
 @(private = "file")
 _game_over :: proc(evt: ^EventGameOver) -> Error {
 	state.client.game.status = .GameOver
+	return nil
+}
+
+@(private = "file")
+_potion_consume :: proc(evt: ^EventPotionConsume) -> Error {
+	entity := entity_or_error(evt.entity_id) or_return
+
+	item, item_ok := item(evt.item_id).?
+	if !item_ok do return error(ItemNotFound{item_id = evt.item_id})
+
+	if item.container_id != entity.id {
+		return error(
+			WrongContainer {
+				actual_container = item.container_id,
+				expected_container = entity.id,
+				item_id = item.id,
+			},
+		)
+	}
+
+	switch item.type {
+	case PotionType.Fire:
+		tile_create_fireball(entity.pos, 2.5, 40)
+	case PotionType.Healing:
+		event_fire(EventEntityHeal{entity_id = entity.id, hp = 40})
+	}
+	item.count = item.count - 1
+	if item.count == 0 do item_despawn(item.id)
+
 	return nil
 }

@@ -50,16 +50,16 @@ containers_reset :: proc() -> Error {
 	// TODO: Move iteration to item.odin
 	item_iterator := prism.pool_iterator(&state.client.game.items)
 	for item, item_id in prism.pool_iterate(&item_iterator) {
-		switch cid in item.container_id {
-		case EntityId:
-			trace("Item %w in inventory of %d", item, cid)
-		case TileCoord:
-			trace("Item %w contained in tile %d", item, cid)
-		case ItemId:
-			trace("Item contained by item %v", cid)
-		case nil:
-			trace("Item not contained")
-		}
+		// switch cid in item.container_id {
+		// case EntityId:
+		// 	trace("Item %w in inventory of %d", item, cid)
+		// case TileCoord:
+		// 	trace("Item %w contained in tile %d", item, cid)
+		// case ItemId:
+		// 	trace("Item contained by item %v", cid)
+		// case nil:
+		// 	trace("Item not contained")
+		// }
 		if item.container_id != nil {
 			existing_list, ok := &state.client.game.containers.index[item.container_id]
 			if !ok {

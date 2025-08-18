@@ -60,6 +60,7 @@ derived_handle_entity_changed :: proc(entity: ^Entity) {
 derived_regenerate_player_maps :: proc() {
 	clear(&state.client.game.derived.entity_djikstra_maps)
 	for _, player in state.client.game.players {
+		if player.player_entity_id == 0 do continue
 		trace("Regenerate djikstra map to ", player.player_entity_id)
 		_, e := derived_djikstra_map_to(player.player_entity_id)
 		if e != nil do error_log(e)

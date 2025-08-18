@@ -1,12 +1,13 @@
-total 26960
-drwxr-xr-x  27 jordan  staff      864  .
+total 33280
+drwxr-xr-x  35 jordan  staff     1120  .
 drwxr-xr-x   4 jordan  staff      128  ..
 -rw-r--r--   1 jordan  staff    28600  CompaqThin.ttf
 -rw-r--r--   1 jordan  staff  9204012  Daudir.mp3
+-rw-rw-r--@  1 jordan  staff  3154436  LanaPixel.ttf
 -rw-r--r--   1 jordan  staff    70640  PxPlus_IBM_VGA_8x16.ttf
 -rw-r--r--   1 jordan  staff  3083520  ambience.mp3
--rwxr-xr-x   1 jordan  staff   356985  app.wasm
--rw-r--r--   1 jordan  staff   126452  archive.tar.gz
+-rwxr-xr-x   1 jordan  staff   375852  app.wasm
+-rw-r--r--   1 jordan  staff   132205  archive.tar.gz
 -rw-r--r--   1 jordan  staff   153850  death-bell.mp3
 -rw-r--r--   1 jordan  staff    77899  death-scream.ogg
 -rw-r--r--   1 jordan  staff   401712  fire.mp3
@@ -20,9 +21,16 @@ drwxr-xr-x   4 jordan  staff      128  ..
 -rw-r--r--   1 jordan  staff    11726  footstep-008.ogg
 -rw-r--r--   1 jordan  staff     8895  footstep-009.ogg
 -rw-r--r--   1 jordan  staff     9190  footstep-010.ogg
--rw-r--r--   1 jordan  staff      550  index-CUKWKAn8.css
--rw-r--r--   1 jordan  staff    13930  index-d8sO_2Xt.js
--rw-r--r--   1 jordan  staff     3701  manifest.json
+-rw-r--r--   1 jordan  staff      643  index-CRf9C4zC.css
+-rw-r--r--   1 jordan  staff    14056  index-Cm9SuPk0.js
+-rw-r--r--   1 jordan  staff     4011  manifest.json
 -rw-r--r--   1 jordan  staff    22401  miss.ogg
+-rw-r--r--   1 jordan  staff     9496  player-hurt-001.ogg
+-rw-r--r--   1 jordan  staff    10073  player-hurt-002.ogg
+-rw-r--r--   1 jordan  staff     9496  player_hit-001.ogg
+-rw-r--r--   1 jordan  staff    10073  player_hit-002.ogg
+-rw-r--r--   1 jordan  staff     9496  player_hurt-001.ogg
+-rw-r--r--   1 jordan  staff    10073  player_hurt-002.ogg
+-rw-r--r--   1 jordan  staff     9496  playerhurt-001.ogg
 -rw-r--r--   1 jordan  staff    51278  punch.wav
--rw-r--r--   1 jordan  staff     4279  spritesheet.png
+-rw-r--r--   1 jordan  staff     4533  spritesheet.png

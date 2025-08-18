@@ -91,7 +91,7 @@ ui_layout_screen :: proc() -> clay.ClayArray(clay.RenderCommand) {
 						padding = {16, 16, 16, 16},
 						sizing = {width = clay.SizingGrow({}), height = clay.SizingFit({})},
 					},
-					backgroundColor = COLOR_PURPLE_500,
+					backgroundColor = clay.Hovered() ? COLOR_PURPLE_200 : COLOR_PURPLE_500,
 				},
 				) {
 					clay.Text("Start", default_text_config)
@@ -111,9 +111,17 @@ ui_layout_screen :: proc() -> clay.ClayArray(clay.RenderCommand) {
 				player_entity_id := state.client.controlling_entity_id
 				inventory_iter := container_iterator(player_entity_id)
 				for item in container_iterate(&inventory_iter) {
-					switch t in item.type {
-					case PotionType:
-						_add_fmt_text("%d Potion of %s", item.count, item.type)
+					if clay.UI()(
+					{
+						layout = {padding = {4, 4, 4, 4}, sizing = {width = clay.SizingGrow({})}},
+						backgroundColor = clay.Hovered() ? COLOR_PURPLE_500 : COLOR_PURPLE_800,
+					},
+					) {
+						clay.OnHover(input_on_hover_inventory_item, item)
+						switch t in item.type {
+						case PotionType:
+							_add_fmt_text("%d Potion of %s", item.count, item.type)
+						}
 					}
 				}
 			}

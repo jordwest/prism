@@ -47,6 +47,13 @@ pool_init :: proc(arr: ^Pool($T, $Capacity)) {
 	arr.next_id = 1
 }
 
+pool_clear :: proc(arr: ^Pool($T, $Capacity)) {
+	queue.clear(&arr.holes)
+	mem.zero_slice(arr.generations[:])
+	mem.zero_slice(arr.items[:])
+	arr.next_id = 1
+}
+
 pool_add :: proc(arr: ^Pool($T, $Capacity), item: T) -> (PoolId, ^T, bool) {
 	old_slot, has_old_slot := queue.pop_front_safe(&arr.holes)
 	if has_old_slot {

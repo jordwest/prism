@@ -127,7 +127,7 @@ input_frame :: proc(dt: f32) {
 		if is_action_just_pressed(.LeftClick) {
 			clay.SetCurrentContext(ctx1)
 			if clay.PointerOver(clay.ID("StartButton")) {
-				host_log_entry(LogEntryGameStarted{})
+				host_start_game()
 			}
 		}
 	} else {
@@ -142,7 +142,7 @@ input_frame :: proc(dt: f32) {
 
 
 	if is_action_just_pressed(.TempGameStart) && state.host.is_host {
-		host_log_entry(LogEntryGameStarted{})
+		host_start_game()
 	}
 
 	// TODO Cheat commands later?
@@ -162,4 +162,18 @@ is_action_pressed :: proc(action: InputActions) -> bool {
 }
 is_action_just_pressed :: proc(action: InputActions) -> bool {
 	return fresnel.is_action_just_pressed(i32(action))
+}
+
+input_on_hover_inventory_item :: proc "c" (
+	elementId: clay.ElementId,
+	pointerData: clay.PointerData,
+	userData: rawptr,
+) {
+	context = app_context()
+	item := (^ItemStack)(userData)
+
+	// if pointerData.state == .PressedThisFrame {
+	if fresnel.is_action_just_pressed(i32(InputActions.LeftClick)) {
+		command_submit(Command{type = .Consume, target_item = item.id})
+	}
 }

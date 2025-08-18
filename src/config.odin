@@ -4,11 +4,11 @@ package main
 
 FOG_OF_WAR_OFF :: false
 NO_ENEMIES :: false
-GOD_MODE :: true
+GOD_MODE :: false
 
 ////////// DEBUG OPTIONS \\\\\\\\\\
 
-DEBUG_SPECTATE :: false
+DEBUG_SPECTATE :: true
 DEBUG_TURN_STEPPING :: false
 DEBUG_OVERLAYS_ENABLED :: false
 STUTTER_CHECKER_ENABLED :: false
@@ -53,8 +53,8 @@ FONT_SIZE_BASE :: 22
 
 ///////// FUTURE STATE \\\\\\\\\
 
-// GAME_SEED :: 0xdeadbeef6532932
-GAME_SEED :: 0xdebf6455f3
+GAME_SEED: u64 : 0xdeadbeef653293
+// GAME_SEED: u64 : 0xdeadbeed89f6455f
 TURN_DELAY :: 0.1
 ANIMATION_DELAY :: 0.25
 MUSIC_ENABLED :: true

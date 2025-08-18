@@ -91,13 +91,6 @@ test_generational_array :: proc() {
 	assert_eq(arr.generations[3], 2)
 	assert_eq(arr.generations[4], 1)
 
-	iter := prism.pool_iterator(&arr)
-	for item, id in prism.pool_iterate(&iter) {
-		trace("Item %v is %v", id, item^)
-	}
-
-	trace("Size %d", size_of(arr))
-
 	test_complete()
 }
 

@@ -40,6 +40,7 @@ game_reset :: proc() {
 	game.status = .Lobby
 	clear(&state.client.game.entities)
 	procgen_reset(state.client.game.pcg.?)
+	items_reset()
 }
 
 game_get_move_modifier :: proc(

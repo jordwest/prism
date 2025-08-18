@@ -11,6 +11,7 @@ CommandTypeId :: enum u8 {
 	Attack,
 	MoveTowardsAllies,
 	PickUp,
+	Consume,
 }
 
 Command :: struct {
@@ -22,7 +23,7 @@ Command :: struct {
 
 CommandOutcome :: enum {
 	// Executed command successfully, continue
-	Ok,
+	OkNext,
 
 	// Something went wrong when executing command, probably don't want to retry
 	CommandFailed,
@@ -39,23 +40,25 @@ CommandOutcome :: enum {
 
 // Execute current command for this entity as long as possible this turn
 command_execute_all :: proc(entity: ^Entity) -> CommandOutcome {
-	outcome: CommandOutcome = .Ok
+	outcome: CommandOutcome = .OkNext
 
-	for outcome == .Ok {
+	for outcome == .OkNext {
 		outcome = command_execute(entity)
+		state_check_for_infinite_loops()
 	}
 
 	return outcome
 }
 
 command_execute_all_ai :: proc(entity: ^Entity) -> CommandOutcome {
-	outcome: CommandOutcome = .Ok
+	outcome: CommandOutcome = .OkNext
 
 	// AI continues executing commands until it runs out of action points
 	for {
 		ai_evaluate(entity)
 		outcome = command_execute(entity)
 		if outcome == .WaitForAnimation || outcome == .NeedsActionPoints do return outcome
+		state_check_for_infinite_loops()
 	}
 
 	return outcome
@@ -74,7 +77,7 @@ command_execute :: proc(entity: ^Entity) -> CommandOutcome {
 	// Have command and action points, try to move
 	switch cmd.type {
 	case .None:
-		return .IsPlayerControlled in entity.meta.flags ? .NeedsInput : .Ok
+		return .IsPlayerControlled in entity.meta.flags ? .NeedsInput : .OkNext
 	case .Move:
 		return _move(entity)
 	case .Attack:
@@ -83,11 +86,13 @@ command_execute :: proc(entity: ^Entity) -> CommandOutcome {
 		return _move_towards_allies(entity)
 	case .PickUp:
 		return _pick_up(entity)
+	case .Consume:
+		return _consume(entity)
 	case .Skip:
 		return _skip(entity)
 	}
 
-	return .Ok
+	return .OkNext
 }
 
 _move :: proc(entity: ^Entity) -> CommandOutcome {
@@ -95,21 +100,21 @@ _move :: proc(entity: ^Entity) -> CommandOutcome {
 	switch outcome {
 	case .Moved:
 		if at_target do entity_clear_cmd(entity)
-		return .Ok
+		return .OkNext
 	case .Blocked:
 		entity_clear_cmd(entity)
 		return .CommandFailed
 	case .AlreadyAtTarget:
 		entity_clear_cmd(entity)
-		return .Ok
+		return .OkNext
 	}
-	return .Ok
+	return .OkNext
 }
 
 _skip :: proc(entity: ^Entity) -> CommandOutcome {
 	entity_consume_ap(entity, 100)
 	entity.cmd = Command{}
-	return .Ok
+	return .OkNext
 }
 
 _attack :: proc(e: ^Entity) -> CommandOutcome {
@@ -143,7 +148,7 @@ _attack :: proc(e: ^Entity) -> CommandOutcome {
 	outcome, reached := _player_move_towards(e, target.pos, true)
 	if outcome != .Moved do return .CommandFailed
 
-	return .Ok
+	return .OkNext
 }
 
 @(private = "file")
@@ -245,7 +250,7 @@ _pick_up :: proc(e: ^Entity) -> CommandOutcome {
 
 		entity_consume_ap(e, .IsFast in e.meta.flags ? 80 : 100)
 		entity_clear_cmd(e)
-		return .Ok
+		return .OkNext
 	}
 	trace("Move towards")
 
@@ -253,7 +258,22 @@ _pick_up :: proc(e: ^Entity) -> CommandOutcome {
 	if outcome != .Moved do return .CommandFailed
 
 	trace("Returning ok")
-	return .Ok
+	return .OkNext
+}
+
+_consume :: proc(entity: ^Entity) -> CommandOutcome {
+	trace("Consume %w", entity.cmd)
+
+	e := event_fire(EventPotionConsume{entity_id = entity.id, item_id = entity.cmd.target_item})
+	if e != nil {
+		trace("Failed %w", e)
+		entity_clear_cmd(entity)
+		return .CommandFailed
+	}
+
+	entity_consume_ap(entity, 100)
+	entity_clear_cmd(entity)
+	return .OkNext
 }
 
 _move_towards_allies :: proc(entity: ^Entity) -> CommandOutcome {
@@ -265,14 +285,14 @@ _move_towards_allies :: proc(entity: ^Entity) -> CommandOutcome {
 
 	switch _move_or_swap(entity, TileCoord(coord_out), false) {
 	case .Moved:
-		return .Ok
+		return .OkNext
 	case .Blocked:
 		return .CommandFailed
 	case .AlreadyAtTarget:
 		return .CommandFailed
 	}
 
-	return .Ok
+	return .OkNext
 }
 
 command_serialize :: proc(s: ^prism.Serializer, cmd: ^Command) -> prism.SerializationResult {

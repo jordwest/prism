@@ -192,6 +192,7 @@ canvas.addEventListener("mousedown", (evt) => {
   const actionId = state.input.mouseButtonToAction.get(evt.button);
   if (actionId != null) {
     evt.preventDefault();
+    console.log("Set action", actionId)
     setAction(actionId);
   }
 
@@ -212,6 +213,7 @@ canvas.addEventListener("mouseup", (evt) => {
   pointerState.down = false;
   const actionId = state.input.mouseButtonToAction.get(evt.button);
   if (actionId != null) {
+    console.log("Clear action", actionId)
     clearAction(actionId);
   }
 

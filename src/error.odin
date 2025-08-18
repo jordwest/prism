@@ -7,7 +7,9 @@ import "prism"
 
 InnerError :: union {
 	EntityNotFound,
+	ItemNotFound,
 	EntityExists,
+	WrongContainer,
 	PlayerCommandWrongEntity,
 	TooManyIterations,
 	InvariantError,
@@ -49,6 +51,12 @@ NoSpaceForEntity :: struct {
 	pos:       TileCoord,
 }
 
+WrongContainer :: struct {
+	item_id:            ItemId,
+	expected_container: ContainerId,
+	actual_container:   ContainerId,
+}
+
 NoCapacity :: struct {}
 
 UnexpectedSeqId :: struct {
@@ -62,6 +70,10 @@ ClientNotFound :: struct {
 
 EntityNotFound :: struct {
 	entity_id: EntityId,
+}
+
+ItemNotFound :: struct {
+	item_id: ItemId,
 }
 
 EntityExists :: struct {

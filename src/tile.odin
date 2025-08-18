@@ -1,5 +1,7 @@
 package main
 
+import "core:math/ease"
+import "core:math/linalg"
 import "prism"
 
 Tiles :: struct {
@@ -71,6 +73,20 @@ tile_draw :: proc(pos: TileCoord, type: TileType) {
 	tile, ok := tile_at(pos).?
 	if ok {
 		tile_set_type(tile, type)
+	}
+}
+
+tile_create_fireball :: proc(at: TileCoord, radius: f32, fuel: i32) {
+	r := i32(radius)
+	iter := prism.aabb_iterator(prism.aabb(Vec2i(at) - {r, r}, Vec2i({r * 2 + 1, r * 2 + 1})))
+	for pos in prism.aabb_iterate(&iter) {
+		tile, valid_tile := tile_at(TileCoord(pos)).?
+
+		dist := linalg.length(vec2f(pos) - vec2f(at))
+		relative_dist := 1 - (dist / radius)
+		fuel_ease := ease.quadratic_out(relative_dist)
+
+		if valid_tile && dist <= radius do tile_set_fire(tile, i32(f32(fuel) * fuel_ease))
 	}
 }
 

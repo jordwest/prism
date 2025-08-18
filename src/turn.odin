@@ -30,7 +30,7 @@ turn_evaluate :: proc() -> (outcome: TurnOutcome, e: Error) {
 		case .WaitForAnimation:
 			log_entry_delay_processing_for_animation()
 			return .AwaitingAnimation, nil
-		case .Ok:
+		case .OkNext:
 			// Current command should have executed until
 			// it has been exhausted and is waiting on input
 			// or action points, so we should never get an
@@ -46,7 +46,6 @@ turn_evaluate :: proc() -> (outcome: TurnOutcome, e: Error) {
 		if .IsAiControlled not_in entity.meta.flags do continue
 
 		outcome := command_execute_all_ai(&entity)
-		trace("Outcome for %d is %w", entity.id, outcome)
 
 		switch outcome {
 		case .NeedsActionPoints:
@@ -58,7 +57,7 @@ turn_evaluate :: proc() -> (outcome: TurnOutcome, e: Error) {
 		case .WaitForAnimation:
 			log_entry_delay_processing_for_animation()
 			return .AwaitingAnimation, nil
-		case .Ok:
+		case .OkNext:
 			// Current command should have executed until
 			// it has been exhausted and is waiting on input
 			// or action points, so we should never get an

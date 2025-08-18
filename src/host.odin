@@ -1,5 +1,6 @@
 package main
 
+import "core:math/rand"
 import "core:mem"
 import "fresnel"
 import "prism"
@@ -152,4 +153,11 @@ host_catch_up_client :: proc(client_id: ClientId, start_at: LogSeqId) {
 			ic.next_seq_id = LogSeqId(len(state.host.game_log))
 		}
 	}
+}
+
+host_start_game :: proc() {
+	seed_bytes: [8]u8
+	fresnel.fill_slice_random(seed_bytes[:])
+	seed := transmute(u64)seed_bytes
+	host_log_entry(LogEntryGameStarted{game_seed = seed})
 }

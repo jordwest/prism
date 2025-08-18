@@ -121,6 +121,16 @@ serialize_u32 :: proc(s: ^Serializer, state: ^u32) -> SerializationResult {
 	s.offset = s.offset + 4
 	return nil
 }
+serialize_u64 :: proc(s: ^Serializer, state: ^u64) -> SerializationResult {
+	if (s.writing) {
+		els := transmute([8]u8)(state^)
+		mem.copy(&s.stream[s.offset], &els[0], len(els))
+	} else {
+		state^ = slice.to_type(s.stream[s.offset:][:8], u64)
+	}
+	s.offset = s.offset + 8
+	return nil
+}
 
 serialize_f32 :: proc(s: ^Serializer, state: ^f32) -> SerializationResult {
 	if (s.writing) {

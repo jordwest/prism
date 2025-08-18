@@ -25,16 +25,32 @@ ItemId :: distinct prism.PoolId
 item :: proc(item_id: ItemId) -> Maybe(^ItemStack) {
 	return prism.pool_get(&state.client.game.items, prism.PoolId(item_id))
 }
+item_or_error :: proc(item_id: ItemId) -> (^ItemStack, Error) {
+	item, ok := item(item_id).?
+	if !ok do return nil, error(ItemNotFound{item_id = item_id})
+	return item, nil
+}
 
 items_init :: proc() {
 	prism.pool_init(&state.client.game.items)
 }
 
-item_spawn :: proc(item: ItemStack) -> (ItemId, ^ItemStack, Error) {
+items_reset :: proc() {
+	prism.pool_clear(&state.client.game.items)
+}
+
+// If in_batch is true, you are expected to call containers_reset after spawning all entities
+item_spawn :: proc(item: ItemStack, in_batch := false) -> (ItemId, ^ItemStack, Error) {
 	id, stored_item, ok := prism.pool_add(&state.client.game.items, item)
 	if !ok do return ItemId{}, nil, error(NoCapacity{})
 	stored_item.id = ItemId(id)
+	if !in_batch && stored_item.container_id != nil do containers_reset()
 	return stored_item.id, stored_item, nil
+}
+
+item_despawn :: proc(item_id: ItemId) {
+	prism.pool_delete(&state.client.game.items, prism.PoolId(item_id))
+	containers_reset()
 }
 
 item_set_container :: proc(item: ^ItemStack, container_id: ContainerId) {
