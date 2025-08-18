@@ -57,6 +57,9 @@ _on_game_started :: proc(entry: LogEntryGameStarted) -> Error {
 
 	if state.client.game.status == .GameOver do game_reset()
 
+	info("Starting game with seed 0x%x", entry.game_seed)
+	state.client.game.seed = entry.game_seed
+
 	t0 := fresnel.now()
 	for !pcg.done {
 		procgen_iterate(pcg)
@@ -65,8 +68,6 @@ _on_game_started :: proc(entry: LogEntryGameStarted) -> Error {
 	pcg.total_time += (t1 - t0)
 
 	fresnel.metric_i32("djikstra_iterations", pcg.djikstra_map.iterations)
-
-	info("Starting game with seed 0x%x", entry.game_seed)
 
 	// Spawn all players
 	for player_id, &player in &state.client.game.players {

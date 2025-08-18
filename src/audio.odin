@@ -37,7 +37,7 @@ audio_init :: proc() {
 }
 
 audio_frame :: proc() {
-	rng := prism.rand_splitmix_create(GAME_SEED, RNG_AUDIO)
+	rng := prism.rand_splitmix_create(state.client.game.seed, RNG_AUDIO)
 	prism.rand_splitmix_add_f32(&rng, state.t)
 
 	audio := &state.client.audio

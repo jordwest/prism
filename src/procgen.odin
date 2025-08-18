@@ -127,7 +127,8 @@ _try_add_room :: proc(
 	max_x: i32 = LEVEL_WIDTH,
 	max_y: i32 = LEVEL_HEIGHT,
 ) -> bool {
-	rng := prism.rand_splitmix_create(GAME_SEED, RNG_ROOM_PLACEMENT)
+	trace("PROCGEN WITH SEED 0x%x", state.client.game.seed)
+	rng := prism.rand_splitmix_create(state.client.game.seed, RNG_ROOM_PLACEMENT)
 	prism.rand_splitmix_add(&rng, pcg.iteration)
 
 	room_count := len(pcg.rooms)
@@ -273,7 +274,7 @@ _add_grass :: proc() {
 
 @(private = "file")
 _spawn_enemies :: proc() {
-	rng := prism.rand_splitmix_create(GAME_SEED, RNG_ROOM_PLACEMENT)
+	rng := prism.rand_splitmix_create(state.client.game.seed, RNG_ROOM_PLACEMENT)
 
 	spawn_max := 12
 	spawned := 0

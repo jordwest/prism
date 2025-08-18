@@ -288,7 +288,7 @@ serialize :: proc {
 }
 
 rng_new :: proc(stream: u64) -> prism.SplitMixState {
-	return prism.rand_splitmix_create(GAME_SEED, stream)
+	return prism.rand_splitmix_create(state.client.game.seed, stream)
 }
 rng_dice :: prism.rand_splitmix_get_dice_roll
 rng_range :: prism.rand_splitmix_get_i32_range

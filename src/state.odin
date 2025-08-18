@@ -56,6 +56,7 @@ GameStatus :: enum {
 
 // Game state (generally expected to be deterministic across clients)
 GameState :: struct {
+	seed:             u64,
 	status:           GameStatus,
 	spawn_point:      TileCoord,
 	newest_entity_id: i32,

@@ -156,8 +156,12 @@ host_catch_up_client :: proc(client_id: ClientId, start_at: LogSeqId) {
 }
 
 host_start_game :: proc() {
-	seed_bytes: [8]u8
-	fresnel.fill_slice_random(seed_bytes[:])
-	seed := transmute(u64)seed_bytes
-	host_log_entry(LogEntryGameStarted{game_seed = seed})
+	when GAME_SEED != 0 {
+		host_log_entry(LogEntryGameStarted{game_seed = GAME_SEED})
+	} else {
+		seed_bytes: [8]u8
+		fresnel.fill_slice_random(seed_bytes[:])
+		seed := transmute(u64)seed_bytes
+		host_log_entry(LogEntryGameStarted{game_seed = seed})
+	}
 }

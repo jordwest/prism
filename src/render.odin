@@ -164,7 +164,7 @@ render_tiles :: proc() {
 
 	tiles := &state.client.game.tiles
 
-	rng := prism.rand_splitmix_create(GAME_SEED, RNG_TILE_VARIANCE)
+	rng := prism.rand_splitmix_create(state.client.game.seed, RNG_TILE_VARIANCE)
 	for x: i32 = 0; x < LEVEL_WIDTH; x += 1 {
 		for y: i32 = 0; y < LEVEL_HEIGHT; y += 1 {
 			tile_c := TileCoord{x, y}
