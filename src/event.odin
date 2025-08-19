@@ -200,14 +200,7 @@ _potion_consume :: proc(evt: ^EventPotionConsume) -> Error {
 		)
 	}
 
-	switch item.type {
-	case PotionType.Fire:
-		tile_create_fireball(entity.pos, 2.5, 40)
-	case PotionType.Healing:
-		event_fire(EventEntityHeal{entity_id = entity.id, hp = 40})
-	}
-	item.count = item.count - 1
-	if item.count == 0 do item_despawn(item.id)
+	event_fire(EventPotionActivateAt{item_id = item.id, pos = entity.pos})
 
 	return nil
 }

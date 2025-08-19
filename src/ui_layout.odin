@@ -115,7 +115,9 @@ ui_layout_screen :: proc() -> clay.ClayArray(clay.RenderCommand) {
 
 				player_entity_id := state.client.controlling_entity_id
 				inventory_iter := container_iterator(SharedLootContainer)
-				activate_mode, is_activating_item := state.client.ui.mode.(UiActivatingItem)
+				mode := ui_mode()
+				activate_mode, is_activating_item := mode.(UiActivatingItem)
+
 				for item in container_iterate(&inventory_iter) {
 					if clay.UI()(
 					{

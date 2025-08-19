@@ -173,10 +173,7 @@ input_on_hover_inventory_item :: proc "c" (
 	item := (^ItemStack)(userData)
 
 	if fresnel.is_action_just_pressed(i32(InputActions.LeftClick)) {
-		// command_submit(Command{type = .Consume, target_item = item.id})
-		state.client.ui.mode = UiActivatingItem {
-			item_id = item.id,
-		}
+		ui_replace_mode(UiActivatingItem{item_id = item.id}, toggle = true)
 	}
 }
 
@@ -190,7 +187,7 @@ input_on_hover_consume :: proc "c" (
 
 	if fresnel.is_action_just_pressed(i32(InputActions.LeftClick)) {
 		command_submit(Command{type = .Consume, target_item = item.id})
-		state.client.ui.mode = nil
+		ui_clear_mode()
 	}
 }
 
@@ -204,7 +201,7 @@ input_on_hover_throw :: proc "c" (
 
 	if fresnel.is_action_just_pressed(i32(InputActions.LeftClick)) {
 		command_submit(Command{type = .Throw, target_item = item.id})
-		state.client.ui.mode = nil
+		ui_clear_mode()
 	}
 }
 
@@ -218,6 +215,6 @@ input_on_hover_drop :: proc "c" (
 
 	if fresnel.is_action_just_pressed(i32(InputActions.LeftClick)) {
 		command_submit(Command{type = .Drop, target_item = item.id})
-		state.client.ui.mode = nil
+		ui_clear_mode()
 	}
 }
