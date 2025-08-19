@@ -250,11 +250,19 @@ _drop :: proc(e: ^Entity) -> CommandOutcome {
 	return .OkNext
 }
 
-_throw :: proc(e: ^Entity) -> CommandOutcome {
-	err("Not implemented")
+_throw :: proc(entity: ^Entity) -> CommandOutcome {
+	e := event_fire(
+		EventPotionActivateAt{pos = entity.pos + {5, 0}, item_id = entity.cmd.target_item},
+	)
+	if e != nil {
+		trace("Throw failed: %w", e)
+		entity_clear_cmd(entity)
+		return .CommandFailed
+	}
 
-	entity_clear_cmd(e)
-	return .CommandFailed
+	entity_consume_ap(entity, 100)
+	entity_clear_cmd(entity)
+	return .OkNext
 }
 
 _pick_up :: proc(e: ^Entity) -> CommandOutcome {

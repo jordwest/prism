@@ -542,3 +542,7 @@ Create resurrection potion by combining three health potions - this means everyo
 # Tuesday 19 Aug 2025
 
 Dentist visit today got some interesting feelings going. Working on selecting which action to take with a potion. Got consuming working, and buttons for throwing and dropping that don't yet do anything. Drop should be the easy one, but I guess I might as well do both at the same time since they'll each need commands.
+
+Throwing is implemented but now I need to add the UI for targetting. Also need to think about how to store that mode information in the state - should it be a generic "targetting" mode (probably) that has information about what will happen when targetting is done? That seems to make the most sense.
+
+But now I think I need to go sit for a bit.

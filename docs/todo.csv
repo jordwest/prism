@@ -85,6 +85,7 @@ done,imp,b4,Add animation delay
 done,feat,b4,Items and basic inventory UI
 done,content,b4,Heal ability (potion?)
 done,content,b4,Fire potion
+done,feat,b4,Drop potions
 doing,feat,b4,Make potions throwable
 todo,content,b4,Water potion
 todo,content,b4,Fire traps

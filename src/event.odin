@@ -10,6 +10,7 @@ Event :: union {
 	EventTurnStarting,
 	EventTurnEnding,
 	EventPotionConsume,
+	EventPotionActivateAt,
 	EventGameOver,
 }
 
@@ -19,6 +20,11 @@ EventTurnEnding :: struct {}
 EventPotionConsume :: struct {
 	item_id:   ItemId,
 	entity_id: EntityId,
+}
+
+EventPotionActivateAt :: struct {
+	item_id: ItemId,
+	pos:     TileCoord,
 }
 
 EventEntityHeal :: struct {
@@ -72,6 +78,8 @@ _handle :: proc(evt: ^Event) -> Error {
 		return _turn_ending(&evt)
 	case EventPotionConsume:
 		return _potion_consume(&evt)
+	case EventPotionActivateAt:
+		return _potion_activate(&evt)
 	case EventGameOver:
 		return _game_over(&evt)
 	}
@@ -197,6 +205,39 @@ _potion_consume :: proc(evt: ^EventPotionConsume) -> Error {
 		tile_create_fireball(entity.pos, 2.5, 40)
 	case PotionType.Healing:
 		event_fire(EventEntityHeal{entity_id = entity.id, hp = 40})
+	}
+	item.count = item.count - 1
+	if item.count == 0 do item_despawn(item.id)
+
+	return nil
+}
+
+@(private = "file")
+_potion_activate :: proc(evt: ^EventPotionActivateAt) -> Error {
+	pos := evt.pos
+
+	tile_entities := derived_entities_at(pos)
+	entity_at_pos, has_entity_at_pos := tile_entities.obstacle.?
+
+	item, item_ok := item(evt.item_id).?
+	if !item_ok do return error(ItemNotFound{item_id = evt.item_id})
+
+	if item.container_id != SharedLootContainer {
+		return error(
+			WrongContainer {
+				actual_container = item.container_id,
+				expected_container = SharedLootContainer,
+				item_id = item.id,
+			},
+		)
+	}
+
+	switch item.type {
+	case PotionType.Fire:
+		tile_create_fireball(pos, 2.5, 40)
+	case PotionType.Healing:
+		if !has_entity_at_pos do break
+		event_fire(EventEntityHeal{entity_id = entity_at_pos.id, hp = 40})
 	}
 	item.count = item.count - 1
 	if item.count == 0 do item_despawn(item.id)
