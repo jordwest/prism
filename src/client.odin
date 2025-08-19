@@ -14,29 +14,6 @@ client_boot :: proc(width: i32, height: i32) -> Error {
 	log_queue_init(&state.client.log_queue)
 	fx_init()
 
-	//////////// test DELETE ME
-	item_spawn(
-		ItemStack{count = 1, type = PotionType.Healing, container_id = EntityId(123)},
-	) or_return
-	item_spawn(
-		ItemStack{count = 1, type = PotionType.Fire, container_id = TileCoord{5, 6}},
-	) or_return
-	item_spawn(
-		ItemStack{count = 5, type = PotionType.Fire, container_id = EntityId(123)},
-	) or_return
-	containers_reset()
-
-	iter := container_iterator(EntityId(123))
-	for item in container_iterate(&iter) {
-		trace("container A contains: %w", item^)
-	}
-
-	iter = container_iterator(TileCoord{5, 6})
-	for item in container_iterate(&iter) {
-		trace("container B contains: %w", item^)
-	}
-	///////////////
-
 	state.client.zoom = DEFAULT_ZOOM
 	state.client.camera = prism.spring_create(
 		2,

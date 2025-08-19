@@ -538,3 +538,7 @@ A shared loot pool also means all players are more likely to die together, eg wh
 I think if there's plenty of mundane loot on each level, there should be more than enough to go around. The real exciting loot would appear in the shop or in the special per-player loot rooms.
 
 Create resurrection potion by combining three health potions - this means everyone can keep playing but the loss of three potions significantly reduces the survivability of the team. Sort of a way of reducing the health pool of the team when a teammate dies, but still an interesting decision that the team must make (and be careful not to anger the dead player's ghost).
+
+# Tuesday 19 Aug 2025
+
+Dentist visit today got some interesting feelings going. Working on selecting which action to take with a potion. Got consuming working, and buttons for throwing and dropping that don't yet do anything. Drop should be the easy one, but I guess I might as well do both at the same time since they'll each need commands.

@@ -108,8 +108,14 @@ ui_layout_screen :: proc() -> clay.ClayArray(clay.RenderCommand) {
 			},
 			) {
 
+				button_config: clay.ElementDeclaration = {
+					layout = {padding = {16, 16, 8, 8}, sizing = {width = clay.SizingGrow({})}},
+					backgroundColor = clay.Hovered() ? COLOR_PURPLE_200 : COLOR_PURPLE_500,
+				}
+
 				player_entity_id := state.client.controlling_entity_id
-				inventory_iter := container_iterator(player_entity_id)
+				inventory_iter := container_iterator(SharedLootContainer)
+				activate_mode, is_activating_item := state.client.ui.mode.(UiActivatingItem)
 				for item in container_iterate(&inventory_iter) {
 					if clay.UI()(
 					{
@@ -123,6 +129,40 @@ ui_layout_screen :: proc() -> clay.ClayArray(clay.RenderCommand) {
 							_add_fmt_text("%d Potion of %s", item.count, item.type)
 						}
 					}
+
+					if is_activating_item && activate_mode.item_id == item.id {
+						if clay.UI()(
+						{
+							layout = {
+								padding = {4, 4, 4, 4},
+								sizing = {width = clay.SizingGrow({})},
+								childGap = 8,
+							},
+						},
+						) {
+							ui_button(
+								{
+									on_hover = input_on_hover_consume,
+									on_hover_user_data = item,
+									text = "Consume",
+								},
+							)
+							ui_button(
+								{
+									text = "Throw",
+									on_hover = input_on_hover_throw,
+									on_hover_user_data = item,
+								},
+							)
+							ui_button(
+								{
+									text = "Drop",
+									on_hover = input_on_hover_drop,
+									on_hover_user_data = item,
+								},
+							)
+						}
+					}
 				}
 			}
 		}
@@ -131,6 +171,32 @@ ui_layout_screen :: proc() -> clay.ClayArray(clay.RenderCommand) {
 	// Returns a list of render commands
 	return clay.EndLayout()
 } // An example function to create your layout tree
+
+HoverProc :: proc "c" (
+	element_id: clay.ElementId,
+	pointer_data: clay.PointerData,
+	user_data: rawptr,
+)
+
+UiButtonProps :: struct {
+	text:               string,
+	on_hover:           HoverProc,
+	on_hover_user_data: rawptr,
+}
+ui_button :: proc(props: UiButtonProps) {
+	if clay.UI()(
+	{
+		layout = {padding = {16, 16, 8, 8}, sizing = {width = clay.SizingGrow({})}},
+		backgroundColor = clay.Hovered() ? COLOR_PURPLE_200 : COLOR_PURPLE_500,
+	},
+	) {
+		if props.on_hover != nil do clay.OnHover(props.on_hover, props.on_hover_user_data)
+		clay.TextDynamic(
+			props.text,
+			clay.TextConfig({textColor = COLOR_WHITE, fontSize = FONT_SIZE_BASE}),
+		)
+	}
+}
 
 ui_tooltip_latch := false
 

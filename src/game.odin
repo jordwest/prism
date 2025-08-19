@@ -38,6 +38,7 @@ game_reset :: proc() {
 	derived_clear()
 	game.turn_complete = false
 	game.status = .Lobby
+	tiles_reset()
 	clear(&state.client.game.entities)
 	procgen_reset(state.client.game.pcg.?)
 	items_reset()

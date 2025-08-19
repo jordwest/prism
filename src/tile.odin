@@ -2,6 +2,7 @@ package main
 
 import "core:math/ease"
 import "core:math/linalg"
+import "core:mem"
 import "prism"
 
 Tiles :: struct {
@@ -43,6 +44,10 @@ tile_default_flags: [TileType]TileFlags = {
 TileFire :: struct {
 	fuel:     i32, // How many turns worth of fuel is left in this tile
 	ignition: bool,
+}
+
+tiles_reset :: proc() {
+	mem.zero_slice(state.client.game.tiles.data[:])
 }
 
 tile_set_type :: proc(tile: ^TileData, type: TileType) {

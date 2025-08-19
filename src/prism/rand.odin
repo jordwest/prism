@@ -3,7 +3,7 @@ package prism
 // SplitMix64 inspired by:
 // https://www.youtube.com/watch?v=e4b--cyXEsM
 rand_splitmix :: proc(seed: u64, gamma: u64, i: u64) -> u64 {
-	z: u64 = seed + i * gamma
+	z: u64 = seed + 0x9e3779b97f4a7c15 + i * gamma
 	z = (z ~ (z >> 30)) * 0xbf58476d1ce4e5b9
 	z = (z ~ (z >> 27)) * 0x94d049bb133111eb
 	return z ~ (z >> 31)

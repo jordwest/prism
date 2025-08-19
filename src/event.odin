@@ -182,11 +182,11 @@ _potion_consume :: proc(evt: ^EventPotionConsume) -> Error {
 	item, item_ok := item(evt.item_id).?
 	if !item_ok do return error(ItemNotFound{item_id = evt.item_id})
 
-	if item.container_id != entity.id {
+	if item.container_id != SharedLootContainer {
 		return error(
 			WrongContainer {
 				actual_container = item.container_id,
-				expected_container = entity.id,
+				expected_container = SharedLootContainer,
 				item_id = item.id,
 			},
 		)

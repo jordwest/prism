@@ -69,6 +69,7 @@ _on_game_started :: proc(entry: LogEntryGameStarted) -> Error {
 
 	fresnel.metric_i32("djikstra_iterations", pcg.djikstra_map.iterations)
 
+	player_count := i32(len(state.client.game.players))
 	// Spawn all players
 	for player_id, &player in &state.client.game.players {
 		spawn, ok := game_find_nearest_traversable_space(state.client.game.spawn_point)
@@ -80,16 +81,24 @@ _on_game_started :: proc(entry: LogEntryGameStarted) -> Error {
 		if state.client.player_id == player_id {
 			state.client.controlling_entity_id = player_entity.id
 		}
-
-		item_spawn(
-			ItemStack{container_id = player_entity.id, count = 1, type = PotionType.Healing},
-			in_batch = true,
-		)
-		item_spawn(
-			ItemStack{container_id = player_entity.id, count = 1, type = PotionType.Fire},
-			in_batch = true,
-		)
 	}
+
+	item_spawn(
+		ItemStack {
+			container_id = SharedLootContainer,
+			count = player_count,
+			type = PotionType.Healing,
+		},
+		in_batch = true,
+	)
+	item_spawn(
+		ItemStack {
+			container_id = SharedLootContainer,
+			count = player_count,
+			type = PotionType.Fire,
+		},
+		in_batch = true,
+	)
 	containers_reset()
 
 	state.client.game.status = .Started

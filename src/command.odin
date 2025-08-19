@@ -12,6 +12,8 @@ CommandTypeId :: enum u8 {
 	MoveTowardsAllies,
 	PickUp,
 	Consume,
+	Drop,
+	Throw,
 }
 
 Command :: struct {
@@ -88,6 +90,10 @@ command_execute :: proc(entity: ^Entity) -> CommandOutcome {
 		return _pick_up(entity)
 	case .Consume:
 		return _consume(entity)
+	case .Drop:
+		return _drop(entity)
+	case .Throw:
+		return _throw(entity)
 	case .Skip:
 		return _skip(entity)
 	}
@@ -230,11 +236,30 @@ _move_or_swap :: proc(entity: ^Entity, pos: TileCoord, allow_swap: bool = true) 
 	return .Moved
 }
 
-_pick_up :: proc(e: ^Entity) -> CommandOutcome {
-	trace("Execute pick up")
+_drop :: proc(e: ^Entity) -> CommandOutcome {
+	trace("Execute drop")
 	target_item, ok := item(e.cmd.target_item).?
 	if !ok do return .CommandFailed // Item doesn't exist anymore
 
+	if target_item.container_id != SharedLootContainer {
+		return .CommandFailed
+	}
+
+	item_set_container(target_item, e.pos)
+	entity_clear_cmd(e)
+	return .OkNext
+}
+
+_throw :: proc(e: ^Entity) -> CommandOutcome {
+	err("Not implemented")
+
+	entity_clear_cmd(e)
+	return .CommandFailed
+}
+
+_pick_up :: proc(e: ^Entity) -> CommandOutcome {
+	target_item, ok := item(e.cmd.target_item).?
+	if !ok do return .CommandFailed // Item doesn't exist anymore
 
 	dist_to_target := prism.tile_distance(e.cmd.pos - e.pos)
 	trace("To target %d", dist_to_target)
@@ -246,7 +271,7 @@ _pick_up :: proc(e: ^Entity) -> CommandOutcome {
 	}
 
 	if dist_to_target == 0 {
-		item_set_container(target_item, e.id)
+		item_set_container(target_item, SharedLoot{})
 
 		entity_consume_ap(e, .IsFast in e.meta.flags ? 80 : 100)
 		entity_clear_cmd(e)

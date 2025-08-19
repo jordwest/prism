@@ -85,12 +85,13 @@ done,imp,b4,Add animation delay
 done,feat,b4,Items and basic inventory UI
 done,content,b4,Heal ability (potion?)
 done,content,b4,Fire potion
-todo,feat,b4,Make potions throwable
+doing,feat,b4,Make potions throwable
 todo,content,b4,Water potion
 todo,content,b4,Fire traps
 todo,imp,b4,Click & drag to move camera around
 todo,feat,b4,Add critical hits - chance for double max roll
 todo,feat,b4,Sleeping enemies - can be killed instantly
+todo,content,b4,Potion of Overgrowth (expanding plant that slows and can burn up)
 todo,imp,b4,Grass crunch sound
 todo,feat,ideas,Item identification system
 todo,bug,b4,Player indicators should appear above all entities (render order)

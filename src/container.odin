@@ -19,9 +19,13 @@ ContainerNode :: struct {
 
 ContainerId :: union {
 	ItemId,
-	EntityId,
+	// EntityId,
+	SharedLoot,
 	TileCoord,
 }
+
+SharedLoot :: struct {}
+SharedLootContainer := SharedLoot{}
 
 ContainerIterator :: struct {
 	list_iter: list.Iterator(ContainerNode),

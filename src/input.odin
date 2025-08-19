@@ -172,8 +172,52 @@ input_on_hover_inventory_item :: proc "c" (
 	context = app_context()
 	item := (^ItemStack)(userData)
 
-	// if pointerData.state == .PressedThisFrame {
+	if fresnel.is_action_just_pressed(i32(InputActions.LeftClick)) {
+		// command_submit(Command{type = .Consume, target_item = item.id})
+		state.client.ui.mode = UiActivatingItem {
+			item_id = item.id,
+		}
+	}
+}
+
+input_on_hover_consume :: proc "c" (
+	elementId: clay.ElementId,
+	pointerData: clay.PointerData,
+	userData: rawptr,
+) {
+	context = app_context()
+	item := (^ItemStack)(userData)
+
 	if fresnel.is_action_just_pressed(i32(InputActions.LeftClick)) {
 		command_submit(Command{type = .Consume, target_item = item.id})
+		state.client.ui.mode = nil
+	}
+}
+
+input_on_hover_throw :: proc "c" (
+	elementId: clay.ElementId,
+	pointerData: clay.PointerData,
+	userData: rawptr,
+) {
+	context = app_context()
+	item := (^ItemStack)(userData)
+
+	if fresnel.is_action_just_pressed(i32(InputActions.LeftClick)) {
+		command_submit(Command{type = .Throw, target_item = item.id})
+		state.client.ui.mode = nil
+	}
+}
+
+input_on_hover_drop :: proc "c" (
+	elementId: clay.ElementId,
+	pointerData: clay.PointerData,
+	userData: rawptr,
+) {
+	context = app_context()
+	item := (^ItemStack)(userData)
+
+	if fresnel.is_action_just_pressed(i32(InputActions.LeftClick)) {
+		command_submit(Command{type = .Drop, target_item = item.id})
+		state.client.ui.mode = nil
 	}
 }

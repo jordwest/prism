@@ -13,33 +13,42 @@ AppState :: struct {
 }
 
 ClientState :: struct {
-	crashed:                bool,
-	frame_iter_count:       i32, // Used to crash out early instead of getting into infinite loops
-	// vvvvvv Move these into own struct?
+	////// Cursor state //////
 	cursor_pos:             TileCoord,
 	cursor_screen_pos:      ScreenCoord,
 	cursor_hidden:          bool,
 	cursor_last_moved:      f32,
 	cursor_over_ui:         bool,
-	// ^^^^^^
-	join_mode:              JoinMode,
-	zoom:                   f32,
-	camera:                 prism.Spring(2),
-	my_token:               PlayerToken,
-	player_id:              PlayerId,
-	controlling_entity_id:  EntityId,
-	game:                   GameState,
-	bytes_sent:             i32,
-	bytes_received:         i32,
+
+	////// Player feedback //////
+	ui:                     UiState,
 	audio:                  AudioState,
 	fx:                     prism.Pool(Fx, 100),
+
+	////// Camera /////
+	zoom:                   f32,
+	camera:                 prism.Spring(2),
+	controlling_entity_id:  EntityId,
+
+	//// Network state ////
+	my_token:               PlayerToken,
+	player_id:              PlayerId,
+	join_mode:              JoinMode,
+	bytes_sent:             i32,
+	bytes_received:         i32,
+
+	///// Game state ////
+	game:                   GameState,
 	log_queue:              LogQueue,
 	t_evaluate_turns_after: f32,
 	log_entry_replay_state: LogEntryReplayState,
-
 	// The sequence id of the command last issued by the client
 	// See JOURNAL.md, 5 Aug 2025
 	cmd_seq:                CmdSeqId,
+
+	/////// Crash handling /////////
+	crashed:                bool,
+	frame_iter_count:       i32, // Used to crash out early instead of getting into infinite loops
 }
 
 

@@ -4,7 +4,7 @@ import "prism"
 
 ItemStack :: struct {
 	id:           ItemId,
-	count:        u8,
+	count:        i32,
 	type:         ItemTypes,
 	container_id: ContainerId,
 }
