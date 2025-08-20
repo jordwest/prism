@@ -1,3 +1,6 @@
 [submodule "fresnel-web"]
 	path = fresnel-web
 	url = git@github.com:jordwest/fresnel-web.git
+[submodule "src/fresnel"]
+	path = src/fresnel
+	url = git@github.com:jordwest/libfresnel-odin.git
