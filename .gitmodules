@@ -1,0 +1,3 @@
+[submodule "fresnel-web"]
+	path = fresnel-web
+	url = git@github.com:jordwest/fresnel-web.git
