@@ -1,5 +1,5 @@
 dev:
-    deno --allow-read=. --allow-write=build --allow-net --allow-run devserver.js
+    deno --allow-read=. --allow-write=build --allow-net --allow-run fresnel-web/devserver.js
 clean:
     rm -rf build
 optimize-wasm:
