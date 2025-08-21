@@ -4,3 +4,6 @@
 [submodule "src/fresnel"]
 	path = src/fresnel
 	url = git@github.com:jordwest/libfresnel-odin.git
+[submodule "src/prism"]
+	path = src/prism
+	url = git@github.com:jordwest/prism.git
