@@ -1,14 +1,15 @@
 package prism
 
+import "core:mem"
+
 BufArena :: struct($T: int) {
 	memory:    [T]u8,
 	arena:     mem.Arena,
 	allocator: mem.Allocator,
 }
 
-@(private = "file")
 buf_arena_init :: proc(arena: ^BufArena($T)) {
-	arena.arena = mem.BufArena {
+	arena.arena = mem.Arena {
 		data = arena.memory[:],
 	}
 	arena.allocator = mem.arena_allocator(&arena.arena)
