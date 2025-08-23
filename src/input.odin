@@ -129,6 +129,9 @@ input_frame :: proc(dt: f32) {
 			if clay.PointerOver(clay.ID("StartButton")) {
 				host_start_game()
 			}
+			if clay.PointerOver(clay.ID("ConnectButton")) {
+				client_connect()
+			}
 		}
 	} else {
 		if ok && is_action_just_pressed(.LeftClick) {

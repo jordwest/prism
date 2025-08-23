@@ -97,6 +97,20 @@ ui_layout_screen :: proc() -> clay.ClayArray(clay.RenderCommand) {
 					clay.Text("Start", default_text_config)
 				}
 			}
+
+			if clay.UI()(
+			{
+				id = clay.ID("ConnectButton"),
+				layout = {
+					padding = {16, 16, 16, 16},
+					sizing = {width = clay.SizingGrow({}), height = clay.SizingFit({})},
+				},
+				backgroundColor = clay.Hovered() ? COLOR_PURPLE_200 : COLOR_PURPLE_500,
+			},
+			) {
+				clay.Text("Connect", default_text_config)
+			}
+
 			if clay.UI()(
 			{
 				id = clay.ID("InventoryList"),

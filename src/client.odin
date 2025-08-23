@@ -28,9 +28,11 @@ client_boot :: proc(width: i32, height: i32) -> Error {
 	state.client.game.pcg = pcg
 	procgen_init(pcg)
 
-	fresnel.client_connect()
-
 	return nil
+}
+
+client_connect :: proc() {
+	fresnel.client_connect()
 }
 
 client_frame :: proc(dt: f32) -> Error {

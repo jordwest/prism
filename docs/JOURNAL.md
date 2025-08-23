@@ -562,3 +562,10 @@ Probably makes sense to use JSON for the negotiation between the WASM hosts. Als
 So I've got the basic server up and running, and calling a POST endpoint gets it to give us a room ID. Maybe actually it should respond with the websocket URL instead.
 
 Ok most of the Rust part is done, now it's just hooking up the web part - should be fairly straightforward.
+
+Turns out this is one of the harder parts.... so many layers of indirection. I definitely want to clean this up once it's working.
+
+Think it's time to call it there though. Tomorrow:
+
+ - Stop the client from trying to connect at boot time, instead add a button to do the connection
+ - Once it works, split out the host and client into separate NetPeer types (for both dummy and websockets).
