@@ -546,3 +546,19 @@ Dentist visit today got some interesting feelings going. Working on selecting wh
 Throwing is implemented but now I need to add the UI for targetting. Also need to think about how to store that mode information in the state - should it be a generic "targetting" mode (probably) that has information about what will happen when targetting is done? That seems to make the most sense.
 
 But now I think I need to go sit for a bit.
+
+# Saturday 23 Aug 2025
+
+After a bit of a side quest in building my own music tracker, I'm back to motivated to work on the game and to get it to a place where I can playtest with others.
+
+So today the plan is to build the relay server, so I can actually connect two devices.
+
+Should be relatively simple, just need to have the host client tell the server it's setting up a new game, and the server should reply with a websocket URL and mark the host's token as the owner of the room.
+
+Then the URL can be shared with other clients which connect to the room directly as non-hosts.
+
+Probably makes sense to use JSON for the negotiation between the WASM hosts. Also not sure if I should use rust or deno here... maybe Rust makes more sense as I've deployed Rust apps to my server already and so can probably do that fairly easily again.
+
+So I've got the basic server up and running, and calling a POST endpoint gets it to give us a room ID. Maybe actually it should respond with the websocket URL instead.
+
+Ok most of the Rust part is done, now it's just hooking up the web part - should be fairly straightforward.
