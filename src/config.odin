@@ -29,9 +29,9 @@ when ODIN_DEBUG {
 	LOG_LEVEL :: LogLevel.Error
 }
 // Whether to record messages received by host
-LOG_HOST_MESSAGES :: true
+LOG_HOST_MESSAGES :: false
 // Whether to record messages received by client
-LOG_CLIENT_MESSAGES :: true
+LOG_CLIENT_MESSAGES :: false
 LOG_LOG_ENTRIES :: false
 LOG_COMMANDS :: false
 LOG_EVENTS :: false

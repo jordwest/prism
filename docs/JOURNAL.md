@@ -567,5 +567,17 @@ Turns out this is one of the harder parts.... so many layers of indirection. I d
 
 Think it's time to call it there though. Tomorrow:
 
- - Stop the client from trying to connect at boot time, instead add a button to do the connection
+ - Stop the client from trying to connect at boot time, instead add a button to do the connection DONE
  - Once it works, split out the host and client into separate NetPeer types (for both dummy and websockets).
+
+# Sunday 24 Aug 2025
+
+Plan for today is to tidy up the net code. Done, and also got the relay server deployed to nix!
+
+It works on itch.io. I just have a few things to fix before others can play it:
+ - Remove websocket hot reload unless running on localhost - DONE
+ - Set up itch.io butler for quick deploys DONE
+ - Button to play ~~single player~~/start hosting/connect to host
+ - Delete rooms when no activity after some time
+
+Taking the rest of the day off. Tomorrow: add a basic server host/join UI, set up relay to delete old rooms.

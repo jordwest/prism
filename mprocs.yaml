@@ -12,3 +12,6 @@ procs:
   build-release:
     shell: "just build-release"
     autostart: false
+  deploy-itch:
+    shell: "just deploy-itch"
+    autostart: false

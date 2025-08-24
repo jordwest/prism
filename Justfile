@@ -17,10 +17,13 @@ build-wasm-release:
 build-web-release:
     rm -f build/web/assets/*.js
     rm -f build/web/assets/*.css
-    (cd fresnel-web && node_modules/.bin/vite build . --outDir ../build/web)
+    (cd fresnel-web && node_modules/.bin/vite build --base ./ . --outDir ../build/web)
 build-web-dev:
     rm -f build/web/assets/*.js
     rm -f build/web/assets/*.css
-    (cd fresnel-web && node_modules/.bin/vite build --minify false . --outDir ../build/web)
+    (cd fresnel-web && node_modules/.bin/vite build --base ./ --minify false . --outDir ../build/web)
 
 build-release: build-web-release build-wasm-release
+
+deploy-itch: build-release
+    butler push build/web jordwest/gm115:web
