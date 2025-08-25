@@ -1,5 +1,6 @@
 package prism
 
+import "core:math"
 import "core:mem"
 import "core:slice"
 
@@ -93,6 +94,24 @@ serialize_string :: proc(s: ^Serializer, state: ^string) -> SerializationResult 
 		state^ = string(str_slice)
 	}
 	s.offset = s.offset + i32(len(state^))
+	return nil
+}
+
+serialize_bufstring :: proc(s: ^Serializer, bufstring: ^BufString($N)) -> SerializationResult {
+	str_len: i32
+	if (s.writing) {
+		str_len = bufstring.len
+		serialize_i32(s, &str_len)
+
+		mem.copy(&s.stream[s.offset], &bufstring.buf[0], int(bufstring.len))
+	} else {
+		serialize_i32(s, &str_len)
+		read_len := math.min(str_len, N)
+
+		mem.copy(&bufstring.buf[0], &s.stream[s.offset], int(read_len))
+		bufstring.len = read_len
+	}
+	s.offset = s.offset + str_len
 	return nil
 }
 
@@ -237,4 +256,5 @@ serialize :: proc {
 	serialize_f32,
 	serialize_u8,
 	serialize_string,
+	serialize_bufstring,
 }

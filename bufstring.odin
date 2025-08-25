@@ -1,20 +1,29 @@
 package prism
 
-BufString :: struct($N: int) {
-	buf: [N]u8,
-	str: string,
-}
+import "core:mem"
 
-bufstring_from_string :: proc($Length: int, str: string) -> BufString(Length) {
-	return BufString(Length){str = str}
+BufString :: struct($N: i32) {
+	buf: [N]u8,
+	len: i32,
 }
 
 bufstring_update_from_string :: proc(bs: ^BufString($N), str: string) {
-	bs.str = str
+	copy(bs.buf[:], str)
+	bs.len = i32(len(str))
 }
 
-bufstring_update_from_bytes :: proc(bs: ^BufString($N), bytes_read: int) {
-	bs.str = string(bs.buf[:bytes_read])
+bufstring_from_string :: proc($N: i32, str: string) -> BufString(N) {
+	bs := BufString(N){}
+	bufstring_update_from_string(&bs, str)
+	return bs
+}
+
+bufstring_as_str :: proc(bs: ^BufString($N)) -> string {
+	return string(bs.buf[:bs.len])
+}
+
+bufstring_update_from_bytes :: proc(bs: ^BufString($N), bytes_read: i32) {
+	bs.len = bytes_read
 }
 
 bufstring_update :: proc {
