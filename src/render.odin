@@ -10,7 +10,13 @@ import "prism"
 @(private = "file")
 _tempstr_buf: [16384]u8
 
+RenderState :: struct {
+	text_input_rendered_this_frame: bool,
+}
+
 render_frame :: proc(dt: f32) {
+	state.client.render.text_input_rendered_this_frame = false
+
 	render_clear()
 	render_move_camera(dt)
 	render_tiles()
@@ -30,6 +36,10 @@ render_frame :: proc(dt: f32) {
 
 	if state.debug.render_debug_overlays {
 		render_debug_overlays()
+	}
+
+	if !state.client.render.text_input_rendered_this_frame {
+		fresnel.remove_input()
 	}
 }
 
@@ -437,7 +447,12 @@ render_tile_cursors :: proc(dt: f32) {
 
 			render_sprite(SPRITE_COORD_OTHER_PLAYER_CURSOR, cursor_pos)
 			fresnel.fill(255, 255, 255, 1)
-			fresnel.draw_text(text_pos.x, text_pos.y, FONT_SIZE_BASE, "Player")
+			fresnel.draw_text(
+				text_pos.x,
+				text_pos.y,
+				FONT_SIZE_BASE,
+				prism.bufstring_as_str(&p.display_name),
+			)
 		}
 	}
 }
@@ -517,6 +532,19 @@ render_ui :: proc(ui: UiContext, offset_in: ScreenCoord = {0, 0}) {
 				i32(render_command.renderData.text.fontSize),
 				string_from_clay_slice(render_command.renderData.text.stringContents),
 			)
+		case .Custom:
+			el := (^CustomClayElement)(render_command.renderData.custom.customData)
+			switch custom in el {
+			case TextInput:
+				state.client.render.text_input_rendered_this_frame = true
+				fresnel.render_input(
+					render_command.boundingBox.x,
+					render_command.boundingBox.y,
+					render_command.boundingBox.width,
+					i32(render_command.boundingBox.height),
+					custom.value,
+				)
+			}
 		}
 	}
 }

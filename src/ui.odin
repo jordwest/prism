@@ -9,7 +9,22 @@ UiActivatingItem :: struct {
 }
 
 UiState :: struct {
-	mode: UiMode,
+	mode:              UiMode,
+	current_menu:      UiMenu,
+	input_destination: UiInputDestination,
+}
+
+UiMenu :: enum {
+	MainMenu,
+	Join,
+	Lobby,
+}
+
+// Which input is currently visible - determines which state is updated when the input is changed
+UiInputDestination :: enum {
+	None,
+	DisplayName,
+	JoinURL,
 }
 
 ui_clear_mode :: proc() {

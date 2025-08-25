@@ -28,11 +28,14 @@ client_boot :: proc(width: i32, height: i32) -> Error {
 	state.client.game.pcg = pcg
 	procgen_init(pcg)
 
+	state.client.ui.current_menu = .MainMenu
+	state.client.ui.input_destination = .DisplayName
+
 	return nil
 }
 
-client_connect :: proc() {
-	fresnel.client_connect()
+client_connect :: proc(path: string) {
+	fresnel.client_connect(path)
 }
 
 client_frame :: proc(dt: f32) -> Error {
@@ -77,7 +80,7 @@ client_poll :: proc() -> Error {
 			client_send_message(
 				ClientMessageIdentify {
 					token = state.client.my_token,
-					display_name = "Player me",
+					display_name = state.client.my_display_name,
 					join_mode = state.client.join_mode,
 					next_log_seq = state.client.game.next_log_seq,
 				},

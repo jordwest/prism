@@ -425,6 +425,15 @@ ConfigureOpenElement :: proc(config: ElementDeclaration) -> bool {
 }
 
 @(deferred_none = _CloseElement)
+OpenElement :: proc(config: ElementDeclaration) {
+	_OpenElement()
+	_ConfigureOpenElement(config)
+}
+CloseElement :: proc() {
+	_CloseElement()
+}
+
+@(deferred_none = _CloseElement)
 UI :: proc() -> proc(config: ElementDeclaration) -> bool {
 	_OpenElement()
 	return ConfigureOpenElement

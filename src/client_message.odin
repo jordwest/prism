@@ -63,7 +63,7 @@ JoinMode :: enum u8 {
 ClientMessageIdentify :: struct {
 	token:        PlayerToken,
 	join_mode:    JoinMode,
-	display_name: string,
+	display_name: prism.BufString(32),
 	next_log_seq: LogSeqId,
 }
 

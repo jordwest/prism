@@ -86,6 +86,8 @@ done,feat,b4,Items and basic inventory UI
 done,content,b4,Heal ability (potion?)
 done,content,b4,Fire potion
 done,feat,b4,Drop potions
+done,feat,b4,Make rust websocket server and connect it up
+done,feat,b4,"Add basic lobby for connecting, setting name and starting game"
 doing,feat,b4,Make potions throwable
 todo,content,b4,Water potion
 todo,content,b4,Fire traps
@@ -97,7 +99,6 @@ todo,imp,b4,Grass crunch sound
 todo,feat,ideas,Item identification system
 todo,bug,b4,Player indicators should appear above all entities (render order)
 todo,imp,b4,Consider setting a delay after actions (like attack) instead of after every turn
-todo,feat,b4,"Add basic lobby for connecting, setting name and starting game"
 todo,imp,b4,Handle individual player death
 todo,feat,b4,Button mechanism requiring multiple players to unlock a door
 todo,imp,b4,Add a proper LOS algorithm
@@ -105,7 +106,6 @@ todo,imp,b4,Preload and postload assets - delay loading only until preload asset
 todo,imp,b4,Cancel all allies commands when an enemy is spotted for the first time
 todo,bug,b4,Don't advance turn when all players are dead
 todo,imp,b4,Add SFX again
-todo,feat,b4,Make rust websocket server and connect it up
 todo,feat,b4,Make use of client token to relogin a user (and store it in localstorage)
 todo,imp,b4,Darken non currently visible areas
 todo,refactor,b4,Test turn system and iron out weird bugs with a refactor

@@ -9,12 +9,21 @@ HostError :: union {
 	mem.Allocator_Error,
 }
 
+_server_connection_path_buf: [1024]u8
+@(export)
+on_listening :: proc "c" () {
+	context = app_context()
+	bytes_written := fresnel.server_connection_path(_server_connection_path_buf[:])
+	connection_path := string(_server_connection_path_buf[:bytes_written])
+	state.host.connection_path = connection_path
+	client_connect(connection_path)
+}
+
 host_boot :: proc() -> HostError {
 	memory_init_host()
 	alloc_error: mem.Allocator_Error
 
 	info("Size of game log %d", size_of(LogEntry) * 100_000)
-	state.host.is_host = true
 	state.host.game_log = make(
 		[dynamic]LogEntry,
 		0,
@@ -22,8 +31,6 @@ host_boot :: proc() -> HostError {
 		allocator = host_arena_alloc,
 	) or_return
 	state.host.clients = make(map[ClientId]Client, 128, allocator = host_arena_alloc) or_return
-
-	fresnel.server_listen()
 
 	return nil
 }
@@ -64,7 +71,7 @@ host_handle_client_message :: proc(from_client_id: ClientId, msg: ClientMessage)
 	if !client_exists do return error(ClientNotFound{client_id = from_client_id})
 	client_ident, client_identified := client.(IdentifiedClient)
 
-	switch m in msg {
+	switch &m in msg {
 	case ClientMessageIdentify:
 		new_player_id: PlayerId = 0
 		if m.join_mode == .Play {
@@ -84,7 +91,8 @@ host_handle_client_message :: proc(from_client_id: ClientId, msg: ClientMessage)
 			host_catch_up_client(from_client_id, m.next_log_seq)
 		}
 
-		if new_player_id > 0 do host_log_entry(LogEntryPlayerJoined{player_id = new_player_id})
+		trace("Bufstr %w, %s", m.display_name, prism.bufstring_as_str(&m.display_name))
+		if new_player_id > 0 do host_log_entry(LogEntryPlayerJoined{player_id = new_player_id, display_name = m.display_name})
 	case ClientMessageCursorPosUpdate:
 		if !client_identified do break
 		host_broadcast_message(

@@ -5,7 +5,7 @@ import "prism"
 Player :: struct {
 	player_id:         PlayerId,
 	player_entity_id:  EntityId,
-	display_name:      string,
+	display_name:      prism.BufString(32),
 
 	// Not deterministic
 	cursor_tile:       TileCoord,

@@ -31,7 +31,8 @@ log_replay_entry :: proc(entry: LogEntry) -> Error {
 ///////////////////// VARIANTS ////////////////////
 
 LogEntryPlayerJoined :: struct {
-	player_id: PlayerId,
+	player_id:    PlayerId,
+	display_name: prism.BufString(32),
 }
 
 LogEntryGameStarted :: struct {
@@ -113,6 +114,7 @@ _on_player_joined :: proc(entry: LogEntryPlayerJoined) -> Error {
 
 	s.players[entry.player_id] = Player {
 		player_id     = entry.player_id,
+		display_name  = entry.display_name,
 		// player_entity_id = assigned in _on_game_started,
 		cursor_spring = prism.spring_create(2, [2]f32{0, 0}, k = 40, c = 10),
 	}
@@ -237,6 +239,7 @@ _game_started_serialize :: proc(s: ^S, entry: ^LogEntryGameStarted) -> SResult {
 
 _player_joined_serialize :: proc(s: ^S, entry: ^LogEntryPlayerJoined) -> SResult {
 	serialize(s, &entry.player_id)
+	serialize(s, &entry.display_name)
 	return nil
 }
 

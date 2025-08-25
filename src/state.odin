@@ -24,6 +24,7 @@ ClientState :: struct {
 	ui:                     UiState,
 	audio:                  AudioState,
 	fx:                     prism.Pool(Fx, 100),
+	render:                 RenderState,
 
 	////// Camera /////
 	zoom:                   f32,
@@ -32,8 +33,10 @@ ClientState :: struct {
 
 	//// Network state ////
 	my_token:               PlayerToken,
+	my_display_name:        prism.BufString(32),
 	player_id:              PlayerId,
 	join_mode:              JoinMode,
+	connection_path:        prism.BufString(512),
 	bytes_sent:             i32,
 	bytes_received:         i32,
 
@@ -84,16 +87,17 @@ GameState :: struct {
 }
 
 HostState :: struct {
-	crashed:        bool,
-	is_host:        bool,
-	last_turn_at:   f32,
-	clients:        map[ClientId]Client,
-	bytes_sent:     i32,
-	bytes_received: i32,
-	game_log:       [dynamic]LogEntry,
+	crashed:         bool,
+	is_host:         bool,
+	connection_path: string,
+	last_turn_at:    f32,
+	clients:         map[ClientId]Client,
+	bytes_sent:      i32,
+	bytes_received:  i32,
+	game_log:        [dynamic]LogEntry,
 	// True when the current completed turn has been sent off, to avoid double sends.
 	// Resets at the beginning of another turn
-	turn_sent_off:  bool,
+	turn_sent_off:   bool,
 }
 
 ClientId :: distinct i32

@@ -114,7 +114,6 @@ boot :: proc "c" (width: i32, height: i32, flags: i32) {
 	memory_init()
 	context = app_context()
 
-
 	info("Boot width=%d height=%d flags=%d", width, height, flags)
 	info("Size of AppState: %d", size_of(AppState))
 	info("Size of HostState: %d", size_of(HostState))
@@ -123,17 +122,13 @@ boot :: proc "c" (width: i32, height: i32, flags: i32) {
 
 	debug_init()
 
-	if (flags == 0) {
-		host_boot_err := host_boot()
-		if host_boot_err != nil {
-			err("Error booting host: %v", host_boot_err)
-			state.host.crashed = true
-		}
+	host_boot_err := host_boot()
+	if host_boot_err != nil {
+		err("Error booting host: %v", host_boot_err)
+		state.host.crashed = true
 	}
 
-	if (flags == 1) {
-		state.client.join_mode = DEBUG_SPECTATE ? .Spectate : .Play
-	}
+	state.client.join_mode = DEBUG_SPECTATE ? .Spectate : .Play
 
 	trace("Is host: %w", state.host.is_host)
 
@@ -285,6 +280,7 @@ serialize :: proc {
 	prism.serialize_string,
 	prism.serialize_vec2i,
 	prism.serialize_u8,
+	prism.serialize_bufstring,
 }
 
 rng_new :: proc(stream: u64) -> prism.SplitMixState {

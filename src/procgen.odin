@@ -276,7 +276,7 @@ _add_grass :: proc() {
 _spawn_enemies :: proc() {
 	rng := prism.rand_splitmix_create(state.client.game.seed, RNG_ROOM_PLACEMENT)
 
-	spawn_max := 12
+	spawn_max := 12 * len(state.client.game.players)
 	spawned := 0
 	for i := 0; i < 100 && spawned < spawn_max; i += 1 {
 		x := prism.rand_splitmix_get_i32_range(&rng, 0, LEVEL_WIDTH)

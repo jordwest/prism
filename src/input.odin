@@ -27,6 +27,24 @@ InputActions :: enum i32 {
 	DebugHostReplaySave       = 9004,
 }
 
+read_input_into_bufstring :: proc(bs: ^prism.BufString($N)) {
+	bytes_read := fresnel.read_input(bs.buf[:])
+	prism.bufstring_update_from_bytes(bs, bytes_read)
+}
+
+@(export)
+on_input :: proc "c" () {
+	context = app_context()
+
+	switch state.client.ui.input_destination {
+	case .None:
+	case .DisplayName:
+		read_input_into_bufstring(&state.client.my_display_name)
+	case .JoinURL:
+		read_input_into_bufstring(&state.client.connection_path)
+	}
+}
+
 _replay_storage: [1048576]u8
 input_frame :: proc(dt: f32) {
 	if state.debug.turn_stepping != .Off {
@@ -129,9 +147,6 @@ input_frame :: proc(dt: f32) {
 			if clay.PointerOver(clay.ID("StartButton")) {
 				host_start_game()
 			}
-			if clay.PointerOver(clay.ID("ConnectButton")) {
-				client_connect()
-			}
 		}
 	} else {
 		if ok && is_action_just_pressed(.LeftClick) {
@@ -143,10 +158,6 @@ input_frame :: proc(dt: f32) {
 		}
 	}
 
-
-	if is_action_just_pressed(.TempGameStart) && state.host.is_host {
-		host_start_game()
-	}
 
 	// TODO Cheat commands later?
 	// if is_action_pressed(.LeftClick) {
@@ -219,5 +230,57 @@ input_on_hover_drop :: proc "c" (
 	if fresnel.is_action_just_pressed(i32(InputActions.LeftClick)) {
 		command_submit(Command{type = .Drop, target_item = item.id})
 		ui_clear_mode()
+	}
+}
+
+input_on_hover_host_game :: proc "c" (
+	elementId: clay.ElementId,
+	pointerData: clay.PointerData,
+	userData: rawptr,
+) {
+	context = app_context()
+
+	if fresnel.is_action_just_pressed(i32(InputActions.LeftClick)) {
+		state.host.is_host = true
+		state.client.ui.input_destination = .None
+		state.client.ui.current_menu = .Lobby
+		fresnel.server_listen()
+	}
+}
+
+input_on_hover_join_game :: proc "c" (
+	elementId: clay.ElementId,
+	pointerData: clay.PointerData,
+	userData: rawptr,
+) {
+	context = app_context()
+
+	if fresnel.is_action_just_pressed(i32(InputActions.LeftClick)) {
+		trace(
+			"JOIN PRESSED %s %s",
+			state.client.ui.current_menu,
+			state.client.ui.input_destination,
+		)
+		if state.client.ui.current_menu == .MainMenu {
+			state.client.ui.input_destination = .JoinURL
+			state.client.ui.current_menu = .Join
+		} else if state.client.ui.current_menu == .Join && state.client.connection_path.len > 0 {
+			client_connect(prism.bufstring_as_str(&state.client.connection_path))
+			state.client.ui.input_destination = .None
+			state.client.ui.current_menu = .Lobby
+		}
+	}
+}
+
+input_on_hover_start_game :: proc "c" (
+	elementId: clay.ElementId,
+	pointerData: clay.PointerData,
+	userData: rawptr,
+) {
+	context = app_context()
+
+	if fresnel.is_action_just_pressed(i32(InputActions.LeftClick)) {
+		trace("Start game pressed")
+		host_start_game()
 	}
 }

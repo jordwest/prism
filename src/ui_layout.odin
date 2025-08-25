@@ -12,10 +12,12 @@ COLOR_ORANGE :: clay.Color{225, 138, 50, 150}
 COLOR_BLACK :: clay.Color{0, 0, 0, 255}
 COLOR_WHITE :: clay.Color{255, 255, 255, 255}
 COLOR_GRAY_200 :: clay.Color{170, 170, 170, 255}
+COLOR_GRAY_700 :: clay.Color{30, 30, 30, 255}
 COLOR_LIGHT_RED :: clay.Color{255, 170, 170, 150}
 COLOR_LIGHT_YELLOW :: clay.Color{255, 255, 170, 150}
 COLOR_LIGHT_GREEN :: clay.Color{170, 255, 170, 150}
 COLOR_PURPLE_800 :: clay.Color{20, 16, 24, 255}
+COLOR_PURPLE_900 :: clay.Color{10, 8, 12, 255}
 COLOR_PURPLE_500 :: clay.Color{45, 32, 59, 255}
 COLOR_PURPLE_200 :: clay.Color{128, 106, 153, 255}
 
@@ -43,10 +45,19 @@ sidebar_item_component :: proc(index: u32) {
 	) {}
 }
 
-_test_ui_text_buf: [200]u8
+CustomClayElement :: union {
+	TextInput,
+}
+TextInput :: struct {
+	value: string,
+}
+
 // An example function to create your layout tree
 ui_layout_screen :: proc() -> clay.ClayArray(clay.RenderCommand) {
 	context.temp_allocator = arena_ui_frame.allocator
+
+	if state.client.game.status == .Lobby do return ui_layout_menu()
+
 	// Begin constructing the layout.
 	clay.BeginLayout()
 	default_text_config := clay.TextConfig({textColor = COLOR_WHITE, fontSize = FONT_SIZE_BASE})
@@ -82,35 +93,6 @@ ui_layout_screen :: proc() -> clay.ClayArray(clay.RenderCommand) {
 				"Inventory",
 				clay.TextConfig({textColor = COLOR_GRAY_200, fontSize = FONT_SIZE_BASE}),
 			)
-			if state.host.is_host && state.client.game.status != .Started {
-
-				if clay.UI()(
-				{
-					id = clay.ID("StartButton"),
-					layout = {
-						padding = {16, 16, 16, 16},
-						sizing = {width = clay.SizingGrow({}), height = clay.SizingFit({})},
-					},
-					backgroundColor = clay.Hovered() ? COLOR_PURPLE_200 : COLOR_PURPLE_500,
-				},
-				) {
-					clay.Text("Start", default_text_config)
-				}
-			}
-
-			if clay.UI()(
-			{
-				id = clay.ID("ConnectButton"),
-				layout = {
-					padding = {16, 16, 16, 16},
-					sizing = {width = clay.SizingGrow({}), height = clay.SizingFit({})},
-				},
-				backgroundColor = clay.Hovered() ? COLOR_PURPLE_200 : COLOR_PURPLE_500,
-			},
-			) {
-				clay.Text("Connect", default_text_config)
-			}
-
 			if clay.UI()(
 			{
 				id = clay.ID("InventoryList"),
@@ -188,6 +170,262 @@ ui_layout_screen :: proc() -> clay.ClayArray(clay.RenderCommand) {
 	return clay.EndLayout()
 } // An example function to create your layout tree
 
+ui_component_lobby :: proc() {
+	clay.OpenElement(
+		{
+			id = clay.ID("Lobby"),
+			layout = {
+				layoutDirection = .TopToBottom,
+				sizing = {width = clay.SizingFixed(400), height = clay.SizingFit({})},
+				childAlignment = {
+					x = clay.LayoutAlignmentX.Center,
+					y = clay.LayoutAlignmentY.Center,
+				},
+				childGap = 16,
+			},
+		},
+	)
+
+	clay.Text("Lobby", clay.TextConfig({fontSize = FONT_SIZE_BASE, textColor = COLOR_WHITE}))
+
+	if (state.host.is_host) {
+		clay.Text(
+			"Send this URL to other players:",
+			clay.TextConfig({fontSize = FONT_SIZE_BASE, textColor = COLOR_GRAY_200}),
+		)
+		{
+			clay.OpenElement(
+				{
+					id = clay.ID("ConnectionPath"),
+					layout = {padding = {8, 8, 8, 8}, sizing = {width = clay.SizingGrow({})}},
+					backgroundColor = COLOR_PURPLE_900,
+				},
+			)
+			{
+				text_input := new(CustomClayElement, allocator = context.temp_allocator)
+				text_input^ = TextInput {
+					value = state.host.connection_path,
+				}
+				clay.OpenElement(
+					{
+						id = clay.ID("ConnectionPathInput"),
+						layout = {
+							sizing = {
+								width = clay.SizingGrow({}),
+								height = clay.SizingFixed(FONT_SIZE_BASE),
+							},
+						},
+						custom = {customData = text_input},
+					},
+				)
+			}
+		}
+	}
+
+	_add_fmt_text("%d players joined", len(state.client.game.players))
+	{
+		clay.OpenElement(
+			{
+				id = clay.ID("PlayerList"),
+				layout = {
+					padding = {8, 8, 8, 8},
+					sizing = {width = clay.SizingGrow({})},
+					layoutDirection = .TopToBottom,
+					childGap = 8,
+				},
+				backgroundColor = COLOR_PURPLE_900,
+			},
+		)
+
+		for _, &player in state.client.game.players {
+			clay.TextDynamic(
+				prism.bufstring_as_str(&player.display_name),
+				clay.TextConfig({fontSize = FONT_SIZE_BASE, textColor = COLOR_WHITE}),
+			)
+		}
+	}
+
+	if state.host.is_host {
+		ui_button({text = "Start game", on_hover = input_on_hover_start_game})
+	} else {
+		clay.Text(
+			"Waiting for host to start game...",
+			clay.TextConfig({fontSize = FONT_SIZE_BASE, textColor = COLOR_GRAY_200}),
+		)
+	}
+}
+
+ui_component_menu :: proc() {
+	clay.OpenElement(
+		{
+			id = clay.ID("Menu"),
+			layout = {
+				layoutDirection = .TopToBottom,
+				sizing = {width = clay.SizingFixed(300), height = clay.SizingFit({})},
+				childAlignment = {
+					x = clay.LayoutAlignmentX.Center,
+					y = clay.LayoutAlignmentY.Center,
+				},
+				childGap = 16,
+			},
+		},
+	)
+
+	// clay.Text(
+	// 	"Untitled.odin",
+	// 	clay.TextConfig({fontSize = FONT_SIZE_BASE, textColor = COLOR_WHITE}),
+	// )
+
+	clay.Text(
+		"Enter your name:",
+		clay.TextConfig({fontSize = FONT_SIZE_BASE, textColor = COLOR_GRAY_200}),
+	)
+	{
+		clay.OpenElement(
+			{
+				id = clay.ID("DisplayName"),
+				layout = {padding = {8, 8, 8, 8}, sizing = {width = clay.SizingGrow({})}},
+				backgroundColor = COLOR_PURPLE_900,
+			},
+		)
+		if (state.client.ui.input_destination == .DisplayName) {
+			text_input := new(CustomClayElement, allocator = context.temp_allocator)
+			text_input^ = TextInput {
+				value = prism.bufstring_as_str(&state.client.my_display_name),
+			}
+			clay.OpenElement(
+				{
+					id = clay.ID("DisplayNameInput"),
+					layout = {
+						sizing = {
+							width = clay.SizingGrow({}),
+							height = clay.SizingFixed(FONT_SIZE_BASE),
+						},
+					},
+					custom = {customData = text_input},
+				},
+			)
+		}
+	}
+
+	empty_display_name := prism.bufstring_as_str(&state.client.my_display_name) == ""
+
+	ui_button(
+		{text = "Host game", on_hover = input_on_hover_host_game, disabled = empty_display_name},
+	)
+	ui_button(
+		{text = "Join game", on_hover = input_on_hover_join_game, disabled = empty_display_name},
+	)
+}
+
+ui_component_join :: proc() {
+	clay.OpenElement(
+		{
+			id = clay.ID("Join"),
+			layout = {
+				layoutDirection = .TopToBottom,
+				sizing = {width = clay.SizingFixed(300), height = clay.SizingFit({})},
+				childAlignment = {
+					x = clay.LayoutAlignmentX.Center,
+					y = clay.LayoutAlignmentY.Center,
+				},
+				childGap = 16,
+			},
+		},
+	)
+
+	connection_path := prism.bufstring_as_str(&state.client.connection_path)
+
+	clay.Text(
+		"Enter join URL:",
+		clay.TextConfig({fontSize = FONT_SIZE_BASE, textColor = COLOR_GRAY_200}),
+	)
+	{
+		clay.OpenElement(
+			{
+				id = clay.ID("JoinURL"),
+				layout = {padding = {8, 8, 8, 8}, sizing = {width = clay.SizingGrow({})}},
+				backgroundColor = COLOR_PURPLE_900,
+			},
+		)
+		if (state.client.ui.input_destination == .JoinURL) {
+			text_input := new(CustomClayElement, allocator = context.temp_allocator)
+			text_input^ = TextInput {
+				value = connection_path,
+			}
+			clay.OpenElement(
+				{
+					id = clay.ID("JoinURLInput"),
+					layout = {
+						sizing = {
+							width = clay.SizingGrow({}),
+							height = clay.SizingFixed(FONT_SIZE_BASE),
+						},
+					},
+					custom = {customData = text_input},
+				},
+			)
+		}
+	}
+
+	ui_button(
+		{
+			text = "Join game",
+			on_hover = input_on_hover_join_game,
+			disabled = connection_path == "",
+		},
+	)
+}
+
+ui_layout_menu :: proc() -> clay.ClayArray(clay.RenderCommand) {
+	//f
+	clay.BeginLayout()
+
+
+	{
+		clay.OpenElement(
+			{
+				id = clay.ID("OuterContainer"),
+				layout = {
+					childAlignment = {
+						x = clay.LayoutAlignmentX.Center,
+						y = clay.LayoutAlignmentY.Center,
+					},
+					sizing = {width = clay.SizingGrow({}), height = clay.SizingGrow({})},
+				},
+			},
+		)
+
+		{
+			clay.OpenElement(
+				{
+					id = clay.ID("MenuContainer"),
+					layout = {
+						sizing = {width = clay.SizingFit({}), height = clay.SizingFit({})},
+						padding = {16, 16, 16, 16},
+						childAlignment = {
+							x = clay.LayoutAlignmentX.Center,
+							y = clay.LayoutAlignmentY.Center,
+						},
+					},
+					backgroundColor = COLOR_PURPLE_800,
+				},
+			)
+
+			switch state.client.ui.current_menu {
+			case .MainMenu:
+				ui_component_menu()
+			case .Lobby:
+				ui_component_lobby()
+			case .Join:
+				ui_component_join()
+			}
+		}
+	}
+
+	return clay.EndLayout()
+}
+
 HoverProc :: proc "c" (
 	element_id: clay.ElementId,
 	pointer_data: clay.PointerData,
@@ -195,6 +433,7 @@ HoverProc :: proc "c" (
 )
 
 UiButtonProps :: struct {
+	disabled:           bool,
 	text:               string,
 	on_hover:           HoverProc,
 	on_hover_user_data: rawptr,
@@ -202,14 +441,24 @@ UiButtonProps :: struct {
 ui_button :: proc(props: UiButtonProps) {
 	if clay.UI()(
 	{
-		layout = {padding = {16, 16, 8, 8}, sizing = {width = clay.SizingGrow({})}},
-		backgroundColor = clay.Hovered() ? COLOR_PURPLE_200 : COLOR_PURPLE_500,
+		layout = {
+			childAlignment = {x = clay.LayoutAlignmentX.Center},
+			padding = {16, 16, 8, 8},
+			sizing = {width = clay.SizingGrow({})},
+		},
+		backgroundColor = props.disabled ? COLOR_GRAY_700 : (clay.Hovered() ? COLOR_PURPLE_200 : COLOR_PURPLE_500),
 	},
 	) {
-		if props.on_hover != nil do clay.OnHover(props.on_hover, props.on_hover_user_data)
+		if !props.disabled && props.on_hover != nil do clay.OnHover(props.on_hover, props.on_hover_user_data)
+
 		clay.TextDynamic(
 			props.text,
-			clay.TextConfig({textColor = COLOR_WHITE, fontSize = FONT_SIZE_BASE}),
+			clay.TextConfig(
+				{
+					textColor = props.disabled ? COLOR_GRAY_200 : COLOR_WHITE,
+					fontSize = FONT_SIZE_BASE,
+				},
+			),
 		)
 	}
 }
@@ -269,7 +518,10 @@ ui_layout_tooltip :: proc() -> clay.ClayArray(clay.RenderCommand) {
 				player, is_player := player_from_entity(hover_entity).?
 
 				if is_player {
-					clay.TextDynamic(player.display_name, default_text_config)
+					clay.TextDynamic(
+						prism.bufstring_as_str(&player.display_name),
+						default_text_config,
+					)
 				} else {
 					_add_fmt_text("%s", hover_entity.meta_id, size = FONT_SIZE_BASE)
 				}

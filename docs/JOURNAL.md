@@ -581,3 +581,18 @@ It works on itch.io. I just have a few things to fix before others can play it:
  - Delete rooms when no activity after some time
 
 Taking the rest of the day off. Tomorrow: add a basic server host/join UI, set up relay to delete old rooms.
+
+Ended up working on the main menu, but really actually bed time now. I've got a host button working, next need to get display name entry working, then showing the URL in host mode and allowing URL entry after clicking the join button.
+
+# Monday 25 Aug 2025
+
+First up, displaying URL when hosting. Done, also got joining with text input working.
+
+Next up is allowing user to change their display name, and then serializing that over the network.
+
+Ok done! Pretty much is all working as expected after fixing a bunch of things. I think the last few things to polish before getting other players on board are:
+ - Disable the djikstra map overlay button
+ - Show feedback when clicking to pick up item (movement track and rect or something)
+ - Add some kind of goal state
+ - Throwing potions
+ - Handle timeouts and disconnects (at least remove player from game or show a message)
