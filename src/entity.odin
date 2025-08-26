@@ -88,7 +88,7 @@ entity_meta: [EntityMetaId]EntityMeta = {
 		max_hp = 50,
 		vision_distance = 4,
 		flags = {.IsPlayerControlled, .IsObstacle, .CanSwapPlaces, .CanTakeDamage},
-		flavor_text = "Why did I come down here?",
+		flavor_text = "I should've stayed on the surface...",
 	},
 	.Spider = EntityMeta {
 		spritesheet_coord = SPRITE_COORD_SPIDER,

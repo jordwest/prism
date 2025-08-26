@@ -88,6 +88,7 @@ done,content,b4,Fire potion
 done,feat,b4,Drop potions
 done,feat,b4,Make rust websocket server and connect it up
 done,feat,b4,"Add basic lobby for connecting, setting name and starting game"
+todo,bug,b4,Keepalive ping on websocket server
 doing,feat,b4,Make potions throwable
 todo,content,b4,Water potion
 todo,content,b4,Fire traps

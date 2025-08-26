@@ -11,6 +11,7 @@ SoundEffect :: enum {
 	Miss,
 	EnemyDeath,
 	PlayerDeath,
+	AllyDeath,
 	IntroSong, // TODO: Add a music enum
 }
 
@@ -63,6 +64,8 @@ audio_frame :: proc() {
 		case .PlayerDeath:
 			// fresnel.play(14, true)
 			fresnel.stop(100)
+			fresnel.play(14, true)
+		case .AllyDeath:
 			fresnel.play(15, true)
 		case .IntroSong:
 			if !MUSIC_ENABLED do continue

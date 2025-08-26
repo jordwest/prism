@@ -135,7 +135,11 @@ _entity_died :: proc(evt: ^EventEntityDied) -> Error {
 
 	game_check_lose_condition()
 
-	audio_play(deceased.meta.team == .Players ? .PlayerDeath : .EnemyDeath)
+	if deceased.meta.team == .Players {
+		audio_play(entity_is_current_player(deceased) ? .PlayerDeath : .AllyDeath)
+	} else {
+		audio_play(.EnemyDeath)
+	}
 
 	return nil
 }

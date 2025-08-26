@@ -19,6 +19,7 @@ COLOR_LIGHT_GREEN :: clay.Color{170, 255, 170, 150}
 COLOR_PURPLE_800 :: clay.Color{20, 16, 24, 255}
 COLOR_PURPLE_900 :: clay.Color{10, 8, 12, 255}
 COLOR_PURPLE_500 :: clay.Color{45, 32, 59, 255}
+COLOR_PURPLE_400 :: clay.Color{80, 60, 100, 255}
 COLOR_PURPLE_200 :: clay.Color{128, 106, 153, 255}
 
 with_alpha :: proc(color: clay.Color, a: f32) -> clay.Color {
@@ -89,6 +90,10 @@ ui_layout_screen :: proc() -> clay.ClayArray(clay.RenderCommand) {
 			backgroundColor = COLOR_PURPLE_800,
 		},
 		) {
+			player, found_player_entity := player_entity().?
+			if found_player_entity {
+				_add_fmt_text("HP: %d/%d", player.hp, player.meta.max_hp)
+			}
 			clay.Text(
 				"Inventory",
 				clay.TextConfig({textColor = COLOR_GRAY_200, fontSize = FONT_SIZE_BASE}),
@@ -99,11 +104,10 @@ ui_layout_screen :: proc() -> clay.ClayArray(clay.RenderCommand) {
 				layout = {
 					layoutDirection = .TopToBottom,
 					sizing = {width = clay.SizingGrow({}), height = clay.SizingGrow({})},
-					childGap = 4,
+					// childGap = 4,
 				},
 			},
 			) {
-
 				button_config: clay.ElementDeclaration = {
 					layout = {padding = {16, 16, 8, 8}, sizing = {width = clay.SizingGrow({})}},
 					backgroundColor = clay.Hovered() ? COLOR_PURPLE_200 : COLOR_PURPLE_500,
@@ -115,10 +119,12 @@ ui_layout_screen :: proc() -> clay.ClayArray(clay.RenderCommand) {
 				activate_mode, is_activating_item := mode.(UiActivatingItem)
 
 				for item in container_iterate(&inventory_iter) {
+					is_activating_this_item :=
+						is_activating_item && activate_mode.item_id == item.id
 					if clay.UI()(
 					{
-						layout = {padding = {4, 4, 4, 4}, sizing = {width = clay.SizingGrow({})}},
-						backgroundColor = clay.Hovered() ? COLOR_PURPLE_500 : COLOR_PURPLE_800,
+						layout = {padding = {8, 8, 8, 8}, sizing = {width = clay.SizingGrow({})}},
+						backgroundColor = is_activating_this_item ? COLOR_PURPLE_400 : (clay.Hovered() ? COLOR_PURPLE_500 : COLOR_PURPLE_800),
 					},
 					) {
 						clay.OnHover(input_on_hover_inventory_item, item)
@@ -128,13 +134,14 @@ ui_layout_screen :: proc() -> clay.ClayArray(clay.RenderCommand) {
 						}
 					}
 
-					if is_activating_item && activate_mode.item_id == item.id {
+					if is_activating_this_item {
 						if clay.UI()(
 						{
 							layout = {
 								padding = {4, 4, 4, 4},
 								sizing = {width = clay.SizingGrow({})},
 								childGap = 8,
+								layoutDirection = .TopToBottom,
 							},
 						},
 						) {
@@ -246,7 +253,13 @@ ui_component_lobby :: proc() {
 	}
 
 	if state.host.is_host {
-		ui_button({text = "Start game", on_hover = input_on_hover_start_game})
+		ui_button(
+			{
+				text = "Start game",
+				on_hover = input_on_hover_start_game,
+				disabled = len(state.client.game.players) < 1,
+			},
+		)
 	} else {
 		clay.Text(
 			"Waiting for host to start game...",

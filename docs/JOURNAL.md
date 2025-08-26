@@ -591,8 +591,10 @@ First up, displaying URL when hosting. Done, also got joining with text input wo
 Next up is allowing user to change their display name, and then serializing that over the network.
 
 Ok done! Pretty much is all working as expected after fixing a bunch of things. I think the last few things to polish before getting other players on board are:
+ - Keepalive ping - stop socket from closing
+ - Handle timeouts and disconnects (at least remove player from game or show a message)
  - Disable the djikstra map overlay button
  - Show feedback when clicking to pick up item (movement track and rect or something)
+ - Handle dead state - spectate other players (press tab to cycle?)
  - Add some kind of goal state
  - Throwing potions
- - Handle timeouts and disconnects (at least remove player from game or show a message)
