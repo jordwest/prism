@@ -33,3 +33,13 @@ q_entities_in_range_of :: proc(pos: TileCoord, filter: EntityFilterProc) -> (^En
 
 	return nil, false
 }
+
+q_first_living_player_entity :: proc() -> Maybe(^Entity) {
+	for _, &entity in state.client.game.entities {
+		if entity.player_id != nil && !entity.despawning {
+			return &entity
+		}
+	}
+
+	return nil
+}

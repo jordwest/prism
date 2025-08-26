@@ -604,3 +604,7 @@ Ok done! Pretty much is all working as expected after fixing a bunch of things. 
 - Keepalive ping is done, and relay server also cleans up old rooms/clients
 
 Next up I think is handling the dead state - spectate a random player for now. Or perhaps add a player list to the side to switch between players, should be easyish.
+
+Really looking forward to getting more content in, just so much polishing stuff always needs to be done. I guess this sidetrack is largely because of the playtest, otherwise I could just keep adding content.
+
+Ok so first thing is when a player dies, the camera should focus on a different player. Gotta think about how the data structures should work for this. The controlling entity id should not change to another player's entity, but instead perhaps there's a concept of a "viewing entity id" which, if set, moves the camera to that player's entity. For now I can just have it set to something random when player dies.

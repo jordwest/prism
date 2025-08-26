@@ -153,6 +153,10 @@ render_move_camera :: proc(dt: f32) {
 		}
 	}
 
+	if state.client.viewing_entity_id != 0 {
+		focused_entity, ok = entity(state.client.viewing_entity_id).?
+	}
+
 	if !ok do return
 
 	// target := vec2f(e.pos.xy)

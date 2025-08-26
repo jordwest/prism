@@ -30,6 +30,7 @@ ClientState :: struct {
 	zoom:                   f32,
 	camera:                 prism.Spring(2),
 	controlling_entity_id:  EntityId,
+	viewing_entity_id:      EntityId, // If non-zero, view this entity instead of the currently controlling entity
 
 	//// Network state ////
 	my_token:               PlayerToken,

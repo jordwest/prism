@@ -141,6 +141,13 @@ _entity_died :: proc(evt: ^EventEntityDied) -> Error {
 		audio_play(.EnemyDeath)
 	}
 
+	if entity_is_current_player(deceased) || state.client.viewing_entity_id == deceased.id {
+		living_player, ok := q_first_living_player_entity().?
+		if ok {
+			state.client.viewing_entity_id = living_player.id
+		}
+	}
+
 	return nil
 }
 
