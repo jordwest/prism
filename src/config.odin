@@ -2,8 +2,8 @@ package main
 
 ////////// CHEATS \\\\\\\\\\\\
 
-FOG_OF_WAR_OFF :: false
-NO_ENEMIES :: false
+FOG_OF_WAR_OFF :: true
+NO_ENEMIES :: true
 GOD_MODE :: false
 
 ////////// DEBUG OPTIONS \\\\\\\\\\
@@ -42,7 +42,7 @@ MAX_PLAYERS :: 8
 MAX_ENTITIES :: 2048
 SPRITE_SIZE :: 16
 GRID_SIZE :: 16
-DEFAULT_ZOOM :: 2
+DEFAULT_ZOOM :: 1
 CAMERA_SPRING_CONSTANT :: 40
 CAMERA_SPRING_DAMPER :: 10
 LEVEL_WIDTH :: 60

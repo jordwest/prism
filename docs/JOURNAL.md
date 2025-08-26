@@ -609,4 +609,6 @@ Really looking forward to getting more content in, just so much polishing stuff 
 
 Ok so first thing is when a player dies, the camera should focus on a different player. Gotta think about how the data structures should work for this. The controlling entity id should not change to another player's entity, but instead perhaps there's a concept of a "viewing entity id" which, if set, moves the camera to that player's entity. For now I can just have it set to something random when player dies. Done.
 
-Now to fix the pick up command so it shows proper visual feedback.
+Now to fix the pick up command so it shows proper visual feedback. Done.
+
+Next up, creating a goal... staircase going down.

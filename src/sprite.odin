@@ -5,6 +5,7 @@ Sprite :: enum {
 	Grass,
 	Potion,
 	HitEffect,
+	StairsDown,
 }
 
 SpriteMeta :: struct {
@@ -39,6 +40,10 @@ sprite_meta: [Sprite]SpriteMeta = {
 	.HitEffect = SpriteMeta {
 		ascii_char = 'X',
 		frames = {SpriteFrame{offset = {5 * SPRITE_SIZE, 1 * SPRITE_SIZE}}},
+	},
+	.StairsDown = SpriteMeta {
+		ascii_char = '>',
+		frames = {SpriteFrame{offset = {6 * SPRITE_SIZE, 1 * SPRITE_SIZE}}},
 	},
 }
 

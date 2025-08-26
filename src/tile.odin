@@ -21,6 +21,7 @@ TileType :: enum u8 {
 	BrickWall,
 	RopeBridge,
 	Water,
+	StairsDown,
 }
 
 TileFlag :: enum {
@@ -39,6 +40,7 @@ tile_default_flags: [TileType]TileFlags = {
 	.BrickWall  = {.Obstacle},
 	.RopeBridge = {.Traversable, .Flammable},
 	.Water      = {.Traversable, .Slow},
+	.StairsDown = {.Traversable},
 }
 
 TileFire :: struct {

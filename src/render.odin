@@ -220,6 +220,8 @@ render_tiles :: proc() {
 				render_sprite(sprite, screen_c)
 			case .Water:
 				render_sprite(SPRITE_COORD_WATER, screen_c)
+			case .StairsDown:
+				render_sprite(Sprite.StairsDown, screen_c)
 			}
 
 			if tile.fire.fuel > 0 {

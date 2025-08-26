@@ -37,8 +37,7 @@ derived_init :: proc() -> Error {
 	)
 	if e_alloc != nil do return error(e_alloc)
 
-	e_alloc = prism.djikstra_init(&state.client.game.derived.djikstra_algo)
-	if e_alloc != nil do return error(e_alloc)
+	prism.djikstra_init(&state.client.game.derived.djikstra_algo)
 
 	return nil
 }

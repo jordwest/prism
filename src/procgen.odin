@@ -36,6 +36,7 @@ PcgState :: struct {
 	door_locations:  priority_queue.Priority_Queue(PossibleDoorLocation),
 	total_time:      i32,
 	djikstra_map:    prism.DjikstraMap(LEVEL_WIDTH, LEVEL_HEIGHT),
+	djikstra_algo:   prism.DjikstraAlgo(LEVEL_WIDTH, LEVEL_HEIGHT),
 
 	// Just for visualisation
 	cursor:          prism.Aabb(i32),
@@ -66,6 +67,8 @@ procgen_init :: proc(pcg: ^PcgState) {
 		x2 = LEVEL_WIDTH - 1,
 		y2 = LEVEL_HEIGHT - 1,
 	}
+
+	prism.djikstra_init(&pcg.djikstra_algo)
 }
 procgen_reset :: proc(pcg: ^PcgState) {
 	pcg.done = false
@@ -92,11 +95,12 @@ procgen_iterate :: proc(pcg: ^PcgState) {
 	if pcg.iteration >= 1000 || len(pcg.rooms) >= 50 {
 		info("Procedural generation done in %d iterations, %dms", pcg.iteration, pcg.total_time)
 
+		_place_stairs(pcg)
+		_add_grass()
 		when !NO_ENEMIES {
-			_add_grass()
 			_spawn_enemies()
-			_spawn_items()
 		}
+		_spawn_items()
 
 		pcg.done = true
 		return
@@ -119,6 +123,22 @@ _neighbour_cost :: proc(_from: [2]i32, to: [2]i32) -> f32 {
 _pq_less :: proc(a, b: PossibleDoorLocation) -> bool {
 	if a.attempts == b.attempts do return a.tie_breaker < b.tie_breaker
 	return a.attempts < b.attempts
+}
+
+@(private = "file")
+_place_stairs :: proc(pcg: ^PcgState) {
+	// Run djikstra to get furthest point on the map
+
+	prism.djikstra_map_init(&pcg.djikstra_map, &pcg.djikstra_algo)
+	prism.djikstra_map_add_origin(&pcg.djikstra_algo, Vec2i(state.client.game.spawn_point))
+	e := prism.djikstra_map_generate(&pcg.djikstra_algo, game_calculate_move_cost_djikstra, 5000)
+
+	stairwell_pos := TileCoord(pcg.djikstra_map.max_cost_coord)
+	trace("Stairs at %w", stairwell_pos)
+	tile, ok := tile_at(stairwell_pos).?
+	if ok {
+		tile_set_type(tile, .StairsDown)
+	}
 }
 
 @(private = "file")

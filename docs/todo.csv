@@ -91,7 +91,8 @@ done,feat,b4,"Add basic lobby for connecting, setting name and starting game"
 done,bug,b4,Keepalive ping on websocket server
 done,imp,b4,Handle individual player death
 done,imp,b4,Show visual feedback on pick up command
-doing,feat,b4,Add end of floor stairwell
+done,feat,b4,Add end of floor stairwell
+doing,feat,b4,Add win condition/end of game screen
 todo,imp,b4,Put djikstra map visualisation behind a console or something
 todo,imp,b4,Cancel any pending command when enemy is spotted for first time
 doing,feat,b4,Make potions throwable
@@ -117,7 +118,6 @@ todo,imp,b5,Darken non currently visible areas
 todo,refactor,b5,Test turn system and iron out weird bugs with a refactor
 todo,imp,b5,"Handle all players dead, game over"
 todo,balance,b5,Consider limiting ally position swapping to once per turn if unbalanced
-todo,feat,b5,Add win condition again
 todo,feat,b5,Hover tooltips for actions
 todo,feat,b5,Add multiple dungeon levels
 todo,feat,b5,Potion of revive
