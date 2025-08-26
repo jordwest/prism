@@ -598,3 +598,9 @@ Ok done! Pretty much is all working as expected after fixing a bunch of things. 
  - Handle dead state - spectate other players (press tab to cycle?)
  - Add some kind of goal state
  - Throwing potions
+
+# Tuesday 26 Aug 2025
+
+- Keepalive ping is done, and relay server also cleans up old rooms/clients
+
+Next up I think is handling the dead state - spectate a random player for now. Or perhaps add a player list to the side to switch between players, should be easyish.
