@@ -66,6 +66,7 @@ render_debug_overlays :: proc() {
 	_add_debug_text("Turn %d, t=%.2f", state.client.game.current_turn, state.t)
 	_add_debug_text("%.0f FPS (%.0f max, %.0f min)", debug_get_fps())
 	_add_debug_text("Log queue size: %d", queue.len(state.client.log_queue._queue))
+	_add_debug_text("Ambience: %w", state.client.audio.ambience)
 	_add_debug_text(
 		"%d players / %d entities",
 		len(state.client.game.players),

@@ -65,6 +65,7 @@ GameStatus :: enum {
 	Lobby,
 	Started,
 	GameOver,
+	GameWon,
 }
 
 // Game state (generally expected to be deterministic across clients)

@@ -75,6 +75,19 @@ game_check_lose_condition :: proc() {
 	event_fire(EventGameOver{})
 }
 
+game_check_win_condition :: proc() {
+	for _, player in state.client.game.players {
+		entity, ok := entity(player.player_entity_id).?
+		// A player is still alive, game is not over
+		if !ok do continue
+
+		tile, valid_tile := tile_at(entity.pos).?
+		if tile.type == .StairsDown {
+			event_fire(EventGameWon{})
+		}
+	}
+}
+
 game_move_modifiers_to_cost :: proc(modifiers: bit_set[MoveModifier]) -> i32 {
 	cost: i32 = 100
 	if .Blocked in modifiers do return -1

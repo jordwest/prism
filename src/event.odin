@@ -7,11 +7,13 @@ Event :: union {
 	EventEntityHurt,
 	EventEntityMiss,
 	EventEntityHeal,
+	EventEntityMove,
 	EventTurnStarting,
 	EventTurnEnding,
 	EventPotionConsume,
 	EventPotionActivateAt,
 	EventGameOver,
+	EventGameWon,
 }
 
 EventTurnStarting :: struct {}
@@ -38,6 +40,12 @@ DamageSource :: enum {
 }
 
 EventGameOver :: struct {}
+EventGameWon :: struct {}
+
+EventEntityMove :: struct {
+	entity_id: EntityId,
+	pos:       TileCoord,
+}
 
 EventEntityMiss :: struct {
 	target_id:   EntityId,
@@ -72,6 +80,8 @@ _handle :: proc(evt: ^Event) -> Error {
 		return _entity_miss(&evt)
 	case EventEntityHeal:
 		return _entity_heal(&evt)
+	case EventEntityMove:
+		return _entity_move(&evt)
 	case EventTurnStarting:
 		return _turn_starting(&evt)
 	case EventTurnEnding:
@@ -82,6 +92,8 @@ _handle :: proc(evt: ^Event) -> Error {
 		return _potion_activate(&evt)
 	case EventGameOver:
 		return _game_over(&evt)
+	case EventGameWon:
+		return _game_won(&evt)
 	}
 	return nil
 }
@@ -118,6 +130,19 @@ _entity_heal :: proc(evt: ^EventEntityHeal) -> Error {
 	target := entity_or_error(evt.entity_id) or_return
 
 	target.hp = min(target.meta.max_hp, target.hp + evt.hp)
+
+	return nil
+}
+
+_entity_move :: proc(evt: ^EventEntityMove) -> Error {
+	entity := entity_or_error(evt.entity_id) or_return
+	entity.pos = evt.pos
+	entity.meta.flags = entity.meta.flags + {.MovedThisTurn}
+
+	// Check win conditions
+	game_check_win_condition()
+
+	derived_handle_entity_changed(entity)
 
 	return nil
 }
@@ -191,6 +216,12 @@ _turn_ending :: proc(evt: ^EventTurnEnding) -> Error {
 @(private = "file")
 _game_over :: proc(evt: ^EventGameOver) -> Error {
 	state.client.game.status = .GameOver
+	return nil
+}
+
+@(private = "file")
+_game_won :: proc(evt: ^EventGameWon) -> Error {
+	state.client.game.status = .GameWon
 	return nil
 }
 

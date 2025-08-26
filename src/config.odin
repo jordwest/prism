@@ -3,8 +3,8 @@ package main
 ////////// CHEATS \\\\\\\\\\\\
 
 FOG_OF_WAR_OFF :: true
-NO_ENEMIES :: true
-GOD_MODE :: false
+NO_ENEMIES :: false
+GOD_MODE :: true
 
 ////////// DEBUG OPTIONS \\\\\\\\\\
 
@@ -15,7 +15,7 @@ STUTTER_CHECKER_ENABLED :: false
 CLAY_DEBUG_ENABLED :: false
 // Delay procedural generation iterations by this many frames
 // (to help visualise the generation)
-PCG_ITERATION_DELAY :: 0
+PCG_ITERATION_DELAY :: 0 // Doesn't currently work
 TESTS_ENABLED :: true
 
 ////////// ASSERTIONS \\\\\\\\\\\\\
@@ -42,7 +42,7 @@ MAX_PLAYERS :: 8
 MAX_ENTITIES :: 2048
 SPRITE_SIZE :: 16
 GRID_SIZE :: 16
-DEFAULT_ZOOM :: 1
+DEFAULT_ZOOM :: 2
 CAMERA_SPRING_CONSTANT :: 40
 CAMERA_SPRING_DAMPER :: 10
 LEVEL_WIDTH :: 60

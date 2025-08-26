@@ -56,7 +56,7 @@ _on_game_started :: proc(entry: LogEntryGameStarted) -> Error {
 
 	if state.client.game.status == .Started do return error(ErrorCode.GameAlreadyStarted)
 
-	if state.client.game.status == .GameOver do game_reset()
+	if state.client.game.status == .GameOver || state.client.game.status == .GameWon do game_reset()
 
 	info("Starting game with seed 0x%x", entry.game_seed)
 	state.client.game.seed = entry.game_seed
@@ -89,14 +89,6 @@ _on_game_started :: proc(entry: LogEntryGameStarted) -> Error {
 			container_id = SharedLootContainer,
 			count = player_count,
 			type = PotionType.Healing,
-		},
-		in_batch = true,
-	)
-	item_spawn(
-		ItemStack {
-			container_id = SharedLootContainer,
-			count = player_count,
-			type = PotionType.Fire,
 		},
 		in_batch = true,
 	)

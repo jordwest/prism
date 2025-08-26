@@ -57,7 +57,7 @@ TextInput :: struct {
 ui_layout_screen :: proc() -> clay.ClayArray(clay.RenderCommand) {
 	context.temp_allocator = arena_ui_frame.allocator
 
-	if state.client.game.status == .Lobby do return ui_layout_menu()
+	if state.client.game.status != .Started do return ui_layout_menu()
 
 	// Begin constructing the layout.
 	clay.BeginLayout()
@@ -390,6 +390,45 @@ ui_component_join :: proc() {
 	)
 }
 
+ui_component_game_over :: proc() {
+	clay.Text(
+		"Game Over",
+		clay.TextConfig({fontSize = FONT_SIZE_BASE * 4, textColor = COLOR_WHITE}),
+	)
+	clay.Text(
+		"Everyone is dead",
+		clay.TextConfig({fontSize = FONT_SIZE_BASE, textColor = COLOR_GRAY_200}),
+	)
+}
+
+ui_component_game_won :: proc() {
+	clay.OpenElement(
+		{
+			layout = {
+				childAlignment = {
+					x = clay.LayoutAlignmentX.Center,
+					y = clay.LayoutAlignmentY.Center,
+				},
+				layoutDirection = .TopToBottom,
+				childGap = 8,
+			},
+		},
+	)
+
+	clay.Text(
+		"You win... for now",
+		clay.TextConfig({fontSize = FONT_SIZE_BASE * 4, textColor = COLOR_WHITE}),
+	)
+	clay.Text(
+		"You descend the stairwell only to discover a sign that says:",
+		clay.TextConfig({fontSize = FONT_SIZE_BASE, textColor = COLOR_GRAY_200}),
+	)
+	clay.Text(
+		"Under construction, come back later",
+		clay.TextConfig({fontSize = FONT_SIZE_BASE, textColor = COLOR_WHITE}),
+	)
+}
+
 ui_layout_menu :: proc() -> clay.ClayArray(clay.RenderCommand) {
 	//f
 	clay.BeginLayout()
@@ -420,18 +459,28 @@ ui_layout_menu :: proc() -> clay.ClayArray(clay.RenderCommand) {
 							x = clay.LayoutAlignmentX.Center,
 							y = clay.LayoutAlignmentY.Center,
 						},
+						layoutDirection = .TopToBottom,
 					},
 					backgroundColor = COLOR_PURPLE_800,
 				},
 			)
 
-			switch state.client.ui.current_menu {
-			case .MainMenu:
-				ui_component_menu()
+			switch state.client.game.status {
 			case .Lobby:
-				ui_component_lobby()
-			case .Join:
-				ui_component_join()
+				fallthrough
+			case .Started:
+				switch state.client.ui.current_menu {
+				case .MainMenu:
+					ui_component_menu()
+				case .Lobby:
+					ui_component_lobby()
+				case .Join:
+					ui_component_join()
+				}
+			case .GameOver:
+				ui_component_game_over()
+			case .GameWon:
+				ui_component_game_won()
 			}
 		}
 	}

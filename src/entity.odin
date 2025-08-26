@@ -140,9 +140,7 @@ entity_frame :: proc(dt: f32) {
 }
 
 entity_set_pos :: proc(entity: ^Entity, pos: TileCoord) {
-	entity.pos = pos
-	entity.meta.flags = entity.meta.flags + {.MovedThisTurn}
-	derived_handle_entity_changed(entity)
+	event_fire(EventEntityMove{entity_id = entity.id, pos = pos})
 }
 
 entity_is_current_player :: proc(e: ^Entity) -> bool {
