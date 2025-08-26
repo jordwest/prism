@@ -24,11 +24,6 @@ render_frame :: proc(dt: f32) {
 	render_entities(dt)
 	render_tile_cursors(dt)
 	render_fx(dt)
-	if !state.client.cursor_hidden &&
-	   !state.client.cursor_over_ui &&
-	   command_for_tile(state.client.cursor_pos).type == .Move {
-		render_path_to(state.client.cursor_pos, alpha = 80)
-	}
 
 	arena_free(&arena_ui_frame)
 	render_ui(.Main)
@@ -369,7 +364,7 @@ render_entities :: proc(dt: f32) {
 				}
 			}
 
-			if cmd.type == .Move {
+			if cmd.type == .Move || cmd.type == .PickUp {
 				render_path_to(cmd.pos, e.id, 120)
 			}
 			if cmd.type == .Attack {
@@ -417,16 +412,24 @@ render_tile_cursors :: proc(dt: f32) {
 	if state.client.cursor_over_ui do return
 
 	if !state.client.cursor_hidden {
+		cmd := command_for_tile(state.client.cursor_pos)
+		if cmd.type == .Move || cmd.type == .PickUp {
+			render_path_to(state.client.cursor_pos, alpha = 80)
+		}
+
 		// Draw this player's cursor
-		if command_for_tile(state.client.cursor_pos).type == .Move {
+		if cmd.type == .Move {
 			render_sprite(SPRITE_COORD_RECT, screen_coord(state.client.cursor_pos), alpha = 100)
 			render_sprite(SPRITE_COORD_FOOTSTEPS, screen_coord(state.client.cursor_pos))
 		}
-		if command_for_tile(state.client.cursor_pos).type == .Attack {
+		if cmd.type == .Attack {
 			// render_sprite(SPRITE_COORD_RECT, screen_coord(state.client.cursor_pos))
 			render_sprite(SPRITE_COORD_CURSOR_ATTACK, screen_coord(state.client.cursor_pos))
 		}
-		if command_for_tile(state.client.cursor_pos).type == .Skip {
+		if cmd.type == .Skip {
+			render_sprite(SPRITE_COORD_RECT, screen_coord(state.client.cursor_pos))
+		}
+		if cmd.type == .PickUp {
 			render_sprite(SPRITE_COORD_RECT, screen_coord(state.client.cursor_pos))
 		}
 		if state.debug.render_debug_overlays {
