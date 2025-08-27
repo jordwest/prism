@@ -88,14 +88,20 @@ done,content,b4,Fire potion
 done,feat,b4,Drop potions
 done,feat,b4,Make rust websocket server and connect it up
 done,feat,b4,"Add basic lobby for connecting, setting name and starting game"
+done,imp,b4,Add SFX again
 done,bug,b4,Keepalive ping on websocket server
 done,imp,b4,Handle individual player death
 done,imp,b4,Show visual feedback on pick up command
 done,feat,b4,Add end of floor stairwell
 done,feat,b4,Add win condition/end of game screen
+done,imp,b4,"Handle all players dead, game over"
+done,bug,b4,Don't advance turn when all players are dead
 done,imp,b4,Put djikstra map visualisation behind a console or something
 done,imp,b4,Cancel any pending command when enemy is spotted for first time
+done,imp,b4,Cancel all allies commands when an enemy is spotted for the first time
 done,imp,b4,Clicking self when over item should pick up
+done,imp,b4,Add a proper LOS algorithm
+done,imp,b4,Darken non currently visible areas
 doing,feat,b4,Make potions throwable
 todo,content,b4,Add new enemy near stairwell
 todo,content,b5,Water potion
@@ -109,21 +115,14 @@ todo,feat,ideas,Item identification system
 todo,bug,b5,Player indicators should appear above all entities (render order)
 todo,imp,b5,Consider setting a delay after actions (like attack) instead of after every turn
 todo,feat,b5,Button mechanism requiring multiple players to unlock a door
-todo,imp,b5,Add a proper LOS algorithm
 todo,imp,b5,Preload and postload assets - delay loading only until preload assets
 todo,imp,b5,Handle timeouts and disconnects
-todo,imp,b5,Cancel all allies commands when an enemy is spotted for the first time
-todo,bug,b5,Don't advance turn when all players are dead
-todo,imp,b5,Add SFX again
 todo,feat,b5,Make use of client token to relogin a user (and store it in localstorage)
-todo,imp,b5,Darken non currently visible areas
-todo,refactor,b5,Test turn system and iron out weird bugs with a refactor
-todo,imp,b5,"Handle all players dead, game over"
 todo,balance,b5,Consider limiting ally position swapping to once per turn if unbalanced
 todo,feat,b5,Hover tooltips for actions
-todo,feat,b5,Add multiple dungeon levels
-todo,feat,b5,Potion of revive
-todo,feat,b5,Shock traps (probs easiest as tile effects like fire or net don't need to be implemented)
+todo,content,b5,Add multiple dungeon levels
+todo,content,b5,Potion of revive
+todo,content,b5,Shock traps (probs easiest as tile effects like fire or net don't need to be implemented)
 todo,imp,b5,Versioning for serialization - especially for anything saved to localstorage
 todo,devtool,ideas,Hydrate client and server entity state in hot reload
 todo,feat,ideas,Startle mechanic - guaranteed crit if surprised

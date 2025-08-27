@@ -46,7 +46,7 @@ PcgState :: struct {
 @(private = "file")
 PossibleDoorLocation :: struct {
 	pos:         TileCoord,
-	direction:   prism.Direction,
+	direction:   prism.Cardinal,
 	attempts:    int,
 	tie_breaker: u64,
 }

@@ -53,9 +53,10 @@ FONT_SIZE_BASE :: 22
 
 ///////// FUTURE STATE \\\\\\\\\
 
-GAME_SEED: u64 : 0 // Generate seed on each new game
+// GAME_SEED: u64 : 0 // Generate seed on each new game
 // GAME_SEED: u64 : 0xdeadbeef653293
 // GAME_SEED: u64 : 0x8d49336d22dd0a3
+GAME_SEED: u64 : 0x40b144a5d09ecbf6
 TURN_DELAY :: 0.1
 ANIMATION_DELAY :: 0.25
 MUSIC_ENABLED :: false

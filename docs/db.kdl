@@ -44,6 +44,7 @@ schema {
             option "font" label="🀄️ Font"
             option "sfx" label="🔊 Sound effect"
             option "music" label="🎵 Music"
+            option "code" label="⌨️ Code"
         }
         field "file"
         field "name"

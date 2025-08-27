@@ -27,6 +27,7 @@ TileType :: enum u8 {
 TileFlag :: enum {
 	Traversable,
 	Obstacle,
+	BlocksVision,
 	Flammable,
 	Grass,
 	Slow,
@@ -38,7 +39,7 @@ TileFlags :: bit_set[TileFlag]
 tile_default_flags: [TileType]TileFlags = {
 	.Empty      = {},
 	.Floor      = {.Traversable},
-	.BrickWall  = {.Obstacle},
+	.BrickWall  = {.Obstacle, .BlocksVision},
 	.RopeBridge = {.Traversable, .Flammable},
 	.Water      = {.Traversable, .Slow},
 	.StairsDown = {.Traversable},

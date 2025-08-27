@@ -193,6 +193,7 @@ log_frame :: proc() -> Error {
 
 	if state.client.game.status == .Started {
 		turn_evaluate() or_return
+		derived_ensure_fov()
 	}
 
 	if state.debug.turn_stepping == .Step {

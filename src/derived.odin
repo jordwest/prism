@@ -3,17 +3,17 @@ package main
 import "core:mem"
 import "prism"
 
-DerivedDataState :: enum {
-	Empty,
-	Ready,
+DerivedData :: enum {
+	FieldOfView,
+	TileEntities,
 }
 
 // Derived state stores data that is derived from the current game state.
 // It gets flushed away when a meaningful state changes (an entity moves etc)
 // Accessors calculate stuff on demand
 DerivedState :: struct {
+	up_to_date:           bit_set[DerivedData],
 	tile_entities:        [LEVEL_WIDTH][LEVEL_HEIGHT]TileEntities,
-	s_tile_entities:      DerivedDataState,
 	entity_djikstra_maps: map[EntityId]prism.DjikstraMap(LEVEL_WIDTH, LEVEL_HEIGHT),
 	allies_djikstra_map:  Maybe(prism.DjikstraMap(LEVEL_WIDTH, LEVEL_HEIGHT)),
 
@@ -45,7 +45,6 @@ derived_init :: proc() -> Error {
 derived_handle_entity_changed :: proc(entity: ^Entity) {
 	delete_key(&state.client.game.derived.entity_djikstra_maps, entity.id)
 	if entity.meta.team == .Players {
-		vision_update()
 		state.client.game.derived.allies_djikstra_map = nil
 		derived_djikstra_map_to(entity.id)
 	}
@@ -53,7 +52,7 @@ derived_handle_entity_changed :: proc(entity: ^Entity) {
 	if .MovedLastTurn not_in entity.meta.flags {
 		derived_regenerate_player_maps()
 	}
-	state.client.game.derived.s_tile_entities = .Empty
+	state.client.game.derived.up_to_date -= {.TileEntities, .FieldOfView}
 }
 
 derived_regenerate_player_maps :: proc() {
@@ -71,12 +70,18 @@ derived_clear :: proc() {
 	for _, player in state.client.game.players {
 		derived_djikstra_map_to(player.player_entity_id)
 	}
-	state.client.game.derived.s_tile_entities = .Empty
+	state.client.game.derived.up_to_date = {}
+}
+
+derived_ensure_fov :: proc() {
+	if .FieldOfView not_in state.client.game.derived.up_to_date {
+		vision_update()
+	}
 }
 
 derived_entities_at :: proc(coord: TileCoord, ignore_out_of_bounds := false) -> TileEntities {
 	derived := &state.client.game.derived
-	if derived.s_tile_entities == .Empty do _derive_tile_entities()
+	if .TileEntities not_in derived.up_to_date do _derive_tile_entities()
 
 	if coord.x < 0 || coord.x >= LEVEL_WIDTH || coord.y < 0 || coord.y >= LEVEL_HEIGHT {
 		if !ignore_out_of_bounds do warn("Attempt to access tile entities outside bounds")
@@ -185,5 +190,5 @@ _derive_tile_entities :: proc() {
 		}
 	}
 
-	derived.s_tile_entities = .Ready
+	derived.up_to_date += {.TileEntities}
 }
