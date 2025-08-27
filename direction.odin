@@ -1,6 +1,6 @@
 package prism
 
-Direction :: enum {
+Cardinal :: enum {
 	North,
 	East,
 	South,
