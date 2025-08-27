@@ -30,7 +30,8 @@ TileFlag :: enum {
 	Flammable,
 	Grass,
 	Slow,
-	Seen,
+	Seen, // Has been seen ever
+	Visible, // Is currently seen
 }
 TileFlags :: bit_set[TileFlag]
 

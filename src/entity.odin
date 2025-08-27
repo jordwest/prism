@@ -66,6 +66,7 @@ EntityFlags :: enum {
 	IsFast,
 	IsSlow,
 	CanTakeDamage,
+	IsVisibleToPlayers,
 }
 
 EntityFilterProc :: proc(_: ^Entity) -> bool
@@ -86,7 +87,7 @@ entity_meta: [EntityMetaId]EntityMeta = {
 		spritesheet_coord = SPRITE_COORD_PLAYER,
 		team = .Players,
 		max_hp = 50,
-		vision_distance = 4,
+		vision_distance = 6,
 		flags = {.IsPlayerControlled, .IsObstacle, .CanSwapPlaces, .CanTakeDamage},
 		flavor_text = "I should've stayed on the surface...",
 	},

@@ -193,6 +193,7 @@ render_tiles :: proc() {
 			tile_below, has_tile_below := tile_at(tile_c + {0, 1}).?
 			tile, ok := tile_at(tile_c).?
 
+			alpha: u8 = .Visible in tile.flags ? 255 : 80
 			when !FOG_OF_WAR_OFF {
 				if .Seen not_in tile.flags do continue
 			}
@@ -204,25 +205,26 @@ render_tiles :: proc() {
 			switch tile.type {
 			case .Empty:
 				tile_above, has_tile_above := tile_at(tile_c + {0, -1}).?
-				if has_tile_above && tile_above.type in pit_wall_tiles do render_sprite(SPRITE_COORD_PIT_WALL, screen_c)
+				if has_tile_above && tile_above.type in pit_wall_tiles do render_sprite(SPRITE_COORD_PIT_WALL, screen_c, alpha = alpha)
 			case .RopeBridge:
 				render_sprite(
 					use_alternative_tile_500 ? SPRITE_COORD_ROPE_BRIDGE_2 : SPRITE_COORD_ROPE_BRIDGE,
 					screen_c,
+					alpha = alpha,
 				)
 			case .BrickWall:
 				front_facing := has_tile_below && tile_below.type != .BrickWall
 				sprite :=
 					front_facing ? (use_alternative_tile_50 ? SPRITE_COORD_BRICK_WALL_FACE_2 : SPRITE_COORD_BRICK_WALL_FACE) : SPRITE_COORD_BRICK_WALL_BEHIND
-				render_sprite(sprite, screen_c)
+				render_sprite(sprite, screen_c, alpha = alpha)
 			case .Floor:
 				sprite :=
 					use_alternative_tile_50 ? SPRITE_COORD_FLOOR_STONE_2 : SPRITE_COORD_FLOOR_STONE
-				render_sprite(sprite, screen_c)
+				render_sprite(sprite, screen_c, alpha = alpha)
 			case .Water:
-				render_sprite(SPRITE_COORD_WATER, screen_c)
+				render_sprite(SPRITE_COORD_WATER, screen_c, alpha = alpha)
 			case .StairsDown:
-				render_sprite(Sprite.StairsDown, screen_c)
+				render_sprite(Sprite.StairsDown, screen_c, alpha = alpha)
 			}
 
 			if tile.fire.fuel > 0 {
@@ -231,7 +233,11 @@ render_tiles :: proc() {
 			}
 
 			if .Grass in tile.flags {
-				render_sprite(Sprite.Grass, screen_c)
+				render_sprite(
+					Sprite.Grass,
+					screen_c,
+					frame_index = use_alternative_tile_500 ? 1 : 0,
+				)
 			}
 
 		}
@@ -315,8 +321,7 @@ render_entities :: proc(dt: f32) {
 		i += 1
 
 		when !FOG_OF_WAR_OFF {
-			tile, valid_tile := tile_at(e.pos).?
-			if valid_tile && .Seen not_in tile.flags do continue
+			if .IsVisibleToPlayers not_in e.meta.flags do continue
 		}
 
 		screen_c := screen_coord(TileCoordF(e.spring.pos)).xy

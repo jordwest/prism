@@ -612,3 +612,7 @@ Ok so first thing is when a player dies, the camera should focus on a different 
 Now to fix the pick up command so it shows proper visual feedback. Done.
 
 Next up, creating a goal... staircase going down.
+
+# Wednesday 27 Aug 2025
+
+Now time to work on cancelling current pending command if a new enemy is seen.

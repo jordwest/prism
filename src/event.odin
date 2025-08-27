@@ -8,6 +8,7 @@ Event :: union {
 	EventEntityMiss,
 	EventEntityHeal,
 	EventEntityMove,
+	EventEntityVisibilityChanged,
 	EventTurnStarting,
 	EventTurnEnding,
 	EventPotionConsume,
@@ -63,6 +64,11 @@ EventEntityDied :: struct {
 	entity_id: EntityId,
 }
 
+EventEntityVisibilityChanged :: struct {
+	entity_id: EntityId,
+	visible:   bool,
+}
+
 event_fire :: proc(ev: Event) -> Error {
 	evt := ev
 	return _handle(&evt)
@@ -82,6 +88,8 @@ _handle :: proc(evt: ^Event) -> Error {
 		return _entity_heal(&evt)
 	case EventEntityMove:
 		return _entity_move(&evt)
+	case EventEntityVisibilityChanged:
+		return _entity_visibility_changed(&evt)
 	case EventTurnStarting:
 		return _turn_starting(&evt)
 	case EventTurnEnding:
@@ -173,6 +181,21 @@ _entity_died :: proc(evt: ^EventEntityDied) -> Error {
 		}
 	}
 
+	return nil
+}
+
+@(private = "file")
+_entity_visibility_changed :: proc(evt: ^EventEntityVisibilityChanged) -> Error {
+	entity := entity_or_error(evt.entity_id) or_return
+
+	if filter_is_enemy(entity) && evt.visible {
+		// Enemy became visible, clear all player commands
+		for _, &e in state.client.game.entities {
+			if e.player_id == nil do continue
+			e.cmd = Command{}
+			e._local_cmd = nil
+		}
+	}
 	return nil
 }
 

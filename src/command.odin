@@ -338,17 +338,17 @@ command_serialize :: proc(s: ^prism.Serializer, cmd: ^Command) -> prism.Serializ
 
 // Get the command that will be set if a given tile is clicked on (or walked into)
 command_for_tile :: proc(coord: TileCoord) -> Command {
+	if state.client.game.status != .Started do return Command{}
+
 	player_e, player_has_entity := player_entity().?
 	if !player_has_entity do return Command{}
-
-	if coord == player_e.pos do return Command{type = .Skip}
 
 	tile, valid_tile := tile_at(TileCoord(coord)).?
 	if !valid_tile do return Command{}
 	if .Traversable not_in tile.flags do return Command{}
 
 	obstacle, has_obstacle := game_entity_at(coord, entity_is_obstacle).?
-	if has_obstacle {
+	if has_obstacle && obstacle.id != player_e.id {
 		alignment := entity_alignment_to_player(obstacle)
 		if alignment == .Enemy {
 			return Command{type = .Attack, target_entity = obstacle.id}
@@ -363,6 +363,8 @@ command_for_tile :: proc(coord: TileCoord) -> Command {
 	if has_item && !has_more_than_1_item {
 		return Command{type = .PickUp, pos = coord, target_item = item.id}
 	}
+
+	if coord == player_e.pos do return Command{type = .Skip}
 
 	return Command{type = .Move, pos = coord}
 }

@@ -91,7 +91,6 @@ host_handle_client_message :: proc(from_client_id: ClientId, msg: ClientMessage)
 			host_catch_up_client(from_client_id, m.next_log_seq)
 		}
 
-		trace("Bufstr %w, %s", m.display_name, prism.bufstring_as_str(&m.display_name))
 		if new_player_id > 0 do host_log_entry(LogEntryPlayerJoined{player_id = new_player_id, display_name = m.display_name})
 	case ClientMessageCursorPosUpdate:
 		if !client_identified do break

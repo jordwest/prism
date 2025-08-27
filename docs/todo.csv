@@ -92,10 +92,12 @@ done,bug,b4,Keepalive ping on websocket server
 done,imp,b4,Handle individual player death
 done,imp,b4,Show visual feedback on pick up command
 done,feat,b4,Add end of floor stairwell
-doing,feat,b4,Add win condition/end of game screen
-todo,imp,b4,Put djikstra map visualisation behind a console or something
-todo,imp,b4,Cancel any pending command when enemy is spotted for first time
+done,feat,b4,Add win condition/end of game screen
+done,imp,b4,Put djikstra map visualisation behind a console or something
+done,imp,b4,Cancel any pending command when enemy is spotted for first time
+done,imp,b4,Clicking self when over item should pick up
 doing,feat,b4,Make potions throwable
+todo,content,b4,Add new enemy near stairwell
 todo,content,b5,Water potion
 todo,content,b5,Fire traps
 todo,imp,b5,Click & drag to move camera around

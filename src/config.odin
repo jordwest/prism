@@ -2,7 +2,7 @@ package main
 
 ////////// CHEATS \\\\\\\\\\\\
 
-FOG_OF_WAR_OFF :: true
+FOG_OF_WAR_OFF :: false
 NO_ENEMIES :: false
 GOD_MODE :: true
 
@@ -58,7 +58,7 @@ GAME_SEED: u64 : 0 // Generate seed on each new game
 // GAME_SEED: u64 : 0x8d49336d22dd0a3
 TURN_DELAY :: 0.1
 ANIMATION_DELAY :: 0.25
-MUSIC_ENABLED :: true
+MUSIC_ENABLED :: false
 SPRINGS_ENABLED :: true
 
 /////////// DERIVED \\\\\\\\\\\\\
