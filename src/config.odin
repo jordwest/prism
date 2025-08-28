@@ -2,7 +2,7 @@ package main
 
 ////////// CHEATS \\\\\\\\\\\\
 
-FOG_OF_WAR_OFF :: false
+FOG_OF_WAR_OFF :: true
 NO_ENEMIES :: false
 GOD_MODE :: true
 
@@ -34,7 +34,7 @@ LOG_HOST_MESSAGES :: false
 LOG_CLIENT_MESSAGES :: false
 LOG_LOG_ENTRIES :: false
 LOG_COMMANDS :: false
-LOG_EVENTS :: false
+LOG_EVENTS :: true
 
 /////// MAGIC NUMBERS \\\\\\\\\\\
 
@@ -51,12 +51,14 @@ ENTITY_SPRING_CONSTANT :: 40
 ENTITY_SPRING_DAMPER :: 10
 FONT_SIZE_BASE :: 22
 
+/////////// BALANCING \\\\\\\\\\\\
+EFF_SLOW_FACTOR :: 2
+
 ///////// FUTURE STATE \\\\\\\\\
 
-// GAME_SEED: u64 : 0 // Generate seed on each new game
+GAME_SEED: u64 : 0 // Generate seed on each new game
 // GAME_SEED: u64 : 0xdeadbeef653293
 // GAME_SEED: u64 : 0x8d49336d22dd0a3
-GAME_SEED: u64 : 0x40b144a5d09ecbf6
 TURN_DELAY :: 0.1
 ANIMATION_DELAY :: 0.25
 MUSIC_ENABLED :: false

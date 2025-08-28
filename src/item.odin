@@ -15,6 +15,7 @@ ItemTypes :: union {
 
 PotionType :: enum u8 {
 	Healing,
+	Lethargy,
 	Fire,
 }
 

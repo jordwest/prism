@@ -92,6 +92,14 @@ _on_game_started :: proc(entry: LogEntryGameStarted) -> Error {
 		},
 		in_batch = true,
 	)
+	item_spawn(
+		ItemStack {
+			container_id = SharedLootContainer,
+			count = player_count,
+			type = PotionType.Lethargy,
+		},
+		in_batch = true,
+	)
 	containers_reset()
 
 	state.client.game.status = .Started

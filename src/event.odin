@@ -1,5 +1,6 @@
 package main
 
+import "core:math"
 import "prism"
 
 Event :: union {
@@ -8,6 +9,7 @@ Event :: union {
 	EventEntityMiss,
 	EventEntityHeal,
 	EventEntityMove,
+	EventEntitySlow,
 	EventEntityVisibilityChanged,
 	EventTurnStarting,
 	EventTurnEnding,
@@ -33,6 +35,10 @@ EventPotionActivateAt :: struct {
 EventEntityHeal :: struct {
 	entity_id: EntityId,
 	hp:        i32,
+}
+
+EventEntitySlow :: struct {
+	entity_id: EntityId,
 }
 
 DamageSource :: enum {
@@ -90,6 +96,8 @@ _handle :: proc(evt: ^Event) -> Error {
 		return _entity_move(&evt)
 	case EventEntityVisibilityChanged:
 		return _entity_visibility_changed(&evt)
+	case EventEntitySlow:
+		return _entity_slow(&evt)
 	case EventTurnStarting:
 		return _turn_starting(&evt)
 	case EventTurnEnding:
@@ -185,6 +193,20 @@ _entity_died :: proc(evt: ^EventEntityDied) -> Error {
 }
 
 @(private = "file")
+_entity_slow :: proc(evt: ^EventEntitySlow) -> Error {
+	entity := entity_or_error(evt.entity_id) or_return
+
+	eff := &entity.status_effects[.Slowed]
+	eff.flags += {.Active}
+	eff.turns_remain = math.max(20, eff.turns_remain)
+	eff.turns = eff.turns_remain
+
+	fx_add(Fx{type = .SlowedIndicator, lifetime = 2, pos = entity.pos, t0 = state.t})
+
+	return nil
+}
+
+@(private = "file")
 _entity_visibility_changed :: proc(evt: ^EventEntityVisibilityChanged) -> Error {
 	entity := entity_or_error(evt.entity_id) or_return
 
@@ -226,6 +248,8 @@ _turn_ending :: proc(evt: ^EventTurnEnding) -> Error {
 			// Take fire damage
 			event_fire(EventEntityHurt{target_id = entity.id, dmg = 5, source = .Fire})
 		}
+
+		entity_turn(&entity)
 
 		entity.ai.iterations_this_turn = 0
 	}
@@ -296,6 +320,9 @@ _potion_activate :: proc(evt: ^EventPotionActivateAt) -> Error {
 	case PotionType.Healing:
 		if !has_entity_at_pos do break
 		event_fire(EventEntityHeal{entity_id = entity_at_pos.id, hp = 40})
+	case PotionType.Lethargy:
+		if !has_entity_at_pos do break
+		event_fire(EventEntitySlow{entity_id = entity_at_pos.id})
 	}
 	item.count = item.count - 1
 	if item.count == 0 do item_despawn(item.id)

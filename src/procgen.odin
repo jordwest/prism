@@ -335,10 +335,17 @@ _spawn_items :: proc() {
 
 		if prism.tile_distance(coord - state.client.game.spawn_point) < 15 do continue
 
-		is_fire_potion := rng_bool(&rng, 600)
-		item_spawn(
-			ItemStack{container_id = coord, type = is_fire_potion ? .Fire : .Healing, count = 1},
-		)
+		potion_n := rng_range(&rng, 0, 100)
+		potion_type := PotionType.Fire
+		switch {
+		case potion_n <= 20:
+			potion_type = PotionType.Fire
+		case potion_n <= 60:
+			potion_type = PotionType.Healing
+		case:
+			potion_type = PotionType.Lethargy
+		}
+		item_spawn(ItemStack{container_id = coord, type = potion_type, count = 1})
 
 		spawned += 1
 	}

@@ -2,10 +2,15 @@ package main
 
 UiMode :: union {
 	UiActivatingItem,
+	UiThrowingItem,
 }
 
 UiActivatingItem :: struct {
 	item_id: ItemId,
+}
+UiThrowingItem :: struct {
+	item_id: ItemId,
+	pos:     TileCoord,
 }
 
 UiState :: struct {

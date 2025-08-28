@@ -616,3 +616,24 @@ Next up, creating a goal... staircase going down.
 # Wednesday 27 Aug 2025
 
 Now time to work on cancelling current pending command if a new enemy is seen.
+
+# Thursday 27 Aug 2025
+
+Lots of polish done yesterday, the big one being a proper symmetric shadowcasting LOS algorithm that really makes a difference in tension when fighting enemies behind blind corners.
+
+Now I think it's finally time to work on the thing I've been putting off for over a week, throwable potions. Most of the logic is done, I just need to add a modal interface for choosing where to throw the potion. So first thing as always is the state. I suppose I'll add a new "mode" or something to the ui state.
+
+Next up is setting up a new enemy, maybe tweaking the existing ones a bit. I could also add a few new potions, none should be particularly difficult. Some ideas:
+
+ - Potion of paralysis (status effect support)
+ - Scroll of teleport (add scroll item type)
+ - Scroll of safe harbour (teleports allies and surrounds them with temporary walls) (add scroll item type)
+ - Potion of teleport
+ - Potion of blink
+ - Potion of overgrowth
+ - Potion of pain (hobbles player - decreases dodge + decreases chance of being hit)
+ - Potion of slow (slows the entity)
+
+I think first thing that makes sense is to add status effects - that applies to so many items. Need some status effect to get started, I might just use slow since it doesn't need any new stats.
+
+Ok got slow status effect in place. Next need to trigger it somehow. New potion I think.

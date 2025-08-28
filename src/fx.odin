@@ -13,6 +13,7 @@ Fx :: struct {
 FxType :: enum {
 	HitIndicator,
 	MissIndicator,
+	SlowedIndicator,
 }
 
 fx_init :: proc() {

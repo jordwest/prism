@@ -251,9 +251,7 @@ _drop :: proc(e: ^Entity) -> CommandOutcome {
 }
 
 _throw :: proc(entity: ^Entity) -> CommandOutcome {
-	e := event_fire(
-		EventPotionActivateAt{pos = entity.pos + {5, 0}, item_id = entity.cmd.target_item},
-	)
+	e := event_fire(EventPotionActivateAt{pos = entity.cmd.pos, item_id = entity.cmd.target_item})
 	if e != nil {
 		trace("Throw failed: %w", e)
 		entity_clear_cmd(entity)
@@ -346,6 +344,10 @@ command_for_tile :: proc(coord: TileCoord) -> Command {
 	tile, valid_tile := tile_at(TileCoord(coord)).?
 	if !valid_tile do return Command{}
 	if .Traversable not_in tile.flags do return Command{}
+
+	if throwing, is_throwing := state.client.ui.mode.(UiThrowingItem); is_throwing {
+		return Command{type = .Throw, target_item = throwing.item_id, pos = coord}
+	}
 
 	obstacle, has_obstacle := game_entity_at(coord, entity_is_obstacle).?
 	if has_obstacle && obstacle.id != player_e.id {

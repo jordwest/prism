@@ -158,7 +158,7 @@ derived_djikstra_map_to :: proc(
 	e = prism.djikstra_map_generate(
 	algo,
 	proc(from: [2]i32, to: [2]i32) -> i32 {
-		modifiers := game_get_move_modifier(TileCoord(from), TileCoord(to))
+		modifiers := game_get_tile_move_modifier(TileCoord(from), TileCoord(to))
 		cost := game_move_modifiers_to_cost(modifiers)
 		if cost < 0 do return cost
 

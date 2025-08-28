@@ -126,7 +126,11 @@ input_frame :: proc(dt: f32) {
 	}
 
 	if is_action_just_pressed(.Escape) {
-		command_submit(Command{})
+		if state.client.ui.mode != nil {
+			ui_clear_mode()
+		} else {
+			command_submit(Command{})
+		}
 	}
 
 	if is_action_just_pressed(.DebugRenderOverlaysToggle) {
@@ -152,6 +156,9 @@ input_frame :: proc(dt: f32) {
 		if ok && is_action_just_pressed(.LeftClick) {
 			cmd := command_for_tile(state.client.cursor_pos)
 			if cmd.type == .None do return
+			if cmd.type == .Throw {
+				ui_clear_mode()
+			}
 
 			command_submit(cmd)
 			// state.client.cursor_hidden = true
@@ -214,8 +221,10 @@ input_on_hover_throw :: proc "c" (
 	item := (^ItemStack)(userData)
 
 	if fresnel.is_action_just_pressed(i32(InputActions.LeftClick)) {
-		command_submit(Command{type = .Throw, target_item = item.id})
-		ui_clear_mode()
+		entity, ok := player_entity().? // TODO: Target nearest enemy instead?
+		if !ok do return
+
+		ui_replace_mode(UiThrowingItem{item_id = item.id, pos = entity.pos})
 	}
 }
 

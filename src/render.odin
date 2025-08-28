@@ -66,6 +66,7 @@ render_debug_overlays :: proc() {
 	_add_debug_text("Turn %d, t=%.2f", state.client.game.current_turn, state.t)
 	_add_debug_text("%.0f FPS (%.0f max, %.0f min)", debug_get_fps())
 	_add_debug_text("Log queue size: %d", queue.len(state.client.log_queue._queue))
+	_add_debug_text("UI mode: %w", state.client.ui.mode)
 	_add_debug_text("Ambience: %w", state.client.audio.ambience)
 	_add_debug_text(
 		"%d players / %d entities",
@@ -227,9 +228,14 @@ render_tiles :: proc() {
 				render_sprite(Sprite.StairsDown, screen_c, alpha = alpha)
 			}
 
-			if tile.fire.fuel > 0 {
+			if tile.fire.fuel > 0 && .Visible in tile.flags {
 				global_animation_frame := int(state.t * 8)
-				render_sprite(Sprite.Fire, screen_c, frame_index = global_animation_frame)
+				render_sprite(
+					Sprite.Fire,
+					screen_c,
+					frame_index = global_animation_frame,
+					alpha = alpha,
+				)
 			}
 
 			if .Grass in tile.flags {
@@ -237,6 +243,7 @@ render_tiles :: proc() {
 					Sprite.Grass,
 					screen_c,
 					frame_index = use_alternative_tile_500 ? 1 : 0,
+					alpha = alpha,
 				)
 			}
 
@@ -440,6 +447,9 @@ render_tile_cursors :: proc(dt: f32) {
 		if cmd.type == .PickUp {
 			render_sprite(SPRITE_COORD_RECT, screen_coord(state.client.cursor_pos))
 		}
+		if cmd.type == .Throw {
+			render_sprite(SPRITE_COORD_RECT, screen_coord(state.client.cursor_pos))
+		}
 		if state.debug.render_debug_overlays {
 			render_sprite(SPRITE_COORD_RECT, screen_coord(state.client.cursor_pos))
 		}
@@ -491,6 +501,10 @@ render_fx :: proc(dt: f32) {
 			fresnel.fill(255, 0, 0, 255)
 			s := fmt.bprintf(_tmp_16k[:], "%d", fx.dmg)
 			fresnel.draw_text(coord.x, coord.y, FONT_SIZE_BASE, s)
+
+		case .SlowedIndicator:
+			fresnel.fill(255, 255, 255, 255)
+			fresnel.draw_text(coord.x, coord.y, FONT_SIZE_BASE, "SLOWED")
 		}
 	}
 }

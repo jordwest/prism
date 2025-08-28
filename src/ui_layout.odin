@@ -1,5 +1,6 @@
 package main
 import clay "clay-odin"
+import "core:c"
 import "core:fmt"
 import "core:math"
 import "fresnel"
@@ -58,6 +59,10 @@ ui_layout_screen :: proc() -> clay.ClayArray(clay.RenderCommand) {
 	context.temp_allocator = arena_ui_frame.allocator
 
 	if state.client.game.status != .Started do return ui_layout_menu()
+
+	if mode, ok := state.client.ui.mode.(UiThrowingItem); ok {
+		return ui_layout_throw()
+	}
 
 	// Begin constructing the layout.
 	clay.BeginLayout()
@@ -176,6 +181,41 @@ ui_layout_screen :: proc() -> clay.ClayArray(clay.RenderCommand) {
 	// Returns a list of render commands
 	return clay.EndLayout()
 } // An example function to create your layout tree
+
+ui_layout_throw :: proc() -> clay.ClayArray(clay.RenderCommand) {
+	clay.BeginLayout()
+	{
+		clay.OpenElement(
+			{
+				id = clay.ID("OuterContainer"),
+				layout = {
+					sizing = {width = clay.SizingGrow({}), height = clay.SizingGrow({})},
+					layoutDirection = .TopToBottom,
+				},
+			},
+		)
+
+		{
+			clay.OpenElement(
+				{
+					id = clay.ID("ModHeader"),
+					layout = {
+						sizing = {width = clay.SizingGrow({}), height = clay.SizingFit({})},
+						padding = {32, 32, 32, 32},
+						childAlignment = {x = .Center, y = .Center},
+					},
+					backgroundColor = COLOR_PURPLE_800,
+				},
+			)
+
+			clay.Text(
+				"Throw where?",
+				clay.TextConfig({fontSize = FONT_SIZE_BASE, textColor = COLOR_WHITE}),
+			)
+		}
+	}
+	return clay.EndLayout()
+}
 
 ui_component_lobby :: proc() {
 	clay.OpenElement(
@@ -620,6 +660,7 @@ ui_layout_tooltip :: proc() -> clay.ClayArray(clay.RenderCommand) {
 					_add_fmt_text("ID: %d", hover_entity.id)
 					_add_fmt_text("Player ID: %d", hover_entity.player_id)
 					_add_fmt_text("AP: %d", hover_entity.action_points)
+					_add_fmt_text("%w", hover_entity.status_effects)
 					_add_fmt_text("%v", hover_entity.cmd)
 					_add_fmt_text("%v", hover_entity.meta.flags)
 				}

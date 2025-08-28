@@ -1,26 +1,28 @@
 package main
 
+import "core:container/small_array"
 import "prism"
 
 EntityId :: distinct i32
 
 Entity :: struct {
-	id:            EntityId,
-	meta_id:       EntityMetaId,
-	meta:          EntityMeta,
-	pos:           TileCoord,
-	cmd:           Command,
-	action_points: i32,
-	hp:            i32,
-	player_id:     Maybe(PlayerId),
-	spring:        prism.Spring(2),
-	despawning:    bool,
-	ai:            AiBrain,
-	move_seq:      i32,
-	t_last_hurt:   f32,
+	id:             EntityId,
+	meta_id:        EntityMetaId,
+	meta:           EntityMeta,
+	pos:            TileCoord,
+	cmd:            Command,
+	action_points:  i32,
+	hp:             i32,
+	player_id:      Maybe(PlayerId),
+	spring:         prism.Spring(2),
+	despawning:     bool,
+	ai:             AiBrain,
+	move_seq:       i32,
+	t_last_hurt:    f32,
+	status_effects: EffectList,
 
 	// Not serialized
-	_local_cmd:    Maybe(LocalCommand),
+	_local_cmd:     Maybe(LocalCommand),
 }
 
 LocalCommand :: struct {
@@ -138,6 +140,10 @@ entity_frame :: proc(dt: f32) {
 
 		prism.spring_tick(&e.spring, dt, !SPRINGS_ENABLED)
 	}
+}
+
+entity_turn :: proc(entity: ^Entity) {
+	effect_turn(&entity.status_effects)
 }
 
 entity_set_pos :: proc(entity: ^Entity, pos: TileCoord) {
