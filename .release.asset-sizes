@@ -1,4 +1,4 @@
-total 33480
+total 33488
 drwxr-xr-x  36 jordan  staff     1152  .
 drwxr-xr-x   5 jordan  staff      160  ..
 -rw-r--r--   1 jordan  staff     6148  .DS_Store
@@ -7,8 +7,8 @@ drwxr-xr-x   5 jordan  staff      160  ..
 -rw-rw-r--@  1 jordan  staff  3154436  LanaPixel.ttf
 -rw-r--r--   1 jordan  staff    70640  PxPlus_IBM_VGA_8x16.ttf
 -rw-r--r--   1 jordan  staff  3083520  ambience.mp3
--rwxr-xr-x   1 jordan  staff   406375  app.wasm
--rw-r--r--   1 jordan  staff   143265  archive.tar.gz
+-rwxr-xr-x   1 jordan  staff   413480  app.wasm
+-rw-r--r--   1 jordan  staff   145595  archive.tar.gz
 -rw-r--r--   1 jordan  staff   153850  death-bell.mp3
 -rw-r--r--   1 jordan  staff    77899  death-scream.ogg
 -rw-r--r--   1 jordan  staff   401712  fire.mp3

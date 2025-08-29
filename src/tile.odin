@@ -15,6 +15,7 @@ TileData :: struct {
 	fire:  TileFire,
 }
 
+
 TileType :: enum u8 {
 	Empty = 0,
 	Floor,

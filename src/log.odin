@@ -102,6 +102,7 @@ _on_game_started :: proc(entry: LogEntryGameStarted) -> Error {
 	)
 	containers_reset()
 
+	fresnel.cursor_hide()
 	state.client.game.status = .Started
 	vision_update()
 

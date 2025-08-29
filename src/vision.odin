@@ -10,6 +10,10 @@ vision_update :: proc() {
 	for &tile in state.client.game.tiles.data {
 		// Clear visibile tiles as they'll be set in next loop
 		tile.flags -= {.Visible}
+
+		when FOG_OF_WAR_OFF {
+			tile.flags += {.Visible, .Seen}
+		}
 	}
 
 	for _, p in state.client.game.players {
@@ -41,9 +45,7 @@ vision_update :: proc() {
 	for _, &entity in state.client.game.entities {
 		tile, ok := tile_at(entity.pos).?
 		if !ok do continue
-		if entity.id == 1 {
-			trace("Entity: %w, tile: %w", entity, tile)
-		}
+
 		if .IsVisibleToPlayers in entity.meta.flags && .Visible not_in tile.flags {
 			entity.meta.flags -= {.IsVisibleToPlayers}
 			event_fire(EventEntityVisibilityChanged{entity_id = entity.id, visible = false})
@@ -68,7 +70,7 @@ _queue_buf: [100]Row
 //////// from https://www.albertford.com/shadowcasting \\\
 
 @(private)
-_scan :: proc(start_row: Row, max_depth :i32 = 12) {
+_scan :: proc(start_row: Row, max_depth: i32 = 12) {
 	iterations := 0
 
 	row_queue: queue.Queue(Row)
@@ -113,8 +115,6 @@ _scan :: proc(start_row: Row, max_depth :i32 = 12) {
 			queue.push_back(&row_queue, next_row)
 		}
 	}
-
-	trace("Done in %d iterations", iterations)
 }
 
 @(private)

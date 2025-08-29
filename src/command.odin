@@ -14,6 +14,7 @@ CommandTypeId :: enum u8 {
 	Consume,
 	Drop,
 	Throw,
+	Brood,
 }
 
 Command :: struct {
@@ -94,6 +95,8 @@ command_execute :: proc(entity: ^Entity) -> CommandOutcome {
 		return _drop(entity)
 	case .Throw:
 		return _throw(entity)
+	case .Brood:
+		return _brood(entity)
 	case .Skip:
 		return _skip(entity)
 	}
@@ -118,8 +121,25 @@ _move :: proc(entity: ^Entity) -> CommandOutcome {
 }
 
 _skip :: proc(entity: ^Entity) -> CommandOutcome {
-	entity_consume_ap(entity, 100)
+	entity_consume_ap(entity)
 	entity.cmd = Command{}
+	return .OkNext
+}
+
+_brood :: proc(entity: ^Entity) -> CommandOutcome {
+	brood, can_brood := entity_has_ability(entity, .Brood).?
+	if !can_brood do return .CommandFailed
+
+	brood.cooldown = 6
+
+	entity_consume_ap(entity, Percent(100))
+
+	for i := 0; i < len(state.client.game.players); i += 1 {
+		spawn_pos, ok := game_find_nearest_traversable_space(entity.pos)
+		if !ok do return i == 0 ? .CommandFailed : .OkNext
+
+		game_spawn_entity(.Spider, {pos = spawn_pos})
+	}
 	return .OkNext
 }
 
@@ -146,7 +166,7 @@ _attack :: proc(e: ^Entity) -> CommandOutcome {
 			audio_play(.Miss)
 		}
 
-		entity_consume_ap(e, .IsFast in e.meta.flags ? 80 : 100)
+		entity_consume_ap(e)
 		entity_clear_cmd(e)
 		return .WaitForAnimation
 	}
@@ -258,7 +278,7 @@ _throw :: proc(entity: ^Entity) -> CommandOutcome {
 		return .CommandFailed
 	}
 
-	entity_consume_ap(entity, 100)
+	entity_consume_ap(entity)
 	entity_clear_cmd(entity)
 	return .OkNext
 }
@@ -279,7 +299,7 @@ _pick_up :: proc(e: ^Entity) -> CommandOutcome {
 	if dist_to_target == 0 {
 		item_set_container(target_item, SharedLoot{})
 
-		entity_consume_ap(e, .IsFast in e.meta.flags ? 80 : 100)
+		entity_consume_ap(e)
 		entity_clear_cmd(e)
 		return .OkNext
 	}
@@ -302,7 +322,7 @@ _consume :: proc(entity: ^Entity) -> CommandOutcome {
 		return .CommandFailed
 	}
 
-	entity_consume_ap(entity, 100)
+	entity_consume_ap(entity)
 	entity_clear_cmd(entity)
 	return .OkNext
 }
@@ -311,7 +331,14 @@ _move_towards_allies :: proc(entity: ^Entity) -> CommandOutcome {
 	dmap, e := derived_allies_djikstra_map()
 	if e != nil do return .CommandFailed
 
-	coord_out, _, ok := prism.djikstra_next(dmap, Vec2i(entity.pos), game_is_coord_free)
+	desired_distance: i32 = entity.meta_id == .Broodmother ? 5 : 1
+
+	coord_out, _, ok := prism.djikstra_next(
+		dmap,
+		Vec2i(entity.pos),
+		game_is_coord_free,
+		desired_cost = desired_distance * 100,
+	)
 	if !ok do return .CommandFailed
 
 	switch _move_or_swap(entity, TileCoord(coord_out), false) {

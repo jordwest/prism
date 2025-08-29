@@ -628,7 +628,7 @@ ui_layout_tooltip :: proc() -> clay.ClayArray(clay.RenderCommand) {
 					_add_fmt_text("%s", hover_entity.meta_id, size = FONT_SIZE_BASE)
 				}
 
-				if .IsFast in hover_entity.meta.flags {
+				if hover_entity.meta.base_action_cost < 100 {
 					clay.Text(
 						"Fast",
 						clay.TextConfig(
@@ -636,7 +636,7 @@ ui_layout_tooltip :: proc() -> clay.ClayArray(clay.RenderCommand) {
 						),
 					)
 				}
-				if .IsSlow in hover_entity.meta.flags {
+				if hover_entity.meta.base_action_cost > 100 {
 					clay.Text(
 						"Slow",
 						clay.TextConfig(

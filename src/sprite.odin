@@ -6,6 +6,8 @@ Sprite :: enum {
 	Potion,
 	HitEffect,
 	StairsDown,
+	Cursor,
+	CursorHand,
 }
 
 SpriteMeta :: struct {
@@ -44,6 +46,14 @@ sprite_meta: [Sprite]SpriteMeta = {
 	.StairsDown = SpriteMeta {
 		ascii_char = '>',
 		frames = {SpriteFrame{offset = {6 * SPRITE_SIZE, 1 * SPRITE_SIZE}}},
+	},
+	.Cursor = SpriteMeta {
+		ascii_char = 0,
+		frames = {SpriteFrame{offset = {5 * SPRITE_SIZE, 6 * SPRITE_SIZE}}},
+	},
+	.CursorHand = SpriteMeta {
+		ascii_char = 0,
+		frames = {SpriteFrame{offset = {6 * SPRITE_SIZE, 6 * SPRITE_SIZE}}},
 	},
 }
 

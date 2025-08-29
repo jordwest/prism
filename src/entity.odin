@@ -1,6 +1,7 @@
 package main
 
 import "core:container/small_array"
+import "core:math/fixed"
 import "prism"
 
 EntityId :: distinct i32
@@ -36,7 +37,9 @@ EntityMeta :: struct {
 	max_hp:            i32,
 	team:              Team,
 	vision_distance:   i32,
+	abilities:         [4]Ability,
 	flavor_text:       string,
+	base_action_cost:  i32, // Higher is slower (units of time to take an action - ie 100 is one second)
 	flags:             bit_set[EntityFlags],
 }
 
@@ -54,6 +57,8 @@ EntityMetaId :: enum u8 {
 	None,
 	Player,
 	Spider,
+	Gnome,
+	Broodmother,
 	Firebug,
 	Corpse,
 }
@@ -65,10 +70,19 @@ EntityFlags :: enum {
 	CanSwapPlaces,
 	MovedThisTurn,
 	MovedLastTurn,
-	IsFast,
-	IsSlow,
 	CanTakeDamage,
 	IsVisibleToPlayers,
+}
+
+Ability :: struct {
+	type:     AbilityType,
+	cooldown: i16,
+}
+
+AbilityType :: enum {
+	EmptySlot,
+	Attack,
+	Brood,
 }
 
 EntityFilterProc :: proc(_: ^Entity) -> bool
@@ -91,23 +105,49 @@ entity_meta: [EntityMetaId]EntityMeta = {
 		max_hp = 50,
 		vision_distance = 6,
 		flags = {.IsPlayerControlled, .IsObstacle, .CanSwapPlaces, .CanTakeDamage},
+		abilities = {{type = .Attack}, {}, {}, {}},
 		flavor_text = "I should've stayed on the surface...",
+		base_action_cost = 100,
 	},
 	.Spider = EntityMeta {
 		spritesheet_coord = SPRITE_COORD_SPIDER,
 		team = .Darkness,
 		max_hp = 5,
 		vision_distance = 8,
-		flags = {.IsAiControlled, .IsObstacle, .IsFast, .CanTakeDamage},
+		flags = {.IsAiControlled, .IsObstacle, .CanTakeDamage},
+		abilities = {{type = .Attack}, {}, {}, {}},
 		flavor_text = "3 feet tall with thick, black scaled legs - this is no ordinary house spider. It may be weak, but it moves quickly and can easily outrun you.",
+		base_action_cost = 80,
+	},
+	.Gnome = EntityMeta {
+		spritesheet_coord = SPRITE_COORD_GNOME,
+		team = .Darkness,
+		max_hp = 5,
+		vision_distance = 8,
+		flags = {.IsAiControlled, .IsObstacle, .CanTakeDamage},
+		abilities = {{type = .Attack}, {}, {}, {}},
+		flavor_text = "",
+		base_action_cost = 100,
 	},
 	.Firebug = EntityMeta {
 		spritesheet_coord = SPRITE_COORD_FIREBUG,
 		team = .Darkness,
 		max_hp = 12,
 		vision_distance = 4,
-		flags = {.IsAiControlled, .IsObstacle, .IsSlow, .CanTakeDamage},
+		flags = {.IsAiControlled, .IsObstacle, .CanTakeDamage},
+		abilities = {{type = .Attack}, {}, {}, {}},
 		flavor_text = "You'd have mistaken it for a giant cockroach if not for the enormous, glowing red pustule this creature seems to be dragging around on its back. The sack of glowing liquid seems to make it difficult to move.",
+		base_action_cost = 120,
+	},
+	.Broodmother = EntityMeta {
+		spritesheet_coord = SPRITE_COORD_BROODMOTHER,
+		team = .Darkness,
+		max_hp = 20,
+		vision_distance = 8,
+		flags = {.IsAiControlled, .IsObstacle, .CanTakeDamage},
+		abilities = {{type = .Brood}, {}, {}, {}},
+		flavor_text = "The towering broodmother hisses and stares at you with all 8 eyes. Below her abdomen she carries a sack that seems to be writhing and pulsating, as if there's something alive in there.",
+		base_action_cost = 110,
 	},
 	.Corpse = EntityMeta{spritesheet_coord = SPRITE_COORD_CORPSE, flags = {}},
 }
@@ -142,8 +182,19 @@ entity_frame :: proc(dt: f32) {
 	}
 }
 
+entity_has_ability :: proc(entity: ^Entity, type: AbilityType) -> Maybe(^Ability) {
+	for &a in entity.meta.abilities {
+		if a.type == type do return &a
+	}
+	return nil
+}
+
 entity_turn :: proc(entity: ^Entity) {
 	effect_turn(&entity.status_effects)
+
+	for &ability in entity.meta.abilities {
+		if ability.cooldown > 0 do ability.cooldown -= 1
+	}
 }
 
 entity_set_pos :: proc(entity: ^Entity, pos: TileCoord) {
@@ -184,7 +235,17 @@ entity_clear_cmd :: proc(entity: ^Entity, clear_local := false) {
 	if clear_local do entity._local_cmd = nil
 }
 
-entity_consume_ap :: proc(entity: ^Entity, ap: i32) {
+// modified_ap: fixed.Fixed16_16
+// fixed.init_from_parts(&modified_ap, ap, 0)
+// fixed.mul()
+
+// Consumes action points, applying any entity effects
+entity_consume_ap :: proc(entity: ^Entity, multiplier := Percent(100)) {
+	mult := multiplier
+
+	if .Active in entity.status_effects[.Slowed].flags do mult += Percent(100)
+
+	ap := prism.pct_mul_i32(mult, entity.meta.base_action_cost)
 	entity.action_points -= ap
 	entity.move_seq += 1
 }

@@ -33,6 +33,10 @@ render_frame :: proc(dt: f32) {
 		render_debug_overlays()
 	}
 
+	if state.client.game.status == .Started {
+		render_mouse_cursor()
+	}
+
 	if !state.client.render.text_input_rendered_this_frame {
 		fresnel.remove_input()
 	}
@@ -351,11 +355,11 @@ render_entities :: proc(dt: f32) {
 			if cull do continue
 
 			switch id {
-			case 3:
+			case 1:
 				render_sprite(SPRITE_COORD_PLAYER_A, screen_c, alpha)
 			case 2:
 				render_sprite(SPRITE_COORD_PLAYER_B, screen_c, alpha)
-			case 1:
+			case 3:
 				render_sprite(SPRITE_COORD_PLAYER_C, screen_c, alpha)
 			case:
 				render_sprite(e.meta.spritesheet_coord, screen_c, alpha)
@@ -446,6 +450,10 @@ render_tile_cursors :: proc(dt: f32) {
 		}
 		if cmd.type == .PickUp {
 			render_sprite(SPRITE_COORD_RECT, screen_coord(state.client.cursor_pos))
+			render_sprite(
+				Sprite.CursorHand,
+				screen_coord(state.client.cursor_pos) + screen_coord_offset({0, -0.5}),
+			)
 		}
 		if cmd.type == .Throw {
 			render_sprite(SPRITE_COORD_RECT, screen_coord(state.client.cursor_pos))
@@ -576,6 +584,10 @@ render_ui :: proc(ui: UiContext, offset_in: ScreenCoord = {0, 0}) {
 			}
 		}
 	}
+}
+
+render_mouse_cursor :: proc() {
+	render_sprite(Sprite.Cursor, state.client.cursor_screen_pos)
 }
 
 @(private = "file")

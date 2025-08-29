@@ -2,9 +2,9 @@ package main
 
 ////////// CHEATS \\\\\\\\\\\\
 
-FOG_OF_WAR_OFF :: true
+FOG_OF_WAR_OFF :: false
 NO_ENEMIES :: false
-GOD_MODE :: true
+GOD_MODE :: false
 
 ////////// DEBUG OPTIONS \\\\\\\\\\
 
@@ -34,7 +34,7 @@ LOG_HOST_MESSAGES :: false
 LOG_CLIENT_MESSAGES :: false
 LOG_LOG_ENTRIES :: false
 LOG_COMMANDS :: false
-LOG_EVENTS :: true
+LOG_EVENTS :: false
 
 /////// MAGIC NUMBERS \\\\\\\\\\\
 
@@ -85,8 +85,10 @@ SPRITE_COORD_BRICK_WALL_BEHIND :: [2]f32{1 * 16, 3 * 16}
 SPRITE_COORD_PIT_WALL :: [2]f32{4 * 16, 2 * 16}
 SPRITE_COORD_SPIDER :: [2]f32{0 * 16, 2 * 16}
 SPRITE_COORD_FIREBUG :: [2]f32{4 * 16, 1 * 16}
+SPRITE_COORD_GNOME :: [2]f32{7 * 16, 2 * 16}
 SPRITE_COORD_CORPSE :: [2]f32{1 * 16, 2 * 16}
 SPRITE_COORD_WATER :: [2]f32{6 * 16, 2 * 16}
+SPRITE_COORD_BROODMOTHER :: [2]f32{3 * 16, 2 * 16}
 SPRITE_COORD_ROPE_BRIDGE :: [2]f32{6 * 16, 3 * 16}
 SPRITE_COORD_ROPE_BRIDGE_2 :: [2]f32{7 * 16, 3 * 16}
 SPRITE_COORD_CURSOR_ATTACK :: [2]f32{6 * 16, 5 * 16}
@@ -109,3 +111,4 @@ RNG_ITEM_PLACEMENT :: 0x2765bdf387cc
 RNG_AUDIO :: u64(0x8762fa86fa)
 RNG_AI :: u64(0x0897fce5ac67)
 RNG_HIT :: u64(0x81beef6263aa)
+RNG_CHARACTER_NAME :: u64(0x7fe7abc89fff)

@@ -103,18 +103,22 @@ done,imp,b4,Clicking self when over item should pick up
 done,imp,b4,Add a proper LOS algorithm
 done,imp,b4,Darken non currently visible areas
 done,feat,b4,Make potions throwable
-todo,content,b4,Add new enemy near stairwell
+done,content,b4,Potion of Lethargy (slow)
+done,content,b4,Add new enemy near stairwell
+doing,bug,b4,Broodmother shouldn't spawn through walls
+todo,imp,b5,Add escaping djikstra map and use it when enemies are too close to allies
+todo,bug,b5,Throwing should only work in line of sight
 todo,content,b5,Water potion
 todo,content,b5,Fire traps
-todo,imp,b5,Click & drag to move camera around
 todo,feat,b5,Add critical hits - chance for double max roll
-todo,bug,ideas,Store seen tile types so they don't change when out of field of view due to status effects
+todo,bug,b5,Store seen tile types so they don't change when out of field of view due to status effects
 todo,imp,b5,Potion throw targetting with keyboard
 todo,feat,b5,Sleeping enemies - can be killed instantly
 todo,content,b5,Potion of Overgrowth (expanding plant that slows and can burn up)
 todo,imp,b5,Grass crunch sound
-todo,feat,ideas,Item identification system
+todo,feat,b5,Item identification system
 todo,bug,b5,Player indicators should appear above all entities (render order)
+todo,imp,b5,Click & drag to move camera around
 todo,imp,b5,Consider setting a delay after actions (like attack) instead of after every turn
 todo,feat,b5,Button mechanism requiring multiple players to unlock a door
 todo,imp,b5,Preload and postload assets - delay loading only until preload assets

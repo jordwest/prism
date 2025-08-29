@@ -134,6 +134,9 @@ _place_stairs :: proc(pcg: ^PcgState) {
 	e := prism.djikstra_map_generate(&pcg.djikstra_algo, game_calculate_move_cost_djikstra, 5000)
 
 	stairwell_pos := TileCoord(pcg.djikstra_map.max_cost_coord)
+
+	game_spawn_entity(.Broodmother, {pos = stairwell_pos})
+
 	trace("Stairs at %w", stairwell_pos)
 	tile, ok := tile_at(stairwell_pos).?
 	if ok {
@@ -310,8 +313,8 @@ _spawn_enemies :: proc() {
 
 		if prism.tile_distance(coord - state.client.game.spawn_point) < 10 do continue
 
-		is_spider := prism.rand_splitmix_get_bool(&rng, 800)
-		new_enemy := game_spawn_entity(is_spider ? .Spider : .Firebug, {pos = coord})
+		is_gnome := prism.rand_splitmix_get_bool(&rng, 900)
+		new_enemy := game_spawn_entity(is_gnome ? .Gnome : .Firebug, {pos = coord})
 
 		spawned += 1
 	}

@@ -160,7 +160,7 @@ derived_djikstra_map_to :: proc(
 	proc(from: [2]i32, to: [2]i32) -> i32 {
 		modifiers := game_get_tile_move_modifier(TileCoord(from), TileCoord(to))
 		cost := game_move_modifiers_to_cost(modifiers)
-		if cost < 0 do return cost
+		if cost < 0 do return i32(cost)
 
 		when !FOG_OF_WAR_OFF {
 			if .Unseen in modifiers do return -1
@@ -169,7 +169,7 @@ derived_djikstra_map_to :: proc(
 		// Add cost to avoid this tile
 		if .Avoid in modifiers do cost += 50
 
-		return cost
+		return i32(cost)
 	},
 	)
 	if e != nil do return nil, error(e)

@@ -23,9 +23,20 @@ ai_evaluate :: proc(entity: ^Entity) {
 }
 
 _ai_next_cmd :: proc(e: ^Entity) -> Command {
-	target, has_target := q_entities_in_range_of(e.pos, filter_is_player_team)
-	if has_target {
-		return Command{type = .Attack, target_entity = target.id}
+	for &ability in e.meta.abilities {
+		target, has_target := q_entities_in_range_of_ability(
+			e.pos,
+			filter_is_player_team,
+			&ability,
+		)
+
+		if ability.type == .Attack && has_target {
+			return Command{type = .Attack, target_entity = target.id}
+		}
+
+		if ability.type == .Brood && has_target && ability.cooldown <= 0 {
+			return Command{type = .Brood}
+		}
 	}
 
 	dmap, err := derived_allies_djikstra_map()
@@ -37,3 +48,5 @@ _ai_next_cmd :: proc(e: ^Entity) -> Command {
 
 	return Command{type = .MoveTowardsAllies}
 }
+
+ai_next_move_pos :: proc(e: ^Entity) -> TileCoord

@@ -88,34 +88,23 @@ game_check_win_condition :: proc() {
 	}
 }
 
-game_move_modifiers_to_cost :: proc(modifiers: bit_set[MoveModifier]) -> i32 {
-	cost: i32 = 100
+game_move_modifiers_to_cost :: proc(modifiers: bit_set[MoveModifier]) -> Percent {
 	if .Blocked in modifiers do return -1
-	if .Slow in modifiers do cost += 100
-	return cost
+	if .Slow in modifiers do return Percent(200)
+	return Percent(100)
 }
 
-game_calculate_move_cost :: proc(entity: ^Entity, from: TileCoord, to: TileCoord) -> i32 {
+game_calculate_move_cost :: proc(entity: ^Entity, from: TileCoord, to: TileCoord) -> Percent {
 	modifiers := game_get_tile_move_modifier(TileCoord(from), TileCoord(to))
 	cost := game_move_modifiers_to_cost(modifiers)
-	if .IsFast in entity.meta.flags do cost = i32(f32(cost) * 0.8)
-	if .IsSlow in entity.meta.flags do cost = i32(f32(cost) * 1.2)
-
-	if .Active in entity.status_effects[.Slowed].flags {
-		cost = cost * EFF_SLOW_FACTOR
-	}
 
 	return cost
 }
-
-// //
-// game_calculate_move_cost_djikstra_player :: proc(from: [2]i32, to: [2]i32) -> i32 {
-// }
 
 game_calculate_move_cost_djikstra :: proc(from: [2]i32, to: [2]i32) -> i32 {
 	modifiers := game_get_tile_move_modifier(TileCoord(from), TileCoord(to))
 	cost := game_move_modifiers_to_cost(modifiers)
-	if cost < 0 do return cost
+	if cost < 0 do return i32(cost)
 
 	// Add a slight increase to discourage diagonals
 	// if math.abs(to.x - from.x) + math.abs(to.y - from.y) > 1 do cost += 10
@@ -123,7 +112,7 @@ game_calculate_move_cost_djikstra :: proc(from: [2]i32, to: [2]i32) -> i32 {
 	// Add cost to avoid this tile
 	if .Avoid in modifiers do cost += 50
 
-	return cost
+	return i32(cost)
 }
 
 game_entity_at :: proc(

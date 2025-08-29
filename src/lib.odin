@@ -264,6 +264,8 @@ app_context :: proc() -> runtime.Context {
 	return context
 }
 
+Percent :: prism.Percent
+
 serialize :: proc {
 	state_serialize,
 	command_serialize,
@@ -289,6 +291,11 @@ rng_new :: proc(stream: u64) -> prism.SplitMixState {
 rng_dice :: prism.rand_splitmix_get_dice_roll
 rng_range :: prism.rand_splitmix_get_i32_range
 rng_bool :: prism.rand_splitmix_get_bool
+rng_seed_random :: proc(rng: ^prism.SplitMixState) {
+	bytes: [4]u8
+	fresnel.fill_slice_random(bytes[:])
+	rng_add(rng, transmute(i32)bytes)
+}
 rng_add :: proc {
 	prism.rand_splitmix_add_f32,
 	prism.rand_splitmix_add_i32,

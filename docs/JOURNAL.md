@@ -636,4 +636,18 @@ Next up is setting up a new enemy, maybe tweaking the existing ones a bit. I cou
 
 I think first thing that makes sense is to add status effects - that applies to so many items. Need some status effect to get started, I might just use slow since it doesn't need any new stats.
 
-Ok got slow status effect in place. Next need to trigger it somehow. New potion I think.
+Ok got slow status effect in place. Next need to trigger it somehow. New potion I think. Got lethargy potion. Also refactored action post costs. Entity has base move cost, that's multiplied by tile properties on movement, and any entity status effects are added on top.
+
+Added silly name generator. Tomorrow, limiting potion throwing to visible areas and walls should block.
+
+Had this thought that upgrading could be done with "binding" weapons. So, instead of a scroll of enchant only enchanting a selected item, instead it enchants all "bound" weapons/rings/items. Binding a weapon is permanent (unless you find a potion/scroll of unbind).
+
+This makes the player commit to a build, the earlier the better, and allows them to really upgrade that build. It also would solve the issue of sharing scrolls of enchant - by just having it apply to all bound items on all players in the party at once.
+
+Only thing that might not be very fun is finding cooler items later and not being able to use them. I guess an unbind potion could solve that, but the items would be very low level (although maybe chance could allow for improved weapons?)
+
+# Friday 28 Aug 2025
+
+Thinking today that having shared items might be a bit boring because you don't get to make as many decisions on your own. I guess having equipment does give each player a unique advantage, so maybe the items need to interact with player equipment in some way. Something to think about.
+
+Working on adding the broodmother back in.

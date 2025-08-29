@@ -28,6 +28,14 @@ client_boot :: proc(width: i32, height: i32) -> Error {
 	state.client.game.pcg = pcg
 	procgen_init(pcg)
 
+	// Generate a random character name
+	rng := rng_new(RNG_CHARACTER_NAME)
+	rng_seed_random(&rng)
+	state.client.my_display_name = prism.bufstring_from_string(
+		32,
+		name_player_generate(&rng, alloc = persistent_arena_alloc),
+	)
+
 	state.client.ui.current_menu = .MainMenu
 	state.client.ui.input_destination = .DisplayName
 
