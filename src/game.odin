@@ -1,5 +1,6 @@
 package main
 
+import "core:container/queue"
 import "core:math"
 import "core:mem"
 import "prism"
@@ -78,11 +79,12 @@ game_check_lose_condition :: proc() {
 game_check_win_condition :: proc() {
 	for _, player in state.client.game.players {
 		entity, ok := entity(player.player_entity_id).?
-		// A player is still alive, game is not over
 		if !ok do continue
 
+		_, broodmother_alive := entity_find({type = .ByEntityType, entity_type = .Broodmother}).?
+
 		tile, valid_tile := tile_at(entity.pos).?
-		if tile.type == .StairsDown {
+		if tile.type == .StairsDown && !broodmother_alive {
 			event_fire(EventGameWon{})
 		}
 	}
@@ -159,6 +161,7 @@ game_is_coord_free :: proc(coord: [2]i32) -> bool {
 @(private = "file")
 temp_entities: [20]^Entity
 
+// Nearest space that's open, ignoring pathability
 game_find_nearest_traversable_space :: proc(
 	start: TileCoord,
 	max_distance: i32 = 10,
@@ -189,6 +192,56 @@ game_find_nearest_traversable_space :: proc(
 					if .Traversable in tile.flags do return out_coord, true
 				}
 			}
+		}
+	}
+
+	return {}, false
+}
+
+@(private)
+_visited: [LEVEL_WIDTH][LEVEL_HEIGHT]bool
+
+// Similar to game_find_nearest_traversable_space but pathfinds from origin,
+// returning the first space that doesn't contain a non-obstructing entity
+game_find_nearest_pathable_space :: proc(
+	start: TileCoord,
+	max_distance: i32 = 10,
+) -> (
+	out_coord: TileCoord,
+	ok: bool,
+) {
+	mem.zero_slice(_visited[:])
+
+	arena_free(&arena_16k)
+	coord_queue: queue.Queue(TileCoord)
+	queue.init(&coord_queue, 128, allocator = arena_16k.allocator)
+	queue.push_back(&coord_queue, start)
+
+	for {
+		coord, ok := queue.pop_front_safe(&coord_queue)
+		if !ok do break
+
+		trace("Checking coord %w", coord)
+		_visited[coord.x][coord.y] = true
+
+		tile, valid_tile := tile_at(coord).?
+		if !valid_tile do continue
+		if .Traversable not_in tile.flags do continue
+
+		if prism.tile_distance(coord - start) > max_distance do continue
+
+		entities := derived_entities_at(coord)
+		if entities.obstacle != nil {
+			// Pathable, but currently occupied, search neighbours
+			for neighbour_offset in prism.NEIGHBOUR_TILES_8D {
+				neighbour := coord + TileCoord(neighbour_offset)
+				if _visited[neighbour.x][neighbour.y] do continue
+
+				queue.push_back(&coord_queue, neighbour)
+			}
+		} else {
+			// Space seems free, return it!
+			return coord, true
 		}
 	}
 

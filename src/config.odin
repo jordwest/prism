@@ -2,12 +2,13 @@ package main
 
 ////////// CHEATS \\\\\\\\\\\\
 
-FOG_OF_WAR_OFF :: false
+FOG_OF_WAR_OFF :: true
 NO_ENEMIES :: false
-GOD_MODE :: false
+GOD_MODE :: true
 
 ////////// DEBUG OPTIONS \\\\\\\\\\
 
+DEBUG_TEST_ROOM_ENABLED :: false
 DEBUG_SPECTATE :: false
 DEBUG_TURN_STEPPING :: false
 DEBUG_OVERLAYS_ENABLED :: false

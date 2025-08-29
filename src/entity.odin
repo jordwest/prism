@@ -97,6 +97,13 @@ entity_or_error :: proc(id: EntityId) -> (^Entity, Error) {
 	return e, nil
 }
 
+entity_find :: proc(filter_info: EntityFilter) -> Maybe(^Entity) {
+	for _, &e in state.client.game.entities {
+		if filter(filter_info, &e) do return &e
+	}
+	return nil
+}
+
 entity_meta: [EntityMetaId]EntityMeta = {
 	.None = EntityMeta{spritesheet_coord = {0, 0}},
 	.Player = EntityMeta {
@@ -126,7 +133,7 @@ entity_meta: [EntityMetaId]EntityMeta = {
 		vision_distance = 8,
 		flags = {.IsAiControlled, .IsObstacle, .CanTakeDamage},
 		abilities = {{type = .Attack}, {}, {}, {}},
-		flavor_text = "",
+		flavor_text = "The small gnome doesn't look like much of a threat, but for some reason appears disgruntled at your presence.",
 		base_action_cost = 100,
 	},
 	.Firebug = EntityMeta {

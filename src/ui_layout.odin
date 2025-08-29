@@ -577,9 +577,13 @@ ui_layout_tooltip :: proc() -> clay.ClayArray(clay.RenderCommand) {
 		[]Maybe(^Entity){entities_at_cursor.obstacle, entities_at_cursor.ground},
 	).?
 
-	if !ui_tooltip_latch && state.t - state.client.cursor_last_moved < 0.5 do return clay.EndLayout()
+	item_on_tile, _, _ := container_first_item(state.client.cursor_pos)
+	item, has_item := item_on_tile.?
 
-	if state.client.cursor_over_ui || (!has_hover_entity && !state.debug.render_debug_overlays) {
+	if !ui_tooltip_latch && state.t - state.client.cursor_last_moved < 0.1 do return clay.EndLayout()
+
+	if state.client.cursor_over_ui ||
+	   (!has_hover_entity && !has_item && !state.debug.render_debug_overlays) {
 		ui_tooltip_latch = false
 		return clay.EndLayout()
 	}
@@ -663,6 +667,15 @@ ui_layout_tooltip :: proc() -> clay.ClayArray(clay.RenderCommand) {
 					_add_fmt_text("%w", hover_entity.status_effects)
 					_add_fmt_text("%v", hover_entity.cmd)
 					_add_fmt_text("%v", hover_entity.meta.flags)
+				}
+			}
+
+			// TODO: Multiple items on tile?
+			if has_item {
+				if has_hover_entity {
+					_add_fmt_text("There is also a Potion of %s on the ground", item.type)
+				} else {
+					_add_fmt_text("Potion of %s", item.type)
 				}
 			}
 

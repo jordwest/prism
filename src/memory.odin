@@ -32,6 +32,8 @@ _tmp_16k: [16384]u8
 
 pad_before_state: prism.MemPadding
 
+arena_16k: Arena(16384)
+
 state: AppState
 
 arena_containers: Arena(102400) // containers.odin
@@ -45,6 +47,7 @@ clay_memory_tooltip: [2558368]u8
 pad_after_clay: prism.MemPadding
 
 _memory_init_done: bool
+
 
 @(private = "file")
 _init_arena :: proc(arena: ^Arena($T)) {
@@ -83,6 +86,7 @@ memory_init :: proc() {
 
 	_init_arena(&arena_ui_frame)
 	_init_arena(&arena_containers)
+	_init_arena(&arena_16k)
 
 	fresnel.log_i32("persistent mem loc", i32(uintptr(&persistent_memory)))
 	fresnel.log_i32("state_mem_start", i32(uintptr(&state)))

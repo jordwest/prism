@@ -228,10 +228,19 @@ _try_add_room :: proc(
 
 		game_spawn_entity(.Firebug, {pos = TileCoord(pos)})
 
+		item_spawn(
+			{container_id = prism.aabb_rand_tile_coord(island, &rng), count = 1, type = .Healing},
+		)
+		item_spawn(
+			{container_id = prism.aabb_rand_tile_coord(island, &rng), count = 1, type = .Fire},
+		)
+		item_spawn(
+			{container_id = prism.aabb_rand_tile_coord(island, &rng), count = 1, type = .Lethargy},
+		)
+
 		is_pit = true
 		pcg.room_type_count[.Pit] += 1
 	} else {
-		// tile_draw_room(TileCoord({x, y}), Vec2i({width, height}))
 		tile_draw_outline(outer_rect)
 		tile_draw_fill(prism.aabb_grow(outer_rect, -1))
 		pcg.room_type_count[.Normal] += 1
@@ -299,9 +308,12 @@ _add_grass :: proc() {
 _spawn_enemies :: proc() {
 	rng := prism.rand_splitmix_create(state.client.game.seed, RNG_ROOM_PLACEMENT)
 
-	spawn_max := 12 * len(state.client.game.players)
+	player_count := i32(len(state.client.game.players))
+	spawn_count := int(rng_dice(&rng, player_count, 16))
+	trace("Spawning %d enemies", spawn_count)
+
 	spawned := 0
-	for i := 0; i < 100 && spawned < spawn_max; i += 1 {
+	for i := 0; i < 1000 && spawned < spawn_count; i += 1 {
 		x := prism.rand_splitmix_get_i32_range(&rng, 0, LEVEL_WIDTH)
 		y := prism.rand_splitmix_get_i32_range(&rng, 0, LEVEL_HEIGHT)
 		coord := TileCoord({x, y})
@@ -324,11 +336,22 @@ _spawn_enemies :: proc() {
 _spawn_items :: proc() {
 	rng := rng_new(RNG_ITEM_PLACEMENT)
 
-	spawn_max := 5
-	spawned := 0
-	for i := 0; i < 100 && spawned < spawn_max; i += 1 {
-		x := rng_range(&rng, 0, LEVEL_WIDTH)
-		y := rng_range(&rng, 0, LEVEL_HEIGHT)
+	player_count := i32(len(state.client.game.players))
+
+	_spawn_item_type(&rng, rng_dice(&rng, 2, player_count), .Fire)
+	_spawn_item_type(&rng, rng_dice(&rng, 2, player_count), .Healing)
+	_spawn_item_type(&rng, rng_dice(&rng, 2, player_count), .Lethargy)
+
+	containers_reset()
+}
+
+@(private = "file")
+_spawn_item_type :: proc(rng: ^prism.SplitMixState, count: i32, item_type: ItemTypes) {
+	spawned: i32 = 0
+	trace("Spawning %d potions of %s", count, item_type)
+	for i: i32 = 0; i < 100 && spawned < count; i += 1 {
+		x := rng_range(rng, 0, LEVEL_WIDTH)
+		y := rng_range(rng, 0, LEVEL_HEIGHT)
 		coord := TileCoord({x, y})
 
 		tile, valid := tile_at(coord).?
@@ -336,22 +359,8 @@ _spawn_items :: proc() {
 
 		if .Traversable not_in tile.flags do continue
 
-		if prism.tile_distance(coord - state.client.game.spawn_point) < 15 do continue
-
-		potion_n := rng_range(&rng, 0, 100)
-		potion_type := PotionType.Fire
-		switch {
-		case potion_n <= 20:
-			potion_type = PotionType.Fire
-		case potion_n <= 60:
-			potion_type = PotionType.Healing
-		case:
-			potion_type = PotionType.Lethargy
-		}
-		item_spawn(ItemStack{container_id = coord, type = potion_type, count = 1})
+		item_spawn(ItemStack{container_id = coord, type = item_type, count = 1})
 
 		spawned += 1
 	}
-
-	containers_reset()
 }

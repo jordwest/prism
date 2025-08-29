@@ -61,12 +61,16 @@ _on_game_started :: proc(entry: LogEntryGameStarted) -> Error {
 	info("Starting game with seed 0x%x", entry.game_seed)
 	state.client.game.seed = entry.game_seed
 
-	t0 := fresnel.now()
-	for !pcg.done {
-		procgen_iterate(pcg)
+	when DEBUG_TEST_ROOM_ENABLED {
+		debug_generate_test_room()
+	} else {
+		t0 := fresnel.now()
+		for !pcg.done {
+			procgen_iterate(pcg)
+		}
+		t1 := fresnel.now()
+		pcg.total_time += (t1 - t0)
 	}
-	t1 := fresnel.now()
-	pcg.total_time += (t1 - t0)
 
 	fresnel.metric_i32("djikstra_iterations", pcg.djikstra_map.iterations)
 
@@ -89,14 +93,6 @@ _on_game_started :: proc(entry: LogEntryGameStarted) -> Error {
 			container_id = SharedLootContainer,
 			count = player_count,
 			type = PotionType.Healing,
-		},
-		in_batch = true,
-	)
-	item_spawn(
-		ItemStack {
-			container_id = SharedLootContainer,
-			count = player_count,
-			type = PotionType.Lethargy,
 		},
 		in_batch = true,
 	)

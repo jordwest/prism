@@ -130,16 +130,17 @@ _brood :: proc(entity: ^Entity) -> CommandOutcome {
 	brood, can_brood := entity_has_ability(entity, .Brood).?
 	if !can_brood do return .CommandFailed
 
-	brood.cooldown = 6
-
-	entity_consume_ap(entity, Percent(100))
-
 	for i := 0; i < len(state.client.game.players); i += 1 {
-		spawn_pos, ok := game_find_nearest_traversable_space(entity.pos)
+		spawn_pos, ok := game_find_nearest_pathable_space(entity.pos)
+		if !ok do trace("Failed to find spawnable pos")
 		if !ok do return i == 0 ? .CommandFailed : .OkNext
 
+		trace("Spawning at %w", spawn_pos)
 		game_spawn_entity(.Spider, {pos = spawn_pos})
 	}
+
+	brood.cooldown = 6
+	entity_consume_ap(entity, Percent(100))
 	return .OkNext
 }
 
@@ -156,7 +157,7 @@ _attack :: proc(e: ^Entity) -> CommandOutcome {
 	if dist_to_target == 1 {
 		// Melee
 		is_hit := rng_bool(&rng, 900)
-		dmg := rng_dice(&rng, {3, 3})
+		dmg := rng_dice(&rng, 3, 2)
 
 		if is_hit {
 			event_fire(EventEntityHurt{dmg = dmg, source_id = e.id, target_id = target.id})

@@ -28,8 +28,9 @@ EventPotionConsume :: struct {
 }
 
 EventPotionActivateAt :: struct {
-	item_id: ItemId,
-	pos:     TileCoord,
+	item_id:  ItemId,
+	pos:      TileCoord,
+	consumed: bool,
 }
 
 EventEntityHeal :: struct {
@@ -289,7 +290,7 @@ _potion_consume :: proc(evt: ^EventPotionConsume) -> Error {
 		)
 	}
 
-	event_fire(EventPotionActivateAt{item_id = item.id, pos = entity.pos})
+	event_fire(EventPotionActivateAt{item_id = item.id, pos = entity.pos, consumed = true})
 
 	return nil
 }

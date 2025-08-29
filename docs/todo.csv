@@ -105,11 +105,16 @@ done,imp,b4,Darken non currently visible areas
 done,feat,b4,Make potions throwable
 done,content,b4,Potion of Lethargy (slow)
 done,content,b4,Add new enemy near stairwell
-doing,bug,b4,Broodmother shouldn't spawn through walls
+done,devtool,b4,Test area - skip procgen and generate a test room
+done,bug,b4,Broodmother shouldn't spawn through walls
+done,imp,b4,Balance potion generation
+done,imp,b4,Show item info in tooltip
+todo,imp,b4,Stack items when added to same container
 todo,imp,b5,Add escaping djikstra map and use it when enemies are too close to allies
 todo,bug,b5,Throwing should only work in line of sight
 todo,content,b5,Water potion
 todo,content,b5,Fire traps
+todo,imp,b5,Area of effect for potion
 todo,feat,b5,Add critical hits - chance for double max roll
 todo,bug,b5,Store seen tile types so they don't change when out of field of view due to status effects
 todo,imp,b5,Potion throw targetting with keyboard

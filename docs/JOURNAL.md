@@ -650,4 +650,4 @@ Only thing that might not be very fun is finding cooler items later and not bein
 
 Thinking today that having shared items might be a bit boring because you don't get to make as many decisions on your own. I guess having equipment does give each player a unique advantage, so maybe the items need to interact with player equipment in some way. Something to think about.
 
-Working on adding the broodmother back in.
+Working on adding the broodmother back in. Broodmother done, but the issue is that it spawns spiders through walls.
