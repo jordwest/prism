@@ -148,9 +148,10 @@ djikstra_next :: proc(
 	dmap: ^DjikstraMap($Width, $Height),
 	coord_in: [2]i32,
 	is_coord_free: proc(_: [2]i32) -> bool = _always_returns_true,
+	desired_cost: i32 = 0,
 ) -> (
 	coord_out: [2]i32,
-	lowest_cost: i32,
+	best_cost: i32,
 	ok: bool,
 ) {
 	coord_out = coord_in
@@ -159,7 +160,7 @@ djikstra_next :: proc(
 	tile, valid_tile := djikstra_tile(dmap, coord_in).?
 	if !valid_tile do return
 
-	lowest_cost = tile.cost.? or_else bits.I32_MAX
+	best_cost = tile.cost.? or_else bits.I32_MAX
 
 	for offset in NEIGHBOUR_TILES_8D {
 		check_coord := coord_in + offset
@@ -167,15 +168,18 @@ djikstra_next :: proc(
 		if !valid_tile do continue
 		cost, has_cost := tile.cost.?
 		if !has_cost do continue
-		if cost > lowest_cost do continue
+
+		relative_cost := math.abs(cost - desired_cost)
+
+		if relative_cost > math.abs(best_cost - desired_cost) do continue
 		if cost != 0 && !is_coord_free(check_coord) do continue
 
-		lowest_cost = cost
+		best_cost = cost
 		coord_out = check_coord
 		ok = true
 	}
 
-	return coord_out, lowest_cost, ok
+	return coord_out, best_cost, ok
 }
 
 @(private = "file")
