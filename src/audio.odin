@@ -43,6 +43,7 @@ audio_frame :: proc() {
 
 	audio := &state.client.audio
 	if .Fire in audio.ambience {fresnel.play(200)} else {fresnel.stop(200)}
+	fresnel.play(201) // Ambient dungeon sound
 
 	if state.client.game.enemies_killed >= 5 && !state.client.audio.intro_music_played do audio_play(.IntroSong)
 

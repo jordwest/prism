@@ -95,6 +95,11 @@
       "id": 200,
       "filename": "fire.mp3",
       "type": "audio"
+    },
+    {
+      "id": 201,
+      "filename": "ambience.mp3",
+      "type": "audio"
     }
   ],
   "input": {

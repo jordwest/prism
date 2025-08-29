@@ -388,9 +388,9 @@ command_for_tile :: proc(coord: TileCoord) -> Command {
 		return Command{}
 	}
 
-	first_item, has_more_than_1_item, _ := container_first_item(coord)
+	first_item, _has_more_than_1_item, _ := container_first_item(coord)
 	item, has_item := first_item.?
-	if has_item && !has_more_than_1_item {
+	if has_item {
 		return Command{type = .PickUp, pos = coord, target_item = item.id}
 	}
 
