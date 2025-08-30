@@ -143,7 +143,7 @@ entity_meta: [EntityMetaId]EntityMeta = {
 		vision_distance = 4,
 		flags = {.IsAiControlled, .IsObstacle, .CanTakeDamage},
 		abilities = {{type = .Attack}, {}, {}, {}},
-		flavor_text = "You'd have mistaken it for a giant cockroach if not for the enormous, glowing red pustule this creature seems to be dragging around on its back. The sack of glowing liquid seems to make it difficult to move.",
+		flavor_text = "You'd have mistaken it for a giant cockroach if not for the enormous, glowing red pustule this creature seems to be dragging around on its back. The sac of glowing liquid seems to make it difficult to move.",
 		base_action_cost = 120,
 	},
 	.Broodmother = EntityMeta {
@@ -153,7 +153,7 @@ entity_meta: [EntityMetaId]EntityMeta = {
 		vision_distance = 8,
 		flags = {.IsAiControlled, .IsObstacle, .CanTakeDamage},
 		abilities = {{type = .Brood}, {}, {}, {}},
-		flavor_text = "The towering broodmother hisses and stares at you with all 8 eyes. Below her abdomen she carries a sack that seems to be writhing and pulsating, as if there's something alive in there.",
+		flavor_text = "The towering broodmother hisses and stares at you with all 8 eyes. Below her abdomen she carries a sac that seems to be writhing and pulsating, as if there's something alive in there.",
 		base_action_cost = 110,
 	},
 	.Corpse = EntityMeta{spritesheet_coord = SPRITE_COORD_CORPSE, flags = {}},

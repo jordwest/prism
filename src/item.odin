@@ -55,10 +55,24 @@ item_despawn :: proc(item_id: ItemId) {
 }
 
 item_set_container :: proc(item: ^ItemStack, container_id: ContainerId) {
+	// Check container to see if there's already the same item
+	iter := container_iterator(container_id)
+	for other_item in container_iterate(&iter) {
+		// TODO: Limit stack size?
+		if other_item.type == item.type {
+			other_item.count += item.count
+			item_despawn(item.id)
+
+			containers_reset()
+			return
+		}
+	}
+
 	item.container_id = container_id
 	// TODO: Consolidate stacks in the container here before reset
 	// (eg two stacks of 1 potion should become 1 stack of 2)
 	// if item_can_combine(item1, item2) { ... }
+
 	containers_reset()
 }
 

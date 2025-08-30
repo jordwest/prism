@@ -2,9 +2,9 @@ package main
 
 ////////// CHEATS \\\\\\\\\\\\
 
-FOG_OF_WAR_OFF :: true
+FOG_OF_WAR_OFF :: false
 NO_ENEMIES :: false
-GOD_MODE :: true
+GOD_MODE :: false
 
 ////////// DEBUG OPTIONS \\\\\\\\\\
 

@@ -109,7 +109,10 @@ done,devtool,b4,Test area - skip procgen and generate a test room
 done,bug,b4,Broodmother shouldn't spawn through walls
 done,imp,b4,Balance potion generation
 done,imp,b4,Show item info in tooltip
-todo,imp,b4,Stack items when added to same container
+done,imp,b4,Stack items when added to same container
+todo,imp,b5,Remove mouse cursors
+todo,bug,b5,Wrap storage with exception handlers for Firefox Enhanced Tracking protection
+todo,imp,b5,Ignore clicks in a tile if an entity just died there
 todo,imp,b5,Add escaping djikstra map and use it when enemies are too close to allies
 todo,bug,b5,Throwing should only work in line of sight
 todo,content,b5,Water potion
@@ -119,6 +122,7 @@ todo,feat,b5,Add critical hits - chance for double max roll
 todo,bug,b5,Store seen tile types so they don't change when out of field of view due to status effects
 todo,imp,b5,Potion throw targetting with keyboard
 todo,feat,b5,Sleeping enemies - can be killed instantly
+todo,feat,b5,Lobby with room list and password protection
 todo,content,b5,Potion of Overgrowth (expanding plant that slows and can burn up)
 todo,imp,b5,Grass crunch sound
 todo,feat,b5,Item identification system
