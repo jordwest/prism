@@ -48,9 +48,9 @@ rand_splitmix_get_i32_range :: proc(
 	return min + i32(state.z % u64(max - min))
 }
 
-rand_splitmix_get_dice_roll :: proc(state: ^SplitMixState, dice_num_sides: []i32) -> i32 {
+rand_splitmix_get_dice_roll :: proc(state: ^SplitMixState, sides: i32, die: i32 = 1) -> i32 {
 	total: i32 = 0
-	for sides in dice_num_sides {
+	for i: i32 = 0; i < die; i += 1 {
 		total += rand_splitmix_get_i32_range(state, 1, sides + 1)
 	}
 	return total
