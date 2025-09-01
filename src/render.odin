@@ -309,9 +309,9 @@ render_items :: proc() {
 			if !valid_tile do continue
 			if .Seen not_in tile.flags do continue
 
-			iter := container_iterator(container_id)
+			iter := into_iter(container_id)
 			// Only render one item
-			item, _, ok := container_iterate(&iter)
+			item, _, ok := iterate(&iter)
 			if !ok do continue
 			switch t in item.type {
 			case PotionType:

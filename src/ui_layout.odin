@@ -119,11 +119,11 @@ ui_layout_screen :: proc() -> clay.ClayArray(clay.RenderCommand) {
 				}
 
 				player_entity_id := state.client.controlling_entity_id
-				inventory_iter := container_iterator(SharedLootContainer)
+				inventory_iter := into_iter(SharedLootContainer)
 				mode := ui_mode()
 				activate_mode, is_activating_item := mode.(UiActivatingItem)
 
-				for item in container_iterate(&inventory_iter) {
+				for item in iterate(&inventory_iter) {
 					is_activating_this_item :=
 						is_activating_item && activate_mode.item_id == item.id
 					if clay.UI()(
@@ -150,21 +150,21 @@ ui_layout_screen :: proc() -> clay.ClayArray(clay.RenderCommand) {
 							},
 						},
 						) {
-							ui_button(
+							button(
 								{
 									on_hover = input_on_hover_consume,
 									on_hover_user_data = item,
 									text = "Consume",
 								},
 							)
-							ui_button(
+							button(
 								{
 									text = "Throw",
 									on_hover = input_on_hover_throw,
 									on_hover_user_data = item,
 								},
 							)
-							ui_button(
+							button(
 								{
 									text = "Drop",
 									on_hover = input_on_hover_drop,
@@ -293,7 +293,7 @@ ui_component_lobby :: proc() {
 	}
 
 	if state.host.is_host {
-		ui_button(
+		button(
 			{
 				text = "Start game",
 				on_hover = input_on_hover_start_game,
@@ -363,10 +363,10 @@ ui_component_menu :: proc() {
 
 	empty_display_name := prism.bufstring_as_str(&state.client.my_display_name) == ""
 
-	ui_button(
+	button(
 		{text = "Host game", on_hover = input_on_hover_host_game, disabled = empty_display_name},
 	)
-	ui_button(
+	button(
 		{text = "Join game", on_hover = input_on_hover_join_game, disabled = empty_display_name},
 	)
 }
@@ -421,7 +421,7 @@ ui_component_join :: proc() {
 		}
 	}
 
-	ui_button(
+	button(
 		{
 			text = "Join game",
 			on_hover = input_on_hover_join_game,
@@ -534,13 +534,13 @@ HoverProc :: proc "c" (
 	user_data: rawptr,
 )
 
-UiButtonProps :: struct {
+ButtonProps :: struct {
 	disabled:           bool,
 	text:               string,
 	on_hover:           HoverProc,
 	on_hover_user_data: rawptr,
 }
-ui_button :: proc(props: UiButtonProps) {
+button :: proc(props: ButtonProps) {
 	if clay.UI()(
 	{
 		layout = {

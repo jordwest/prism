@@ -298,3 +298,13 @@ rng_add :: proc {
 	prism.rand_splitmix_add_int,
 	prism.rand_splitmix_add_u64,
 }
+
+into_iter :: proc {
+	container_iterator,
+	prism.aabb_iterator,
+}
+
+iterate :: proc {
+	container_iterate,
+	prism.aabb_iterate,
+}

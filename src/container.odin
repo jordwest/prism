@@ -112,8 +112,8 @@ container_first_item :: proc(
 	has_more: bool,
 	more: ContainerIterator,
 ) {
-	iter := container_iterator(container_id)
-	item, _, ok := container_iterate(&iter)
+	iter := into_iter(container_id)
+	item, _, ok := iterate(&iter)
 	if !ok do return nil, false, iter
 	has_more = iter.list_iter.curr != nil
 	return item, has_more, iter

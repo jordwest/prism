@@ -88,8 +88,8 @@ tile_draw :: proc(pos: TileCoord, type: TileType) {
 
 tile_create_fireball :: proc(at: TileCoord, radius: f32, fuel: i32) {
 	r := i32(radius)
-	iter := prism.aabb_iterator(prism.aabb(Vec2i(at) - {r, r}, Vec2i({r * 2 + 1, r * 2 + 1})))
-	for pos in prism.aabb_iterate(&iter) {
+	iter := into_iter(prism.aabb(Vec2i(at) - {r, r}, Vec2i({r * 2 + 1, r * 2 + 1})))
+	for pos in iterate(&iter) {
 		tile, valid_tile := tile_at(TileCoord(pos)).?
 
 		dist := linalg.length(vec2f(pos) - vec2f(at))
@@ -132,8 +132,8 @@ tile_handle_turn :: proc() {
 				state.client.audio.ambience += {.Fire}
 
 				// Spread fire
-				iter := prism.aabb_iterator(prism.aabb(Vec2i(pos) - {1, 1}, Vec2i({3, 3})))
-				for pos in prism.aabb_iterate(&iter) {
+				iter := into_iter(prism.aabb(Vec2i(pos) - {1, 1}, Vec2i({3, 3})))
+				for pos in iterate(&iter) {
 					neighbour, valid_tile := tile_at(TileCoord(pos)).?
 					is_flammable := .Flammable in neighbour.flags || .Grass in neighbour.flags
 					if !prism.aabb_is_edge(iter.aabb, pos) do continue
@@ -146,8 +146,8 @@ tile_handle_turn :: proc() {
 }
 
 tile_draw_outline :: proc(aabb: prism.Aabb(i32), type: TileType = .BrickWall) {
-	iter := prism.aabb_iterator(aabb)
-	for pos in prism.aabb_iterate(&iter) {
+	iter := into_iter(aabb)
+	for pos in iterate(&iter) {
 		tile, ok := tile_at(TileCoord(pos)).?
 		if !ok do continue
 		if prism.aabb_is_edge(aabb, pos) do tile_set_type(tile, type)
@@ -155,8 +155,8 @@ tile_draw_outline :: proc(aabb: prism.Aabb(i32), type: TileType = .BrickWall) {
 }
 
 tile_draw_fill :: proc(aabb: prism.Aabb(i32), type: TileType = .Floor) {
-	iter := prism.aabb_iterator(aabb)
-	for pos in prism.aabb_iterate(&iter) {
+	iter := into_iter(aabb)
+	for pos in iterate(&iter) {
 		tile, ok := tile_at(TileCoord(pos)).?
 		if !ok do continue
 		tile_set_type(tile, type)
