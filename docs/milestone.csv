@@ -1,8 +1,0 @@
-id,title,time_budget,logged_time
-b1,b1 - First playtest,4,17
-b2,b2 - C# rewrite,17,42
-b3,b3 - Odin rewrite,40,87.5
-b4,b4 - First odin playtest,20,0
-b5,b5 - Content and itch release,<null>,<null>
-b6,b6 - Itch release followup,<null>,<null>
-ideas,Future ideas,0,0

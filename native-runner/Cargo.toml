@@ -1,7 +1,0 @@
-[package]
-name = "native-runner"
-version = "0.1.0"
-edition = "2024"
-
-[dependencies]
-tinywasm = { git = "https://github.com/explodingcamera/tinywasm.git", branch = "next" }
