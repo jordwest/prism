@@ -111,7 +111,8 @@ done,imp,b4,Balance potion generation
 done,imp,b4,Show item info in tooltip
 done,imp,b4,Stack items when added to same container
 done,imp,b5,Remove mouse cursors
-todo,bug,b5,Wrap storage with exception handlers for Firefox Enhanced Tracking protection
+done,bug,b5,Wrap storage with exception handlers for Firefox Enhanced Tracking protection
+doing,refactor,b5,Switch to git subtree
 todo,content,b5,Add multiple dungeon levels
 todo,imp,b5,Ignore clicks in a tile if an entity just died there
 todo,imp,b5,Add escaping djikstra map and use it when enemies are too close to allies
