@@ -12,7 +12,7 @@ q_obstacle_at :: proc(pos: TileCoord) -> (^Entity, bool) {
 
 q_entities_in_range_of_ability :: proc(
 	pos: TileCoord,
-	filter: EntityFilterProc,
+	filter: EntityFilter,
 	ability: ^Ability,
 ) -> (
 	^Entity,
@@ -33,7 +33,7 @@ q_entities_in_range_of_ability :: proc(
 
 q_entities_in_range_of :: proc(
 	pos: TileCoord,
-	filter: EntityFilterProc,
+	filter: EntityFilter,
 	max_distance: i32 = 1,
 ) -> (
 	^Entity,

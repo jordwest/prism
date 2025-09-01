@@ -211,7 +211,7 @@ _entity_slow :: proc(evt: ^EventEntitySlow) -> Error {
 _entity_visibility_changed :: proc(evt: ^EventEntityVisibilityChanged) -> Error {
 	entity := entity_or_error(evt.entity_id) or_return
 
-	if filter_is_enemy(entity) && evt.visible {
+	if entity.meta.team == .Darkness && evt.visible {
 		// Enemy became visible, clear all player commands
 		for _, &e in state.client.game.entities {
 			if e.player_id == nil do continue

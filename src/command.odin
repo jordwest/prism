@@ -377,7 +377,7 @@ command_for_tile :: proc(coord: TileCoord) -> Command {
 		return Command{type = .Throw, target_item = throwing.item_id, pos = coord}
 	}
 
-	obstacle, has_obstacle := game_entity_at(coord, entity_is_obstacle).?
+	obstacle, has_obstacle := game_entity_at(coord, .IsObstacle).?
 	if has_obstacle && obstacle.id != player_e.id {
 		alignment := entity_alignment_to_player(obstacle)
 		if alignment == .Enemy {

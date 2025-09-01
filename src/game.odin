@@ -81,7 +81,7 @@ game_check_win_condition :: proc() {
 		entity, ok := entity(player.player_entity_id).?
 		if !ok do continue
 
-		_, broodmother_alive := entity_find({type = .ByEntityType, entity_type = .Broodmother}).?
+		_, broodmother_alive := entity_find(EntityMetaId.Broodmother).?
 
 		tile, valid_tile := tile_at(entity.pos).?
 		if tile.type == .StairsDown && !broodmother_alive {
@@ -117,10 +117,7 @@ game_calculate_move_cost_djikstra :: proc(from: [2]i32, to: [2]i32) -> i32 {
 	return i32(cost)
 }
 
-game_entity_at :: proc(
-	pos: TileCoord,
-	filter := proc(_: ^Entity) -> bool {return true},
-) -> Maybe(^Entity) {
+game_entity_at :: proc(pos: TileCoord, filter: EntityFilter) -> Maybe(^Entity) {
 	entity: [1]^Entity
 
 	count := game_entities_at(pos, entity[:], filter)
@@ -132,7 +129,7 @@ game_entity_at :: proc(
 game_entities_at :: proc(
 	pos: TileCoord,
 	out_entities: []^Entity,
-	filter := proc(_: ^Entity) -> bool {return true},
+	filter_type: EntityFilter,
 ) -> (
 	count: int,
 ) {
@@ -144,7 +141,7 @@ game_entities_at :: proc(
 
 	for _, &entity in state.client.game.entities {
 		if count >= max_iterations do return
-		if entity.pos == pos && filter(&entity) {
+		if entity.pos == pos && filter(filter_type, &entity) {
 			out_entities[count] = &entity
 			count += 1
 		}

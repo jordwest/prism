@@ -24,11 +24,7 @@ ai_evaluate :: proc(entity: ^Entity) {
 
 _ai_next_cmd :: proc(e: ^Entity) -> Command {
 	for &ability in e.meta.abilities {
-		target, has_target := q_entities_in_range_of_ability(
-			e.pos,
-			filter_is_player_team,
-			&ability,
-		)
+		target, has_target := q_entities_in_range_of_ability(e.pos, Team.Players, &ability)
 
 		if ability.type == .Attack && has_target {
 			return Command{type = .Attack, target_entity = target.id}
