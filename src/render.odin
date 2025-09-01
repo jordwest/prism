@@ -462,32 +462,6 @@ render_tile_cursors :: proc(dt: f32) {
 			render_sprite(SPRITE_COORD_RECT, screen_coord(state.client.cursor_pos))
 		}
 	}
-
-	// Draw other players' cursors
-	for _, &p in state.client.game.players {
-		if p.player_id != state.client.player_id {
-			// Like render_move_camera, does this spring logic belong in a separate system (like an animation system)?
-			p.cursor_spring.target = vec2f(p.cursor_tile)
-			prism.spring_tick(&p.cursor_spring, dt)
-
-			if p.cursor_updated_at == 0 || (state.t - p.cursor_updated_at > 3) {
-				// Don't render stale cursors
-				continue
-			}
-
-			cursor_pos := screen_coord(TileCoordF(p.cursor_spring.pos))
-			text_pos := screen_coord(TileCoordF(p.cursor_spring.pos + {1, 0.75}))
-
-			render_sprite(SPRITE_COORD_OTHER_PLAYER_CURSOR, cursor_pos)
-			fresnel.fill(255, 255, 255, 1)
-			fresnel.draw_text(
-				text_pos.x,
-				text_pos.y,
-				FONT_SIZE_BASE,
-				prism.bufstring_as_str(&p.display_name),
-			)
-		}
-	}
 }
 
 render_fx :: proc(dt: f32) {

@@ -67,9 +67,6 @@ SPRINGS_ENABLED :: true
 
 /////////// DERIVED \\\\\\\\\\\\\
 
-// Whether to send cursor coords to the server. It's a nice feature but makes the messaging logs noisy
-CURSOR_REPORTING_ENABLED :: LOG_HOST_MESSAGES == false && LOG_CLIENT_MESSAGES == false
-
 //////////// SPRITE COORDINATES ////////////
 
 SPRITE_COORD_PLAYER :: [2]f32{16 * 1, 16 * 0}

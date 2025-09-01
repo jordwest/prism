@@ -12,7 +12,6 @@ HostMessage :: union {
 	HostMessageWelcome,
 	HostMessageIdentifyResponse,
 	HostMessageCommandAck,
-	HostMessageCursorPos,
 	HostMessageLogEntry,
 }
 
@@ -32,14 +31,13 @@ host_message_union_serialize :: proc(s: ^S, obj: ^HostMessage) -> SResult {
 		_serialize_command_ack,
 		&state,
 	) or_return
-	prism.serialize_union_variant(4, HostMessageCursorPos, _serialize_variant, &state) or_return
+
 	prism.serialize_union_variant(5, HostMessageLogEntry, _serialize_variant, &state) or_return
 	return prism.serialize_union_fail_if_not_found(&state)
 }
 
 @(private = "file")
 _serialize_variant :: proc {
-	_cursor_pos_serialize,
 	_identify_response_serialize,
 	_serialize_command_ack,
 	_log_entry_serialize,
@@ -68,18 +66,6 @@ HostMessageCommandAck :: struct {
 @(private = "file")
 _serialize_command_ack :: proc(s: ^S, msg: ^HostMessageCommandAck) -> SResult {
 	serialize(s, &msg.cmd_seq) or_return
-	return nil
-}
-
-HostMessageCursorPos :: struct {
-	player_id: PlayerId,
-	pos:       TileCoord,
-}
-
-@(private = "file")
-_cursor_pos_serialize :: proc(s: ^S, msg: ^HostMessageCursorPos) -> SResult {
-	prism.serialize(s, (^i32)(&msg.player_id)) or_return
-	prism.serialize(s, (^[2]i32)(&msg.pos)) or_return
 	return nil
 }
 

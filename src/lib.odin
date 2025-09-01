@@ -82,10 +82,6 @@ on_mouse_move :: proc "c" (pos_x: f32, pos_y: f32, button_down: bool) {
 	if state.client.cursor_pos != last_cursor_tile_pos {
 		last_cursor_tile_pos = state.client.cursor_pos
 		state.client.cursor_hidden = false
-
-		if CURSOR_REPORTING_ENABLED {
-			client_send_message(ClientMessageCursorPosUpdate{pos = state.client.cursor_pos})
-		}
 	}
 }
 

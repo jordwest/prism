@@ -95,11 +95,6 @@ client_poll :: proc() -> Error {
 			)
 		case HostMessageIdentifyResponse:
 			state.client.player_id = m.player_id
-		case HostMessageCursorPos:
-			if player, ok := &state.client.game.players[m.player_id]; ok {
-				player.cursor_tile = m.pos
-				player.cursor_updated_at = state.t
-			}
 		case HostMessageLogEntry:
 			expected_seq := state.client.game.next_log_seq
 			if m.seq > expected_seq {

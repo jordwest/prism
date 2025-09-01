@@ -92,11 +92,6 @@ host_handle_client_message :: proc(from_client_id: ClientId, msg: ClientMessage)
 		}
 
 		if new_player_id > 0 do host_log_entry(LogEntryPlayerJoined{player_id = new_player_id, display_name = m.display_name})
-	case ClientMessageCursorPosUpdate:
-		if !client_identified do break
-		host_broadcast_message(
-			HostMessageCursorPos{player_id = client_ident.player_id, pos = m.pos},
-		)
 	case ClientMessageSubmitCommand:
 		if !client_identified do break
 		host_log_entry(

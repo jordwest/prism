@@ -7,7 +7,6 @@ import "prism"
 ClientMessage :: union {
 	ClientMessageIdentify,
 	ClientMessageSubmitCommand,
-	ClientMessageCursorPosUpdate,
 }
 
 client_message_union_serialize :: proc(
@@ -23,12 +22,6 @@ client_message_union_serialize :: proc(
 		serialize_variant,
 		&state,
 	) or_return
-	prism.serialize_union_variant(
-		3,
-		ClientMessageCursorPosUpdate,
-		serialize_variant,
-		&state,
-	) or_return
 	return prism.serialize_union_fail_if_not_found(&state)
 }
 
@@ -36,25 +29,11 @@ client_message_union_serialize :: proc(
 serialize_variant :: proc {
 	_identify_serialize,
 	_submit_command_serialize,
-	_cursor_pos_update_serialize,
 }
 
 /************
  * Variants
  ***********/
-
-ClientMessageCursorPosUpdate :: struct {
-	pos: TileCoord,
-}
-
-@(private)
-_cursor_pos_update_serialize :: proc(
-	s: ^prism.Serializer,
-	msg: ^ClientMessageCursorPosUpdate,
-) -> prism.SerializationResult {
-	prism.serialize(s, (^[2]i32)(&msg.pos)) or_return
-	return nil
-}
 
 JoinMode :: enum u8 {
 	Play,

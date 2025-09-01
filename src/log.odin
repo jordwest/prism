@@ -110,10 +110,9 @@ _on_player_joined :: proc(entry: LogEntryPlayerJoined) -> Error {
 	s := &state.client.game
 
 	s.players[entry.player_id] = Player {
-		player_id     = entry.player_id,
-		display_name  = entry.display_name,
+		player_id    = entry.player_id,
+		display_name = entry.display_name,
 		// player_entity_id = assigned in _on_game_started,
-		cursor_spring = prism.spring_create(2, [2]f32{0, 0}, k = 40, c = 10),
 	}
 
 	vision_update()
@@ -143,11 +142,6 @@ _on_command :: proc(entry: LogEntryCommand) -> Error {
 	}
 
 	entity.cmd = entry.cmd
-
-	if p, is_player := &s.players[entity.player_id.? or_else 0]; is_player {
-		// Mark their cursor as stale to hide it immediately
-		p.cursor_updated_at = 0
-	}
 	return nil
 }
 

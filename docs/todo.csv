@@ -110,8 +110,9 @@ done,bug,b4,Broodmother shouldn't spawn through walls
 done,imp,b4,Balance potion generation
 done,imp,b4,Show item info in tooltip
 done,imp,b4,Stack items when added to same container
-todo,imp,b5,Remove mouse cursors
+doing,imp,b5,Remove mouse cursors
 todo,bug,b5,Wrap storage with exception handlers for Firefox Enhanced Tracking protection
+todo,content,b5,Add multiple dungeon levels
 todo,imp,b5,Ignore clicks in a tile if an entity just died there
 todo,imp,b5,Add escaping djikstra map and use it when enemies are too close to allies
 todo,bug,b5,Throwing should only work in line of sight
@@ -119,26 +120,25 @@ todo,content,b5,Water potion
 todo,content,b5,Fire traps
 todo,imp,b5,Area of effect for potion
 todo,feat,b5,Add critical hits - chance for double max roll
-todo,bug,b5,Store seen tile types so they don't change when out of field of view due to status effects
+todo,bug,b5,Add z-index and sort render commands
 todo,imp,b5,Potion throw targetting with keyboard
 todo,feat,b5,Sleeping enemies - can be killed instantly
 todo,feat,b5,Lobby with room list and password protection
 todo,content,b5,Potion of Overgrowth (expanding plant that slows and can burn up)
 todo,imp,b5,Grass crunch sound
 todo,feat,b5,Item identification system
-todo,bug,b5,Player indicators should appear above all entities (render order)
 todo,imp,b5,Click & drag to move camera around
 todo,imp,b5,Consider setting a delay after actions (like attack) instead of after every turn
 todo,feat,b5,Button mechanism requiring multiple players to unlock a door
 todo,imp,b5,Preload and postload assets - delay loading only until preload assets
 todo,imp,b5,Handle timeouts and disconnects
 todo,feat,b5,Make use of client token to relogin a user (and store it in localstorage)
-todo,balance,b5,Consider limiting ally position swapping to once per turn if unbalanced
 todo,feat,b5,Hover tooltips for actions
-todo,content,b5,Add multiple dungeon levels
-todo,content,b5,Potion of revive
+todo,content,b5,Scroll of revive
 todo,content,b5,Shock traps (probs easiest as tile effects like fire or net don't need to be implemented)
 todo,imp,b5,Versioning for serialization - especially for anything saved to localstorage
+todo,balance,b6,Consider limiting ally position swapping to once per turn if unbalanced
+todo,bug,b6,Store seen tile types so they don't change when out of field of view due to status effects
 todo,devtool,ideas,Hydrate client and server entity state in hot reload
 todo,feat,ideas,Startle mechanic - guaranteed crit if surprised
 todo,devtool,ideas,Replay system to investigate desyncs

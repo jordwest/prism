@@ -3,14 +3,9 @@ package main
 import "prism"
 
 Player :: struct {
-	player_id:         PlayerId,
-	player_entity_id:  EntityId,
-	display_name:      prism.BufString(32),
-
-	// Not deterministic
-	cursor_tile:       TileCoord,
-	cursor_updated_at: f32,
-	cursor_spring:     prism.Spring(2),
+	player_id:        PlayerId,
+	player_entity_id: EntityId,
+	display_name:     prism.BufString(32),
 }
 
 player_id_serialize :: proc(s: ^prism.Serializer, eid: ^PlayerId) -> prism.SerializationResult {
