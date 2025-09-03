@@ -40,7 +40,6 @@ DjikstraTile :: struct {
 djikstra_init :: proc(djikstra_algo: ^DjikstraAlgo($Width, $Height)) {
 	// Assume frontier is unlikely to be larger than covering every edge of the map
 	queue.init_from_slice(&djikstra_algo._queue, djikstra_algo._queue_container[:])
-	// djikstra_algo._move_cost = proc(from: [2]i32, to: [2]i32, user_data: rawptr) -> i32 {return 1}
 }
 
 djikstra_map_init :: proc(
