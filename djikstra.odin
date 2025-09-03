@@ -30,7 +30,6 @@ DjikstraAlgo :: struct($Width: i32, $Height: i32) {
 	_current_map:     Maybe(^DjikstraMap(Width, Height)),
 	_queue:           queue.Queue([2]i32),
 	_queue_container: [Width * Height][2]i32,
-	_move_cost:       proc(from: [2]i32, to: [2]i32) -> i32,
 }
 
 DjikstraTile :: struct {
@@ -38,15 +37,10 @@ DjikstraTile :: struct {
 	cost:    Maybe(i32),
 }
 
-djikstra_init :: proc(
-	djikstra_algo: ^DjikstraAlgo($Width, $Height),
-	allocator: mem.Allocator = context.allocator,
-) -> mem.Allocator_Error {
+djikstra_init :: proc(djikstra_algo: ^DjikstraAlgo($Width, $Height)) {
 	// Assume frontier is unlikely to be larger than covering every edge of the map
-	// queue.init(&djikstra_algo._queue, int(Width * 2 + Height * 2)) or_return
 	queue.init_from_slice(&djikstra_algo._queue, djikstra_algo._queue_container[:])
-	djikstra_algo._move_cost = proc(from: [2]i32, to: [2]i32) -> i32 {return 1}
-	return nil
+	// djikstra_algo._move_cost = proc(from: [2]i32, to: [2]i32, user_data: rawptr) -> i32 {return 1}
 }
 
 djikstra_map_init :: proc(
@@ -91,17 +85,16 @@ djikstra_map_add_origin :: proc(
 
 djikstra_map_generate :: proc(
 	algo: ^DjikstraAlgo($Width, $Height),
-	move_cost: proc(from: [2]i32, to: [2]i32) -> i32,
+	move_cost_fn: proc(from: [2]i32, to: [2]i32, user_data: $Custom) -> i32,
+	user_data: Custom,
 	max_iterations := 1000,
 ) -> DjikstraError {
 	dmap, initialized := algo._current_map.(^DjikstraMap(Width, Height))
 	if !initialized do return .NotInitialized
 
-	algo._move_cost = move_cost
-
 	dmap.state = .PartiallyComplete
 	for i := 0; i < max_iterations && dmap.state != .Complete; i += 1 {
-		e := _iterate(algo, dmap)
+		e := _iterate(algo, dmap, move_cost_fn, user_data)
 		if e != nil do return e
 	}
 
@@ -123,22 +116,19 @@ djikstra_tile :: proc(
 	return &djikstra_map.tiles[idx]
 }
 
-_always_returns_true :: proc(coord: [2]i32) -> bool {
-	return true
-}
-
 djikstra_path :: proc(
 	dmap: ^DjikstraMap($Width, $Height),
 	path_out: [][2]i32,
 	start_at: [2]i32,
-	is_coord_free: proc(_: [2]i32) -> bool = _always_returns_true,
+	is_coord_free: proc(_: [2]i32, user_data: $Custom) -> bool,
+	user_data: Custom,
 ) -> (
 	steps: i32,
 ) {
 	coord := start_at
 	max_iterations := i32(len(path_out))
 	for steps = 0; steps < max_iterations; steps += 1 {
-		next_coord, cost, ok := djikstra_next(dmap, coord, is_coord_free)
+		next_coord, cost, ok := djikstra_next(dmap, coord, is_coord_free, user_data)
 		if !ok do return 0 // No valid next tile
 		if cost == 0 do return steps // Finished pathing to origin
 		coord = next_coord
@@ -151,10 +141,12 @@ djikstra_path :: proc(
 djikstra_next :: proc(
 	dmap: ^DjikstraMap($Width, $Height),
 	coord_in: [2]i32,
-	is_coord_free: proc(_: [2]i32) -> bool = _always_returns_true,
+	is_coord_free: proc(_: [2]i32, _: $Custom) -> bool,
+	user_data: Custom,
+	desired_cost: i32 = 0,
 ) -> (
 	coord_out: [2]i32,
-	lowest_cost: i32,
+	best_cost: i32,
 	ok: bool,
 ) {
 	coord_out = coord_in
@@ -163,7 +155,7 @@ djikstra_next :: proc(
 	tile, valid_tile := djikstra_tile(dmap, coord_in).?
 	if !valid_tile do return
 
-	lowest_cost = tile.cost.? or_else bits.I32_MAX
+	best_cost = tile.cost.? or_else bits.I32_MAX
 
 	for offset in NEIGHBOUR_TILES_8D {
 		check_coord := coord_in + offset
@@ -171,15 +163,18 @@ djikstra_next :: proc(
 		if !valid_tile do continue
 		cost, has_cost := tile.cost.?
 		if !has_cost do continue
-		if cost > lowest_cost do continue
-		if cost != 0 && !is_coord_free(check_coord) do continue
 
-		lowest_cost = cost
+		relative_cost := math.abs(cost - desired_cost)
+
+		if relative_cost > math.abs(best_cost - desired_cost) do continue
+		if cost != 0 && !is_coord_free(check_coord, user_data) do continue
+
+		best_cost = cost
 		coord_out = check_coord
 		ok = true
 	}
 
-	return coord_out, lowest_cost, ok
+	return coord_out, best_cost, ok
 }
 
 @(private = "file")
@@ -191,6 +186,8 @@ _idx :: proc(width: i32, coord: [2]i32) -> i32 {
 _iterate :: proc(
 	algo: ^DjikstraAlgo($Width, $Height),
 	dmap: ^DjikstraMap(Width, Height),
+	move_cost_fn: proc(from: [2]i32, to: [2]i32, user_data: $Custom) -> i32,
+	user_data: Custom,
 ) -> DjikstraError {
 	current_coord, ok := queue.pop_front_safe(&algo._queue)
 	if !ok {
@@ -229,7 +226,7 @@ _iterate :: proc(
 			continue
 		}
 
-		move_cost := algo._move_cost(current_coord, new_coord)
+		move_cost := move_cost_fn(current_coord, new_coord, user_data)
 		neighbour_tile.visited = true
 		if move_cost >= 0 {
 			new_cost := this_tile_cost + move_cost

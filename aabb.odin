@@ -75,6 +75,13 @@ aabb_pos :: proc(aabb: Aabb($T)) -> [2]T {
 	return {aabb.x1, aabb.y1}
 }
 
+aabb_rand_tile_coord :: proc(aabb: Aabb(i32), rng: ^SplitMixState) -> TileCoord {
+	return {
+		rand_splitmix_get_i32_range(rng, aabb.x1, aabb.x2),
+		rand_splitmix_get_i32_range(rng, aabb.y1, aabb.y2),
+	}
+}
+
 aabb_size :: proc(aabb: Aabb($T)) -> [2]T {
 	return {aabb.x2 - aabb.x1, aabb.y2 - aabb.y1}
 }
