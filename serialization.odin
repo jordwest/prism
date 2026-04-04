@@ -1,107 +1,103 @@
 package prism
 
-import "core:strconv"
-import "core:strings"
-import "base:runtime"
-import "core:unicode/utf8"
+import "base:intrinsics"
 import "core:encoding/endian"
 import "core:math"
 import "core:mem"
-import "core:slice"
 import "core:fmt"
 
 SerializationResult :: enum byte {
 	Success = 0,
-	TokenMismatch,
-	CounterMismatch,
+	StringLiteralMismatch,
 	EndOfStream,
 	UnionVariantNotFound,
 	ParseError,
 }
 
+SerializeMode :: enum {
+	Binary = 0,
+	Text = 1,
+}
+
 Serializer :: struct {
 	stream:  []u8,
-	offset:  i32,
+	offset:  int,
 	writing: bool,
 	version: i32,
-	counter: u8,
+	mode: SerializeMode,
+	trace_fn: Maybe(proc(string, ..any)),
 }
 
-create_serializer :: proc(buf: []u8) -> Serializer {
-	return Serializer{stream = buf, offset = 0, writing = true}
+create_serializer :: proc(buf: []u8, mode: SerializeMode = .Binary, trace: Maybe(proc(f: string, args: ..any)) = nil) -> Serializer {
+	return Serializer{stream = buf, offset = 0, writing = true, mode = mode, trace_fn = trace}
 }
 
-create_deserializer :: proc(stream: []u8) -> Serializer {
-	return Serializer{stream = stream, offset = 0, writing = false}
+create_deserializer :: proc(stream: []u8, mode: SerializeMode = .Binary, trace: Maybe(proc(f: string, args: ..any)) = nil) -> Serializer {
+	return Serializer{stream = stream, offset = 0, writing = false, mode = mode, trace_fn = trace}
 }
 
 serialize_version :: proc(s: ^Serializer, serialize_version: i32) -> SerializationResult {
-	if (s.writing) {
-		endian.put_i32(s.stream[s.offset:], .Big, serialize_version)
-		s.version = serialize_version
-	} else {
-		read_version, ok := endian.get_i32(s.stream[s.offset:], .Big)
-		if (!ok) do return SerializationResult.EndOfStream
-		s.version = read_version
+	if s.mode == .Text {
+		serialize_string_literal(s, "version=") or_return
 	}
-	s.offset += 4
+
+	s.version = serialize_version
+	serialize_i32(s, &s.version) or_return
+
 	return nil
 }
 
-serialize_counter :: proc(s: ^Serializer) -> SerializationResult {
-	s.counter += 1
+@(private = "file")
+_trace :: proc(s: ^Serializer, fstr: string, args: ..any) {
+	// i
+	fn, ok := s.trace_fn.?
+	if ok do fn(fstr, ..args)
+}
+
+serialize_string_literal :: proc(s: ^Serializer, literal: string) -> SerializationResult {
 	if (s.writing) {
-		s.stream[s.offset] = s.counter
-		// append(&s.stream, s.counter)
+		fmt.bprintf(s.stream[s.offset:], "%s", literal)
 	} else {
-		counter := s.stream[s.offset]
-		if (counter != s.counter) {
-			return SerializationResult.CounterMismatch
+		str_slice := s.stream[s.offset:][:len(literal)]
+		if (string(str_slice) != literal) {
+			_trace(s, "Expecting: '%s', got '%s' at %d", literal, string(str_slice), s.offset)
+			return SerializationResult.StringLiteralMismatch
 		}
 	}
-	s.offset = s.offset + 1
+	s.offset = s.offset + len(literal)
 	return nil
 }
 
-serialize_u8 :: proc(s: ^Serializer, state: ^u8) -> SerializationResult {
-	if (s.writing) {
-		s.stream[s.offset] = state^
-		// append(&s.stream, state^)
-	} else {
-		state^ = s.stream[s.offset]
+serialize_dynamic_array :: proc(s: ^Serializer, arr: ^[dynamic]$T, serializer: proc(^Serializer, ^T) -> SerializationResult) -> SerializationResult {
+	length: i32
+
+	if s.mode == .Text {
+		serialize_string_literal(s, "len=")
 	}
-	s.offset = s.offset + 1
+	if s.writing {
+		length = i32(len(arr))
+		serialize_i32(s, &length) or_return
+	} else {
+		serialize_i32(s, &length) or_return
+		resize(arr, length)
+	}
+
+	for i : i32 = 0; i < length; i += 1 {
+		serializer(s, &arr[i]) or_return
+	}
+
 	return nil
 }
 
-serialize_token :: proc(s: ^Serializer, token: string) -> SerializationResult {
-	if (s.writing) {
-		str_bytes := transmute([]u8)(token)
-		mem.copy(&s.stream[s.offset], &str_bytes[0], len(str_bytes))
-		// append(&s.stream, ..str_bytes[:])
-	} else {
-		str_slice := s.stream[s.offset:][:len(token)]
-		if (string(str_slice) != token) {
-			return SerializationResult.TokenMismatch
-		}
+serialize_fixed_array :: proc(s: ^Serializer, arr: ^[$N]$T, serializer: proc(^Serializer, ^T) -> SerializationResult) -> SerializationResult {
+	for i := 0; i < N; i += 1 {
+		serializer(s, &arr[i]) or_return
 	}
-	s.offset = s.offset + i32(len(token))
-	return nil
-}
 
-serialize_array :: proc(s: ^Serializer, arr: ^[$N]u8) -> SerializationResult {
-	if (s.writing) {
-		mem.copy(&s.stream[s.offset], &arr[0], len(arr))
-	} else {
-		str_slice := s.stream[s.offset:][:N]
-		copy(arr[:], str_slice)
-	}
-	s.offset = s.offset + i32(len(arr^))
 	return nil
 }
 
 serialize_string :: proc(s: ^Serializer, state: ^string) -> SerializationResult {
-	// Counter not needed as its added by the serialize_i32 call
 	if (s.writing) {
 		str_len := i32(len(state^))
 		serialize_i32(s, &str_len)
@@ -115,7 +111,7 @@ serialize_string :: proc(s: ^Serializer, state: ^string) -> SerializationResult 
 		str_slice := s.stream[s.offset:][:str_len]
 		state^ = string(str_slice)
 	}
-	s.offset = s.offset + i32(len(state^))
+	s.offset = s.offset + len(state^)
 	return nil
 }
 
@@ -137,131 +133,83 @@ serialize_bufstring :: proc(s: ^Serializer, bufstring: ^BufString($N)) -> Serial
 	return nil
 }
 
-serialize_vec2i :: proc(s: ^Serializer, state: ^[2]i32) -> SerializationResult {
-	serialize_i32(s, &state[0])
-	serialize_i32(s, &state[1])
+serialize_endian :: proc(
+	s: ^Serializer,
+	state: ^$T,
+	writer: proc "contextless" ([]byte, endian.Byte_Order, T) -> bool,
+	reader: proc "contextless" ([]byte, endian.Byte_Order) -> (T, bool)
+) -> SerializationResult {
+	size := size_of(T)
+	if (s.writing) {
+		writer(s.stream[s.offset:], .Little, state^)
+	} else {
+		read_val, ok := reader(s.stream[s.offset:], .Little)
+		if (!ok) do return SerializationResult.EndOfStream
+		state^ = read_val
+	}
+
+	s.offset = s.offset + size
 	return nil
+}
+
+serialize_byte :: proc(s: ^Serializer, state: ^byte) -> SerializationResult {
+	if (s.writing) {
+		s.stream[s.offset] = state^
+	} else {
+		state^ = s.stream[s.offset]
+	}
+	s.offset = s.offset + 1
+	return nil
+}
+
+serialize_u8_b :: serialize_byte
+serialize_i8_b :: proc(s: ^Serializer, state: ^i8) -> SerializationResult { return serialize_byte(s, (^byte)(state)) }
+serialize_i32_b :: proc(s: ^Serializer, state: ^i32) -> SerializationResult { return serialize_endian(s, state, endian.put_i32, endian.get_i32) }
+serialize_u32_b :: proc(s: ^Serializer, state: ^u32) -> SerializationResult { return serialize_endian(s, state, endian.put_u32, endian.get_u32) }
+serialize_u64_b :: proc(s: ^Serializer, state: ^u64) -> SerializationResult { return serialize_endian(s, state, endian.put_u64, endian.get_u64) }
+serialize_f32_b :: proc(s: ^Serializer, state: ^f32) -> SerializationResult { return serialize_endian(s, state, endian.put_f32, endian.get_f32) }
+
+serialize_u32 :: proc(s: ^Serializer, state: ^u32) -> SerializationResult {
+	if s.mode == .Binary do return serialize_endian(s, state, endian.put_u32, endian.get_u32)
+	return serialize_num_text(s, state, u64, parse_u)
 }
 serialize_i32 :: proc(s: ^Serializer, state: ^i32) -> SerializationResult {
-	if (s.writing) {
-		els := transmute([4]u8)(state^)
-		mem.copy(&s.stream[s.offset], &els[0], len(els))
-	} else {
-		state^ = slice.to_type(s.stream[s.offset:][:4], i32)
-	}
-	s.offset = s.offset + 4
-	return nil
+	if s.mode == .Binary do return serialize_endian(s, state, endian.put_i32, endian.get_i32)
+	return serialize_num_text(s, state, i64, parse_i)
 }
-serialize_u32 :: proc(s: ^Serializer, state: ^u32) -> SerializationResult {
-	if (s.writing) {
-		els := transmute([4]u8)(state^)
-		mem.copy(&s.stream[s.offset], &els[0], len(els))
-	} else {
-		state^ = slice.to_type(s.stream[s.offset:][:4], u32)
-	}
-	s.offset = s.offset + 4
-	return nil
+serialize_i8 :: proc(s: ^Serializer, state: ^i8) -> SerializationResult {
+	if s.mode == .Binary do return serialize_byte(s, (^byte)(state))
+	return serialize_num_text(s, state, i64, parse_i)
 }
-serialize_u64 :: proc(s: ^Serializer, state: ^u64) -> SerializationResult {
-	if (s.writing) {
-		els := transmute([8]u8)(state^)
-		mem.copy(&s.stream[s.offset], &els[0], len(els))
-	} else {
-		state^ = slice.to_type(s.stream[s.offset:][:8], u64)
-	}
-	s.offset = s.offset + 8
-	return nil
+serialize_u8 :: proc(s: ^Serializer, state: ^u8) -> SerializationResult {
+	if s.mode == .Binary do return serialize_byte(s, state)
+	return serialize_num_text(s, state, u64, parse_u)
+}
+serialize_f32 :: proc(s: ^Serializer, state: ^f32) -> SerializationResult {
+	if s.mode == .Binary do return serialize_endian(s, state, endian.put_f32, endian.get_f32)
+	return serialize_num_text(s, state, f64, parse_f)
 }
 
-serialize_u32_text :: proc(s: ^Serializer, state: ^u32) -> SerializationResult {
+parse_bad :: proc(state: ParserState, type_id: typeid) -> (ParserState, i32, ParserError) {
+	return state, 0, .Ok
+}
+
+serialize_num_text :: proc(s: ^Serializer, state: ^($T), $P: typeid, parser: proc(state: ParserState) -> (ParserState, P, ParserError)) -> SerializationResult {
 	if (s.writing) {
-		text := fmt.tprintf("%d", state^)
-
-		str_bytes := transmute([]u8)(text)
-		mem.copy(&s.stream[s.offset], &str_bytes[0], len(str_bytes))
-
-		s.offset = s.offset + i32(len(text))
+		fmtstr := intrinsics.type_is_float(T) ? "%f;" : "%d;"
+		text := fmt.bprintf(s.stream[s.offset:], fmtstr, state^)
+		s.offset = s.offset + len(text)
 	} else {
 		pstate, perr := parse_init(string(s.stream[s.offset:]))
-		parsed: u32
-		_, parsed, perr = parse_u32(pstate)
+		pstate.trace_fn = s.trace_fn
+		parsed: P
+		pstate, parsed, perr = parser(pstate)
 		if perr != .Ok do return .ParseError
-		state^ = parsed
-		s.offset = s.offset + i32(pstate.offset)
+		pstate, _, perr = parse_rune(pstate, ';')
+		if perr != .Ok do return .ParseError
+		state^ = T(parsed)
+		s.offset = s.offset + pstate.offset
 	}
-	return nil
-}
-
-ParserState :: struct {
-	offset: int,
-	input: string,
-}
-
-ParserError :: enum {
-	Ok = 0,
-	InvalidToken,
-	ConversionFailed,
-	EndOfString,
-}
-
-parse_init :: proc(input: string) -> (ParserState, ParserError) {
-	return {
-		offset = 0,
-		input = input,
-	}, .Ok
-}
-
-parse_u32 :: proc(state: ParserState) -> (pstate: ParserState, out: u32, perr: ParserError) {
-	pstate = state
-	out_str: string
-
-	pstate, out_str = parse_numeric(pstate) or_return
-
-	out_u64, ok := strconv.parse_u64_of_base(out_str, 10)
-	if !ok do return pstate, 0, .ConversionFailed
-
-	return pstate, u32(out_u64), .Ok
-}
-
-parse_numeric :: proc(state: ParserState) -> (ParserState, string, ParserError) {
-	perr := ParserError.Ok
-	pstate := state
-	start := state.offset
-	c: rune
-
-	for {
-		pstate, c, perr = parse_digit(pstate)
-		if perr != .Ok do break
-	}
-
-	if pstate.offset == start do return pstate, "", perr
-
-	return pstate, state.input[start:pstate.offset], .Ok
-}
-
-parse_inc_offset :: proc(state: ParserState, increment_by: int) -> ParserState {
-	s := state
-	s.offset += increment_by
-	return s
-}
-
-parse_digit :: proc(state: ParserState) -> (ParserState, rune, ParserError) {
-	c := utf8.rune_at(state.input, state.offset)
-	rune_size := utf8.rune_size(c)
-	if (c >= '0' && c <= '9') || c == '.' {
-		return parse_inc_offset(state, rune_size), c, .Ok
-	}
-	return state, 0, .InvalidToken
-}
-
-serialize_f32 :: proc(s: ^Serializer, state: ^f32) -> SerializationResult {
-	if (s.writing) {
-		els := transmute([4]u8)(state^)
-		mem.copy(&s.stream[s.offset], &els[0], len(els))
-	} else {
-		state^ = slice.to_type(s.stream[s.offset:][:4], f32)
-	}
-	s.offset = s.offset + 4
 	return nil
 }
 
@@ -359,9 +307,8 @@ serialize_variant :: proc(
 }
 
 serialize :: proc {
-	serialize_vec2i,
 	serialize_i32,
-	serialize_array,
+	serialize_fixed_array,
 	serialize_f32,
 	serialize_u8,
 	serialize_string,
