@@ -208,9 +208,17 @@ serialize_u32_b :: proc(s: ^Serializer, state: ^u32) -> SerializationResult { re
 serialize_u64_b :: proc(s: ^Serializer, state: ^u64) -> SerializationResult { return serialize_endian(s, state, endian.put_u64, endian.get_u64) }
 serialize_f32_b :: proc(s: ^Serializer, state: ^f32) -> SerializationResult { return serialize_endian(s, state, endian.put_f32, endian.get_f32) }
 
+serialize_u64 :: proc(s: ^Serializer, state: ^u64) -> SerializationResult {
+	if s.mode == .Binary do return serialize_endian(s, state, endian.put_u64, endian.get_u64)
+	return serialize_num_text(s, state, u64, parse_u)
+}
 serialize_u32 :: proc(s: ^Serializer, state: ^u32) -> SerializationResult {
 	if s.mode == .Binary do return serialize_endian(s, state, endian.put_u32, endian.get_u32)
 	return serialize_num_text(s, state, u64, parse_u)
+}
+serialize_i64 :: proc(s: ^Serializer, state: ^i64) -> SerializationResult {
+	if s.mode == .Binary do return serialize_endian(s, state, endian.put_i64, endian.get_i64)
+	return serialize_num_text(s, state, i64, parse_i)
 }
 serialize_i32 :: proc(s: ^Serializer, state: ^i32) -> SerializationResult {
 	if s.mode == .Binary do return serialize_endian(s, state, endian.put_i32, endian.get_i32)
