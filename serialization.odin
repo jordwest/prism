@@ -21,6 +21,7 @@ SerializeMode :: enum {
 
 Serializer :: struct {
 	stream:  []u8,
+	indent: u8,
 	offset:  int,
 	writing: bool,
 	version: i32,
@@ -68,6 +69,17 @@ serialize_string_literal :: proc(s: ^Serializer, literal: string) -> Serializati
 	return nil
 }
 
+serialize_newline :: proc(s: ^Serializer) -> SerializationResult {
+	if s.mode != .Text do return nil
+
+	serialize_string_literal(s, "\n") or_return
+	for i : u8 = 0; i < s.indent; i += 1 {
+		serialize_string_literal(s, "| ") or_return
+	}
+
+	return nil
+}
+
 serialize_dynamic_array :: proc(s: ^Serializer, arr: ^[dynamic]$T, serializer: proc(^Serializer, ^T) -> SerializationResult) -> SerializationResult {
 	length: i32
 
@@ -82,9 +94,17 @@ serialize_dynamic_array :: proc(s: ^Serializer, arr: ^[dynamic]$T, serializer: p
 		resize(arr, length)
 	}
 
+	s.indent += 1
+	if s.mode == .Text {
+		serialize_string_literal(s, "[")
+	}
 	for i : i32 = 0; i < length; i += 1 {
 		serializer(s, &arr[i]) or_return
 	}
+	if s.mode == .Text {
+		serialize_string_literal(s, "]")
+	}
+	s.indent -= 1
 
 	return nil
 }
@@ -162,6 +182,25 @@ serialize_byte :: proc(s: ^Serializer, state: ^byte) -> SerializationResult {
 	return nil
 }
 
+serialize_maybe :: proc(s: ^Serializer, state: ^Maybe($T), child_serializer: proc(s: ^Serializer, state: ^T) -> SerializationResult) -> SerializationResult {
+	if s.writing {
+		if v, ok := state.?; ok {
+			child_serializer(s, &v) or_return
+		} else {
+			serialize_string_literal(s, "!") or_return
+		}
+	} else {
+		if serialize_string_literal(s, "!") == .StringLiteralMismatch {
+			// Not null, read the value
+			v: T
+			child_serializer(s, &v) or_return
+		} else {
+			state^ = nil
+		}
+	}
+	return nil
+}
+
 serialize_u8_b :: serialize_byte
 serialize_i8_b :: proc(s: ^Serializer, state: ^i8) -> SerializationResult { return serialize_byte(s, (^byte)(state)) }
 serialize_i32_b :: proc(s: ^Serializer, state: ^i32) -> SerializationResult { return serialize_endian(s, state, endian.put_i32, endian.get_i32) }
@@ -190,13 +229,9 @@ serialize_f32 :: proc(s: ^Serializer, state: ^f32) -> SerializationResult {
 	return serialize_num_text(s, state, f64, parse_f)
 }
 
-parse_bad :: proc(state: ParserState, type_id: typeid) -> (ParserState, i32, ParserError) {
-	return state, 0, .Ok
-}
-
 serialize_num_text :: proc(s: ^Serializer, state: ^($T), $P: typeid, parser: proc(state: ParserState) -> (ParserState, P, ParserError)) -> SerializationResult {
 	if (s.writing) {
-		fmtstr := intrinsics.type_is_float(T) ? "%f;" : "%d;"
+		fmtstr := intrinsics.type_is_float(T) ? "%f," : "%d,"
 		text := fmt.bprintf(s.stream[s.offset:], fmtstr, state^)
 		s.offset = s.offset + len(text)
 	} else {
@@ -204,8 +239,11 @@ serialize_num_text :: proc(s: ^Serializer, state: ^($T), $P: typeid, parser: pro
 		pstate.trace_fn = s.trace_fn
 		parsed: P
 		pstate, parsed, perr = parser(pstate)
-		if perr != .Ok do return .ParseError
-		pstate, _, perr = parse_rune(pstate, ';')
+		if perr != .Ok {
+			_trace(s, "Failed to parse number at %d in '%s'", pstate.offset, pstate.input)
+			return .ParseError
+		}
+		pstate, _, perr = parse_rune(pstate, ',')
 		if perr != .Ok do return .ParseError
 		state^ = T(parsed)
 		s.offset = s.offset + pstate.offset
@@ -217,15 +255,31 @@ UnionSerializerState :: struct($U: typeid) {
 	serializer: ^Serializer,
 	union_ref:  ^U,
 	done:       bool,
+	tag: u8,
 }
-serialize_union_start :: proc(s: ^Serializer, obj: ^$U) -> UnionSerializerState(U) {
-	return UnionSerializerState(U){serializer = s, union_ref = obj}
-}
+
 serialize_union :: proc(s: ^Serializer, obj: ^$U, f: proc(state: ^UnionSerializerState(U)) -> SerializationResult) -> SerializationResult {
-	state := serialize_union_start(s, obj)
+	state := UnionSerializerState(U){serializer = s, union_ref = obj}
+
+	text_prefix := "variant="
+	if state.serializer.mode == .Text {
+		serialize_string_literal(state.serializer, text_prefix)
+	}
+
+	// When reading, we want to preemptively fetch the variant tag, so it can be efficiently compared to each variant
+	if !s.writing {
+		serialize_u8(s, &state.tag) or_return
+	}
+
 	serialize_union_nil(0, &state)
+
+	// Serialize each variant
 	f(&state) or_return
-	return serialize_union_end(&state)
+
+	if !state.done {
+		return SerializationResult.UnionVariantNotFound
+	}
+	return nil
 }
 
 serialize_union_nil :: proc(tag: u8, state: ^UnionSerializerState($U)) -> bool {
@@ -234,14 +288,14 @@ serialize_union_nil :: proc(tag: u8, state: ^UnionSerializerState($U)) -> bool {
 	}
 	if state.serializer.writing {
 		if state.union_ref^ == nil {
-			state.serializer.stream[state.serializer.offset] = tag
+			tag_local := tag
+			serialize_u8(state.serializer, &tag_local)
 			state.done = true
 			return true
 		}
 	} else {
-		read_tag: u8 = state.serializer.stream[state.serializer.offset]
-		if read_tag == tag {
-			state.serializer.offset += 1
+		// Tag already read, just compare
+		if state.tag == tag {
 			state.union_ref^ = nil
 			state.done = true
 			return true
@@ -253,15 +307,6 @@ serialize_union_nil :: proc(tag: u8, state: ^UnionSerializerState($U)) -> bool {
 
 // Convenience function mostly for union types with no data
 serialize_empty :: proc(_: ^Serializer, _: ^($T)) -> SerializationResult {
-	return nil
-}
-
-serialize_union_end :: proc(
-	state: ^UnionSerializerState($U),
-) -> SerializationResult {
-	if !state.done {
-		return SerializationResult.UnionVariantNotFound
-	}
 	return nil
 }
 
@@ -278,24 +323,27 @@ serialize_variant :: proc(
 	if state.serializer.writing {
 		variant, ok := state.union_ref.(T)
 		if ok {
-			state.serializer.stream[state.serializer.offset] = tag
-			state.serializer.offset += 1
+			tag_local := tag
+			serialize_u8(state.serializer, &tag_local)
 			// serialize_empty is not baked into the code due to being polymorphic
 			// so it ends up being a null pointer, which we check for here.
 			// Would be nice to find a better way but this hack works for now
 			if serializer != nil {
+				state.serializer.indent += 1
 				serializer(state.serializer, &variant) or_return
+				state.serializer.indent -= 1
 			}
 			state.done = true
 			return nil
 		}
 	} else {
-		read_tag: u8 = state.serializer.stream[state.serializer.offset]
-		if read_tag == tag {
-			state.serializer.offset += 1
+		// Tag already read, just compare
+		if state.tag == tag {
 			t: T
 			if serializer != nil {
+				state.serializer.indent += 1
 				serializer(state.serializer, &t) or_return
+				state.serializer.indent -= 1
 			}
 			state.union_ref^ = t
 			state.done = true
