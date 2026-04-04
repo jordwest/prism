@@ -1,13 +1,16 @@
 package prism
 
+import "core:encoding/endian"
 import "core:math"
 import "core:mem"
 import "core:slice"
+import "core:fmt"
 
 SerializationResult :: enum byte {
 	Success = 0,
 	TokenMismatch,
 	CounterMismatch,
+	EndOfStream,
 	UnionVariantNotFound,
 }
 
@@ -15,6 +18,7 @@ Serializer :: struct {
 	stream:  []u8,
 	offset:  i32,
 	writing: bool,
+	version: i32,
 	counter: u8,
 }
 
@@ -24,6 +28,18 @@ create_serializer :: proc(buf: []u8) -> Serializer {
 
 create_deserializer :: proc(stream: []u8) -> Serializer {
 	return Serializer{stream = stream, offset = 0, writing = false}
+}
+
+serialize_version :: proc(s: ^Serializer, version: i32) -> SerializationResult {
+	if (s.writing) {
+		endian.put_i32(s.stream[s.offset:], .Big, version)
+		s.version = version
+	} else {
+		read_version, ok := endian.get_i32(s.stream[s.offset:], .Big)
+		if (!ok) do return SerializationResult.EndOfStream
+	}
+	s.offset += 4
+	return nil
 }
 
 serialize_counter :: proc(s: ^Serializer) -> SerializationResult {
@@ -151,6 +167,21 @@ serialize_u64 :: proc(s: ^Serializer, state: ^u64) -> SerializationResult {
 	return nil
 }
 
+serialize_u32_text :: proc(s: ^Serializer, state: ^u32) -> SerializationResult {
+	if (s.writing) {
+		text := fmt.tprintf("%d", state^)
+
+		str_bytes := transmute([]u8)(text)
+		mem.copy(&s.stream[s.offset], &str_bytes[0], len(str_bytes))
+
+		s.offset = s.offset + i32(len(text))
+	} else {
+		// TODO
+	}
+	s.offset = s.offset + 4
+	return nil
+}
+
 serialize_f32 :: proc(s: ^Serializer, state: ^f32) -> SerializationResult {
 	if (s.writing) {
 		els := transmute([4]u8)(state^)
@@ -167,8 +198,14 @@ UnionSerializerState :: struct($U: typeid) {
 	union_ref:  ^U,
 	done:       bool,
 }
-serialize_union_create :: proc(s: ^Serializer, obj: ^$U) -> UnionSerializerState(U) {
+serialize_union_start :: proc(s: ^Serializer, obj: ^$U) -> UnionSerializerState(U) {
 	return UnionSerializerState(U){serializer = s, union_ref = obj}
+}
+serialize_union :: proc(s: ^Serializer, obj: ^$U, f: proc(state: ^UnionSerializerState(U)) -> SerializationResult) -> SerializationResult {
+	state := serialize_union_start(s, obj)
+	serialize_union_nil(0, &state)
+	f(&state) or_return
+	return serialize_union_end(&state)
 }
 
 serialize_union_nil :: proc(tag: u8, state: ^UnionSerializerState($U)) -> bool {
@@ -199,7 +236,7 @@ serialize_empty :: proc(_: ^Serializer, _: ^($T)) -> SerializationResult {
 	return nil
 }
 
-serialize_union_fail_if_not_found :: proc(
+serialize_union_end :: proc(
 	state: ^UnionSerializerState($U),
 ) -> SerializationResult {
 	if !state.done {
@@ -208,11 +245,11 @@ serialize_union_fail_if_not_found :: proc(
 	return nil
 }
 
-serialize_union_variant :: proc(
-	tag: u8,
-	$T: typeid,
-	serializer: proc(s: ^Serializer, t: ^T) -> SerializationResult,
+serialize_variant :: proc(
 	state: ^UnionSerializerState($U),
+	tag: u8,
+	// $T: typeid,
+	serializer: proc(s: ^Serializer, t: ^$T) -> SerializationResult,
 ) -> SerializationResult {
 	if state.done {
 		return nil
