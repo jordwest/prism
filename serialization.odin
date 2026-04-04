@@ -2,9 +2,9 @@ package prism
 
 import "base:intrinsics"
 import "core:encoding/endian"
+import "core:fmt"
 import "core:math"
 import "core:mem"
-import "core:fmt"
 
 SerializationResult :: enum byte {
 	Success = 0,
@@ -16,24 +16,32 @@ SerializationResult :: enum byte {
 
 SerializeMode :: enum {
 	Binary = 0,
-	Text = 1,
+	Text   = 1,
 }
 
 Serializer :: struct {
-	stream:  []u8,
-	indent: u8,
-	offset:  int,
-	writing: bool,
-	version: i32,
-	mode: SerializeMode,
-	trace_fn: Maybe(proc(string, ..any)),
+	stream:   []u8,
+	indent:   u8,
+	offset:   int,
+	writing:  bool,
+	version:  i32,
+	mode:     SerializeMode,
+	trace_fn: Maybe(proc(_: string, _: ..any)),
 }
 
-create_serializer :: proc(buf: []u8, mode: SerializeMode = .Binary, trace: Maybe(proc(f: string, args: ..any)) = nil) -> Serializer {
+create_serializer :: proc(
+	buf: []u8,
+	mode: SerializeMode = .Binary,
+	trace: Maybe(proc(f: string, args: ..any)) = nil,
+) -> Serializer {
 	return Serializer{stream = buf, offset = 0, writing = true, mode = mode, trace_fn = trace}
 }
 
-create_deserializer :: proc(stream: []u8, mode: SerializeMode = .Binary, trace: Maybe(proc(f: string, args: ..any)) = nil) -> Serializer {
+create_deserializer :: proc(
+	stream: []u8,
+	mode: SerializeMode = .Binary,
+	trace: Maybe(proc(f: string, args: ..any)) = nil,
+) -> Serializer {
 	return Serializer{stream = stream, offset = 0, writing = false, mode = mode, trace_fn = trace}
 }
 
@@ -73,14 +81,18 @@ serialize_newline :: proc(s: ^Serializer) -> SerializationResult {
 	if s.mode != .Text do return nil
 
 	serialize_string_literal(s, "\n") or_return
-	for i : u8 = 0; i < s.indent; i += 1 {
+	for i: u8 = 0; i < s.indent; i += 1 {
 		serialize_string_literal(s, "| ") or_return
 	}
 
 	return nil
 }
 
-serialize_dynamic_array :: proc(s: ^Serializer, arr: ^[dynamic]$T, serializer: proc(^Serializer, ^T) -> SerializationResult) -> SerializationResult {
+serialize_dynamic_array :: proc(
+	s: ^Serializer,
+	arr: ^[dynamic]$T,
+	serializer: proc(_: ^Serializer, _: ^T) -> SerializationResult,
+) -> SerializationResult {
 	length: i32
 
 	if s.mode == .Text {
@@ -98,7 +110,7 @@ serialize_dynamic_array :: proc(s: ^Serializer, arr: ^[dynamic]$T, serializer: p
 	if s.mode == .Text {
 		serialize_string_literal(s, "[")
 	}
-	for i : i32 = 0; i < length; i += 1 {
+	for i: i32 = 0; i < length; i += 1 {
 		serializer(s, &arr[i]) or_return
 	}
 	if s.mode == .Text {
@@ -109,7 +121,11 @@ serialize_dynamic_array :: proc(s: ^Serializer, arr: ^[dynamic]$T, serializer: p
 	return nil
 }
 
-serialize_fixed_array :: proc(s: ^Serializer, arr: ^[$N]$T, serializer: proc(^Serializer, ^T) -> SerializationResult) -> SerializationResult {
+serialize_fixed_array :: proc(
+	s: ^Serializer,
+	arr: ^[$N]$T,
+	serializer: proc(_: ^Serializer, _: ^T) -> SerializationResult,
+) -> SerializationResult {
 	for i := 0; i < N; i += 1 {
 		serializer(s, &arr[i]) or_return
 	}
@@ -149,15 +165,15 @@ serialize_bufstring :: proc(s: ^Serializer, bufstring: ^BufString($N)) -> Serial
 		mem.copy(&bufstring.buf[0], &s.stream[s.offset], int(read_len))
 		bufstring.len = read_len
 	}
-	s.offset = s.offset + str_len
+	s.offset = s.offset + int(str_len)
 	return nil
 }
 
 serialize_endian :: proc(
 	s: ^Serializer,
 	state: ^$T,
-	writer: proc "contextless" ([]byte, endian.Byte_Order, T) -> bool,
-	reader: proc "contextless" ([]byte, endian.Byte_Order) -> (T, bool)
+	writer: proc "contextless" (_: []byte, _: endian.Byte_Order, _: T) -> bool,
+	reader: proc "contextless" (_: []byte, _: endian.Byte_Order) -> (T, bool),
 ) -> SerializationResult {
 	size := size_of(T)
 	if (s.writing) {
@@ -182,7 +198,11 @@ serialize_byte :: proc(s: ^Serializer, state: ^byte) -> SerializationResult {
 	return nil
 }
 
-serialize_maybe :: proc(s: ^Serializer, state: ^Maybe($T), child_serializer: proc(s: ^Serializer, state: ^T) -> SerializationResult) -> SerializationResult {
+serialize_maybe :: proc(
+	s: ^Serializer,
+	state: ^Maybe($T),
+	child_serializer: proc(s: ^Serializer, state: ^T) -> SerializationResult,
+) -> SerializationResult {
 	if s.writing {
 		if v, ok := state.?; ok {
 			child_serializer(s, &v) or_return
@@ -202,11 +222,26 @@ serialize_maybe :: proc(s: ^Serializer, state: ^Maybe($T), child_serializer: pro
 }
 
 serialize_u8_b :: serialize_byte
-serialize_i8_b :: proc(s: ^Serializer, state: ^i8) -> SerializationResult { return serialize_byte(s, (^byte)(state)) }
-serialize_i32_b :: proc(s: ^Serializer, state: ^i32) -> SerializationResult { return serialize_endian(s, state, endian.put_i32, endian.get_i32) }
-serialize_u32_b :: proc(s: ^Serializer, state: ^u32) -> SerializationResult { return serialize_endian(s, state, endian.put_u32, endian.get_u32) }
-serialize_u64_b :: proc(s: ^Serializer, state: ^u64) -> SerializationResult { return serialize_endian(s, state, endian.put_u64, endian.get_u64) }
-serialize_f32_b :: proc(s: ^Serializer, state: ^f32) -> SerializationResult { return serialize_endian(s, state, endian.put_f32, endian.get_f32) }
+serialize_i8_b :: proc(s: ^Serializer, state: ^i8) -> SerializationResult {return serialize_byte(
+		s,
+		(^byte)(state),
+	)}
+serialize_i32_b :: proc(
+	s: ^Serializer,
+	state: ^i32,
+) -> SerializationResult {return serialize_endian(s, state, endian.put_i32, endian.get_i32)}
+serialize_u32_b :: proc(
+	s: ^Serializer,
+	state: ^u32,
+) -> SerializationResult {return serialize_endian(s, state, endian.put_u32, endian.get_u32)}
+serialize_u64_b :: proc(
+	s: ^Serializer,
+	state: ^u64,
+) -> SerializationResult {return serialize_endian(s, state, endian.put_u64, endian.get_u64)}
+serialize_f32_b :: proc(
+	s: ^Serializer,
+	state: ^f32,
+) -> SerializationResult {return serialize_endian(s, state, endian.put_f32, endian.get_f32)}
 
 serialize_u64 :: proc(s: ^Serializer, state: ^u64) -> SerializationResult {
 	if s.mode == .Binary do return serialize_endian(s, state, endian.put_u64, endian.get_u64)
@@ -237,7 +272,12 @@ serialize_f32 :: proc(s: ^Serializer, state: ^f32) -> SerializationResult {
 	return serialize_num_text(s, state, f64, parse_f)
 }
 
-serialize_num_text :: proc(s: ^Serializer, state: ^($T), $P: typeid, parser: proc(state: ParserState) -> (ParserState, P, ParserError)) -> SerializationResult {
+serialize_num_text :: proc(
+	s: ^Serializer,
+	state: ^($T),
+	$P: typeid,
+	parser: proc(state: ParserState) -> (ParserState, P, ParserError),
+) -> SerializationResult {
 	if (s.writing) {
 		fmtstr := intrinsics.type_is_float(T) ? "%f," : "%d,"
 		text := fmt.bprintf(s.stream[s.offset:], fmtstr, state^)
@@ -263,11 +303,18 @@ UnionSerializerState :: struct($U: typeid) {
 	serializer: ^Serializer,
 	union_ref:  ^U,
 	done:       bool,
-	tag: u8,
+	tag:        u8,
 }
 
-serialize_union :: proc(s: ^Serializer, obj: ^$U, f: proc(state: ^UnionSerializerState(U)) -> SerializationResult) -> SerializationResult {
-	state := UnionSerializerState(U){serializer = s, union_ref = obj}
+serialize_union :: proc(
+	s: ^Serializer,
+	obj: ^$U,
+	f: proc(state: ^UnionSerializerState(U)) -> SerializationResult,
+) -> SerializationResult {
+	state := UnionSerializerState(U) {
+		serializer = s,
+		union_ref  = obj,
+	}
 
 	text_prefix := "variant="
 	if state.serializer.mode == .Text {
@@ -315,6 +362,35 @@ serialize_union_nil :: proc(tag: u8, state: ^UnionSerializerState($U)) -> bool {
 
 // Convenience function mostly for union types with no data
 serialize_empty :: proc(_: ^Serializer, _: ^($T)) -> SerializationResult {
+	return nil
+}
+
+serialize_empty_variant :: proc(
+	state: ^UnionSerializerState($U),
+	tag: u8,
+	$T: typeid,
+) -> SerializationResult {
+	if state.done {
+		return nil
+	}
+
+	if state.serializer.writing {
+		variant, ok := state.union_ref.(T)
+		if ok {
+			tag_local := tag
+			serialize_u8(state.serializer, &tag_local)
+			state.done = true
+			return nil
+		}
+	} else {
+		// Tag already read, just set to the variant passed in
+		if state.tag == tag {
+			state.union_ref^ = T{}
+			state.done = true
+			return nil
+		}
+	}
+
 	return nil
 }
 
