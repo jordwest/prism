@@ -1,5 +1,9 @@
 package prism
 
+import "core:strconv"
+import "core:strings"
+import "base:runtime"
+import "core:unicode/utf8"
 import "core:encoding/endian"
 import "core:math"
 import "core:mem"
@@ -12,6 +16,7 @@ SerializationResult :: enum byte {
 	CounterMismatch,
 	EndOfStream,
 	UnionVariantNotFound,
+	ParseError,
 }
 
 Serializer :: struct {
@@ -30,13 +35,14 @@ create_deserializer :: proc(stream: []u8) -> Serializer {
 	return Serializer{stream = stream, offset = 0, writing = false}
 }
 
-serialize_version :: proc(s: ^Serializer, version: i32) -> SerializationResult {
+serialize_version :: proc(s: ^Serializer, serialize_version: i32) -> SerializationResult {
 	if (s.writing) {
-		endian.put_i32(s.stream[s.offset:], .Big, version)
-		s.version = version
+		endian.put_i32(s.stream[s.offset:], .Big, serialize_version)
+		s.version = serialize_version
 	} else {
 		read_version, ok := endian.get_i32(s.stream[s.offset:], .Big)
 		if (!ok) do return SerializationResult.EndOfStream
+		s.version = read_version
 	}
 	s.offset += 4
 	return nil
@@ -176,10 +182,76 @@ serialize_u32_text :: proc(s: ^Serializer, state: ^u32) -> SerializationResult {
 
 		s.offset = s.offset + i32(len(text))
 	} else {
-		// TODO
+		pstate, perr := parse_init(string(s.stream[s.offset:]))
+		parsed: u32
+		_, parsed, perr = parse_u32(pstate)
+		if perr != .Ok do return .ParseError
+		state^ = parsed
+		s.offset = s.offset + i32(pstate.offset)
 	}
-	s.offset = s.offset + 4
 	return nil
+}
+
+ParserState :: struct {
+	offset: int,
+	input: string,
+}
+
+ParserError :: enum {
+	Ok = 0,
+	InvalidToken,
+	ConversionFailed,
+	EndOfString,
+}
+
+parse_init :: proc(input: string) -> (ParserState, ParserError) {
+	return {
+		offset = 0,
+		input = input,
+	}, .Ok
+}
+
+parse_u32 :: proc(state: ParserState) -> (pstate: ParserState, out: u32, perr: ParserError) {
+	pstate = state
+	out_str: string
+
+	pstate, out_str = parse_numeric(pstate) or_return
+
+	out_u64, ok := strconv.parse_u64_of_base(out_str, 10)
+	if !ok do return pstate, 0, .ConversionFailed
+
+	return pstate, u32(out_u64), .Ok
+}
+
+parse_numeric :: proc(state: ParserState) -> (ParserState, string, ParserError) {
+	perr := ParserError.Ok
+	pstate := state
+	start := state.offset
+	c: rune
+
+	for {
+		pstate, c, perr = parse_digit(pstate)
+		if perr != .Ok do break
+	}
+
+	if pstate.offset == start do return pstate, "", perr
+
+	return pstate, state.input[start:pstate.offset], .Ok
+}
+
+parse_inc_offset :: proc(state: ParserState, increment_by: int) -> ParserState {
+	s := state
+	s.offset += increment_by
+	return s
+}
+
+parse_digit :: proc(state: ParserState) -> (ParserState, rune, ParserError) {
+	c := utf8.rune_at(state.input, state.offset)
+	rune_size := utf8.rune_size(c)
+	if (c >= '0' && c <= '9') || c == '.' {
+		return parse_inc_offset(state, rune_size), c, .Ok
+	}
+	return state, 0, .InvalidToken
 }
 
 serialize_f32 :: proc(s: ^Serializer, state: ^f32) -> SerializationResult {
