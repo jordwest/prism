@@ -14,17 +14,17 @@ AabbIterator :: struct($T: typeid) {
 	y:     T,
 }
 
-@(deprecated="Aabb deprecated, use Rect instead")
+@(deprecated = "Aabb deprecated, use Rect instead")
 aabb :: proc(pos: [2]$T, size: [2]T) -> Aabb(T) {
 	return Aabb(T){x1 = pos.x, y1 = pos.y, x2 = pos.x + size.x, y2 = pos.y + size.y}
 }
 
-@(deprecated="Aabb deprecated, use Rect instead")
+@(deprecated = "Aabb deprecated, use Rect instead")
 aabb_iterator :: proc(aabb: Aabb($T)) -> AabbIterator(T) {
 	return AabbIterator(T){aabb = aabb, x = aabb.x1, y = aabb.y1}
 }
 
-@(deprecated="Aabb deprecated, use Rect instead")
+@(deprecated = "Aabb deprecated, use Rect instead")
 aabb_iterate :: proc(iter: ^AabbIterator($T)) -> (val: [2]T, idx: int, ok: bool) {
 	// Finished iterating
 	if iter.y >= iter.aabb.y2 do return 0, 0, false
@@ -45,19 +45,19 @@ aabb_iterate :: proc(iter: ^AabbIterator($T)) -> (val: [2]T, idx: int, ok: bool)
 	return {x, y}, index, true
 }
 
-@(deprecated="Aabb deprecated, use Rect instead")
+@(deprecated = "Aabb deprecated, use Rect instead")
 aabb_overlaps :: proc(a: Aabb($T), b: Aabb(T)) -> bool {
 	overlaps_x := (a.x1 <= b.x1 && a.x2 >= b.x1) || b.x1 <= a.x1 && b.x2 >= a.x1
 	overlaps_y := (a.y1 <= b.y1 && a.y2 >= b.y1) || b.y1 <= a.y1 && b.y2 >= a.y1
 	return overlaps_x && overlaps_y
 }
 
-@(deprecated="Aabb deprecated, use Rect instead")
+@(deprecated = "Aabb deprecated, use Rect instead")
 aabb_is_edge :: proc(a: Aabb($T), coord: [2]T) -> bool {
 	return coord.x == a.x1 || coord.x == a.x2 - 1 || coord.y == a.y1 || coord.y == a.y2 - 1
 }
 
-@(deprecated="Aabb deprecated, use Rect instead")
+@(deprecated = "Aabb deprecated, use Rect instead")
 // Inner aabb does not cross outside the container aabb
 aabb_fully_contains :: proc(container: Aabb($T), inner: Aabb(T)) -> bool {
 	return(
@@ -68,7 +68,7 @@ aabb_fully_contains :: proc(container: Aabb($T), inner: Aabb(T)) -> bool {
 	)
 }
 
-@(deprecated="Aabb deprecated, use Rect instead")
+@(deprecated = "Aabb deprecated, use Rect instead")
 aabb_contains_point :: proc(container: Aabb($T), point: [2]T) -> bool {
 	return(
 		point.x >= container.x1 &&
@@ -78,12 +78,12 @@ aabb_contains_point :: proc(container: Aabb($T), point: [2]T) -> bool {
 	)
 }
 
-@(deprecated="Aabb deprecated, use Rect instead")
+@(deprecated = "Aabb deprecated, use Rect instead")
 aabb_pos :: proc(aabb: Aabb($T)) -> [2]T {
 	return {aabb.x1, aabb.y1}
 }
 
-@(deprecated="Aabb deprecated, use Rect instead")
+@(deprecated = "Aabb deprecated, use Rect instead")
 aabb_rand_tile_coord :: proc(aabb: Aabb(i32), rng: ^SplitMixState) -> TileCoord {
 	return {
 		rand_splitmix_get_i32_range(rng, aabb.x1, aabb.x2),
@@ -91,12 +91,12 @@ aabb_rand_tile_coord :: proc(aabb: Aabb(i32), rng: ^SplitMixState) -> TileCoord 
 	}
 }
 
-@(deprecated="Aabb deprecated, use Rect instead")
+@(deprecated = "Aabb deprecated, use Rect instead")
 aabb_size :: proc(aabb: Aabb($T)) -> [2]T {
 	return {aabb.x2 - aabb.x1, aabb.y2 - aabb.y1}
 }
 
-@(deprecated="Aabb deprecated, use Rect instead")
+@(deprecated = "Aabb deprecated, use Rect instead")
 aabb_grow :: proc(aabb: Aabb($T), size: [2]T) -> Aabb(T) {
 	return Aabb(T) {
 		x1 = aabb.x1 - size.x,
