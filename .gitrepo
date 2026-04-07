@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+;
+[subrepo]
+	remote = git@github.com:jordwest/prism.git
+	branch = main
+	commit = 57408532199612d5b9d032d7fbd9eb5abe265213
+	parent = b2a7f37c00425a35a3c5e15f19e9e2be10455f7e
+	method = rebase
+	cmdver = 0.4.9
